@@ -1,0 +1,13 @@
+node_modules/
+.env
+outputs/
+temp/
+uploads/
+wav2lip-checkpoint/
+python-portable/
+*.mp4
+*.m4a
+*.wav
+*.png
+*.jpg
+*.jpeg

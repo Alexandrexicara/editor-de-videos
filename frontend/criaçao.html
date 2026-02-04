@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Vídeo com Avatar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* Steps Indicator */
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .steps-container::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 1;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-number {
+            background: white;
+            color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .step.completed .step-number {
+            background: #51cf66;
+            border-color: #51cf66;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        /* Processing Status */
+        .status-message {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-message.active {
+            display: block;
+        }
+
+        .status-message.processing {
+            border-left-color: #ffd700;
+        }
+
+        .status-message.success {
+            border-left-color: #51cf66;
+        }
+
+        .status-message.error {
+            border-left-color: #ff6b6b;
+        }
+
+        .status-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-size: 1.05em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .status-subtext {
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        /* Message Alert Styles */
+        .message {
+            display: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 600;
+            text-align: center;
+            border-left: 4px solid #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .message.active {
+            display: block;
+        }
+
+        .message.success {
+            border-left-color: #51cf66;
+            background: rgba(81, 207, 102, 0.1);
+            color: #51cf66;
+        }
+
+        .message.error {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+        }
+
+        .spinner-small {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .form-group input[type="file"],
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input[type="file"]:hover,
+        .form-group input[type="text"]:hover {
+            border-color: #667eea;
+        }
+
+        .file-info {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* Avatar Configuration Styles */
+        .config-section {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .config-group {
+            margin-bottom: 25px;
+        }
+
+        .config-group label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .slider-value {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .position-btn {
+            padding: 12px;
+            border: 2px solid #ddd;
+            background: white;
+            color: #666;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .position-btn:hover {
+            border-color: #667eea;
+            background: #f0f3ff;
+            color: #667eea;
+        }
+
+        .position-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .config-summary {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .config-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .config-summary-item strong {
+            color: #333;
+        }
+
+        .upload-section {
+            background: #f8f9ff;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px dashed #667eea;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-section:hover {
+            background: #f0f3ff;
+            border-color: #764ba2;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .button-group button {
+            padding: 15px 30px;
+            font-size: 1.05em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+
+        .btn-reset:hover {
+            background: #e8e8e8;
+            border-color: #999;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.active {
+            display: block;
+        }
+
+        .file-list {
+            list-style: none;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .file-list li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            color: #666;
+        }
+
+        .file-list li:last-child {
+            border-bottom: none;
+        }
+
+        .preview-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .preview-item {
+            text-align: center;
+        }
+
+        .preview-item img,
+        .preview-item video {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            max-height: 200px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border: 1px solid #888;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 1000px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+            flex: 1;
+        }
+
+        .modal-header p {
+            margin: 0;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-body {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .video-preview-container {
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .video-preview-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        /* Live Preview Canvas */
+        .live-preview-wrapper {
+            position: relative;
+            background: #000;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .preview-canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: crosshair;
+        }
+
+        .preview-frame {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .frame-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .avatar-overlay img,
+        .avatar-overlay video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .movement-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            gap: 8px;
+            justify-items: center;
+            margin: 20px 0;
+        }
+
+        .arrow-btn {
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.5em;
+            transition: all 0.2s;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .arrow-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .arrow-btn:active {
+            transform: scale(0.95);
+        }
+
+        .arrow-up { grid-column: 2; grid-row: 1; }
+        .arrow-left { grid-column: 1; grid-row: 2; }
+        .arrow-down { grid-column: 2; grid-row: 3; }
+        .arrow-right { grid-column: 3; grid-row: 2; }
+
+        .movement-value {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .avatar-controls {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .avatar-controls h3 {
+            color: #667eea;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .control-item {
+            margin-bottom: 25px;
+        }
+
+        .control-item label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .x-y-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .control-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-input input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .control-input input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .control-input input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .control-value {
+            min-width: 45px;
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+            font-size: 0.95em;
+        }
+
+        .position-presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .preset-btn {
+            padding: 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .preset-btn:hover {
+            border-color: #667eea;
+            background: #f0f3ff;
+            color: #667eea;
+        }
+
+        .preset-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            background: #f8f9fa;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .modal-btn-secondary {
+            background: #e8e8e8;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #d8d8d8;
+            border-color: #999;
+        }
+
+        @media (max-width: 1000px) {
+            .modal-body {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .video-preview-container {
+                min-height: 300px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .preview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 20% auto;
+            }
+
+            .modal-body {
+                max-height: 70vh;
+            }
+
+            .modal-header {
+                padding: 15px 20px;
+            }
+
+            .modal-header h2 {
+                font-size: 1.3em;
+            }
+
+            .modal-header h2 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Gerador de Vídeo com Avatar</h1>
+            <p>Crie vídeos incríveis com avatar personalizado</p>
+            
+            <!-- Steps Indicator -->
+            <div class="steps-container">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Upload</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Configurar</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Processar</div>
+                </div>
+                <div class="step" id="step4">
+                    <div class="step-number">✓</div>
+                    <div class="step-label">Concluído</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Status Message Display -->
+            <div id="statusMessage" class="status-message">
+                <div class="status-icon" id="statusIcon">⏳</div>
+                <div class="status-text" id="statusText">Processando vídeo...</div>
+                <div class="status-subtext" id="statusSubtext">Aguarde de 1 a 5 minutos para conclusão</div>
+            </div>
+
+            <!-- Alert Message Display -->
+            <div id="message" class="message"></div>
+
+            <!-- Video Upload Section -->
+            <div class="section">
+                <h2>📹 1. Envie seu Vídeo</h2>
+                <div class="form-group">
+                    <label for="videoFile">Selecione o arquivo de vídeo:</label>
+                    <input type="file" id="videoFile" accept="video/*" required>
+                    <div class="file-info">Formatos aceitos: MP4, WebM, MOV, AVI (máximo 100MB)</div>
+                </div>
+                <div id="videoPreview" class="preview-section" style="display:none;">
+                    <p><strong>Preview do Vídeo:</strong></p>
+                    <div class="preview-grid">
+                        <div class="preview-item">
+                            <video id="videoPlayer" controls style="max-height: 200px; max-width: 100%;"></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avatar Upload Section -->
+            <div class="section">
+                <h2>👤 2. Envie sua Foto de Avatar</h2>
+                <div class="form-group">
+                    <label for="avatarFile">Selecione a imagem ou vídeo do avatar:</label>
+                    <input type="file" id="avatarFile" accept="image/*,video/*" required>
+                    <div class="file-info">Formatos aceitos: JPG, PNG, GIF, BMP, WebP, MP4, WebM (máximo 100MB)</div>
+                </div>
+                <div id="avatarPreview" class="preview-section" style="display:none;">
+                    <p><strong>Preview do Avatar:</strong></p>
+                    <div class="preview-grid">
+                        <div class="preview-item">
+                            <img id="avatarImg" src="" alt="Avatar preview" style="max-height: 150px; display:none;">
+                            <video id="avatarVideo" controls style="max-height: 150px; display:none;"></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Upload Section -->
+            <div class="section">
+                <h2>🎵 3. Envie seu Áudio (Opcional)</h2>
+                <div class="form-group">
+                    <label for="audioFile">Selecione o arquivo de áudio:</label>
+                    <input type="file" id="audioFile" accept="audio/*">
+                    <div class="file-info">Formatos aceitos: MP3, WAV, M4A, AAC (máximo 100MB). Deixe em branco para usar áudio do vídeo.</div>
+                </div>
+            </div>
+
+            <!-- Avatar Configuration Section -->
+            <div class="section">
+                <h2>⚙️ 4. Configure o Avatar</h2>
+                <div class="config-section">
+                    <!-- Size Control -->
+                    <div class="config-group">
+                        <label>Tamanho do Avatar</label>
+                        <div class="slider-container">
+                            <input type="range" id="sizeSlider" min="10" max="60" value="35">
+                            <span class="slider-value"><span id="sizeValue">35</span>%</span>
+                        </div>
+                    </div>
+
+                    <!-- Position Control -->
+                    <div class="config-group">
+                        <label>Posição do Avatar</label>
+                        <div class="position-grid">
+                            <button class="position-btn" data-position="top-left">↖️ Superior-Esq</button>
+                            <button class="position-btn" data-position="top-center">⬆️ Topo-Centro</button>
+                            <button class="position-btn" data-position="top-right">↗️ Superior-Dir</button>
+                            <button class="position-btn" data-position="center-left">⬅️ Centro-Esq</button>
+                            <button class="position-btn" data-position="center" style="background: #667eea; color: white; border-color: #667eea;">🎯 Centro</button>
+                            <button class="position-btn" data-position="center-right">➡️ Centro-Dir</button>
+                            <button class="position-btn" data-position="bottom-left">↙️ Inferior-Esq</button>
+                            <button class="position-btn" data-position="bottom-center">⬇️ Base-Centro</button>
+                            <button class="position-btn" data-position="bottom-right">↘️ Inferior-Dir</button>
+                        </div>
+                    </div>
+
+                    <!-- Margin Control -->
+                    <div class="config-group">
+                        <label>Margem (espaço das bordas)</label>
+                        <div class="slider-container">
+                            <input type="range" id="marginSlider" min="5" max="50" value="15">
+                            <span class="slider-value"><span id="marginValue">15</span>px</span>
+                        </div>
+                    </div>
+
+                    <!-- Configuration Summary -->
+                    <div class="config-summary">
+                        <div class="config-summary-item">
+                            <strong>Tamanho:</strong>
+                            <span id="summarySize">35%</span>
+                        </div>
+                        <div class="config-summary-item">
+                            <strong>Posição:</strong>
+                            <span id="summaryPosition">Centro</span>
+                        </div>
+                        <div class="config-summary-item">
+                            <strong>Margem:</strong>
+                            <span id="summaryMargin">15px</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button Section -->
+            <div class="section">
+                <h2>5. Gerar Vídeo</h2>
+                <div class="button-group">
+                    <button class="btn-submit" id="submitBtn">Gerar Vídeo Final</button>
+                    <button class="btn-reset" id="resetBtn">Limpar Formulário</button>
+                    <a id="downloadBtn" class="btn-submit" style="display:none; text-decoration:none; text-align:center;">📥 Baixar Vídeo Final</a>
+                </div>
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Processando seu vídeo... Isso pode levar alguns minutos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Personalização de Posição do Avatar -->
+    <div id="positionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎨 Personalizar Avatar no Vídeo</h2>
+                <p style="font-size: 0.9em; margin-top: 5px; opacity: 0.9;">Ajuste tamanho, posição e detalhes do seu avatar no vídeo processado</p>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Live Preview Container -->
+                <div class="video-preview-container">
+                    <div class="preview-frame" id="previewFrame">
+                        <video id="frameVideo" class="frame-video" playsinline muted loop></video>
+                        <div class="avatar-overlay" id="avatarOverlay">
+                            <img id="overlayImg" style="display: none;">
+                            <video id="overlayVideo" style="display: none;" muted loop></video>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Avatar Controls -->
+                <div class="avatar-controls">
+                    <h3>🎯 Ajustar Avatar</h3>
+
+                    <!-- Movement Controls -->
+                    <div class="control-item">
+                        <label>Mover Avatar (Use Setas)</label>
+                        <div class="movement-controls">
+                            <button class="arrow-btn arrow-up" id="btnUp" title="Mover para cima">⬆️</button>
+                            <button class="arrow-btn arrow-left" id="btnLeft" title="Mover para esquerda">⬅️</button>
+                            <button class="arrow-btn arrow-down" id="btnDown" title="Mover para baixo">⬇️</button>
+                            <button class="arrow-btn arrow-right" id="btnRight" title="Mover para direita">➡️</button>
+                            <div class="movement-value">X: <span id="posX">0</span>px | Y: <span id="posY">0</span>px</div>
+                        </div>
+                    </div>
+
+                    <!-- Size Control -->
+                    <div class="control-item">
+                        <label>Tamanho: <span id="modalSizeValue">35</span>%</label>
+                        <div class="control-input">
+                            <input type="range" id="modalSizeSlider" min="10" max="60" value="35">
+                            <span class="control-value"><span id="modalSizePercent">35</span>%</span>
+                        </div>
+                    </div>
+
+                    <!-- Fine Tuning X Position -->
+                    <div class="control-item">
+                        <label>Posição Horizontal (X): <span id="xValue">0</span>px</label>
+                        <div class="control-input">
+                            <input type="range" id="xSlider" min="-200" max="200" value="0">
+                            <span class="control-value"><span id="xDisplay">0</span>px</span>
+                        </div>
+                    </div>
+
+                    <!-- Fine Tuning Y Position -->
+                    <div class="control-item">
+                        <label>Posição Vertical (Y): <span id="yValue">0</span>px</label>
+                        <div class="control-input">
+                            <input type="range" id="ySlider" min="-200" max="200" value="0">
+                            <span class="control-value"><span id="yDisplay">0</span>px</span>
+                        </div>
+                    </div>
+
+                    <!-- Current Configuration -->
+                    <div class="config-summary">
+                        <div class="config-summary-item">
+                            <strong>Tamanho:</strong>
+                            <span id="modalCurrentSize">35%</span>
+                        </div>
+                        <div class="config-summary-item">
+                            <strong>Posição X:</strong>
+                            <span id="modalCurrentX">0px</span>
+                        </div>
+                        <div class="config-summary-item">
+                            <strong>Posição Y:</strong>
+                            <span id="modalCurrentY">0px</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="cancelModalBtn">Cancelar</button>
+                <button class="modal-btn modal-btn-primary" id="reprocessBtn">🔄 Reprocessar Vídeo</button>
+                <a class="modal-btn modal-btn-primary" id="downloadFinalBtn" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">📥 Baixar</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPosition = 'center';
+        let currentVideoData = null;
+        let currentFormData = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            setupModalEventListeners();
+            updateConfigSummary();
+        });
+
+        let avatarOffsetX = 0;
+        let avatarOffsetY = 0;
+        let currentAvatarFile = null;
+
+        // Modal Event Listeners
+        function setupModalEventListeners() {
+            // Close modal buttons
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+
+            // Modal sliders - com preview ao vivo
+            document.getElementById('modalSizeSlider').addEventListener('input', (e) => {
+                document.getElementById('modalSizeValue').textContent = e.target.value;
+                document.getElementById('modalSizePercent').textContent = e.target.value;
+                document.getElementById('modalCurrentSize').textContent = `${e.target.value}%`;
+                updateLivePreview();
+            });
+
+            // Movement sliders
+            document.getElementById('xSlider').addEventListener('input', (e) => {
+                avatarOffsetX = parseInt(e.target.value);
+                document.getElementById('xValue').textContent = e.target.value;
+                document.getElementById('xDisplay').textContent = e.target.value;
+                document.getElementById('modalCurrentX').textContent = `${e.target.value}px`;
+                document.getElementById('posX').textContent = avatarOffsetX;
+                updateLivePreview();
+            });
+
+            document.getElementById('ySlider').addEventListener('input', (e) => {
+                avatarOffsetY = parseInt(e.target.value);
+                document.getElementById('yValue').textContent = e.target.value;
+                document.getElementById('yDisplay').textContent = e.target.value;
+                document.getElementById('modalCurrentY').textContent = `${e.target.value}px`;
+                document.getElementById('posY').textContent = avatarOffsetY;
+                updateLivePreview();
+            });
+
+            // Arrow buttons para movimento fino
+            const moveStep = 5; // 5px por clique
+            document.getElementById('btnUp').addEventListener('click', () => {
+                avatarOffsetY -= moveStep;
+                document.getElementById('ySlider').value = avatarOffsetY;
+                document.getElementById('ySlider').dispatchEvent(new Event('input'));
+            });
+
+            document.getElementById('btnDown').addEventListener('click', () => {
+                avatarOffsetY += moveStep;
+                document.getElementById('ySlider').value = avatarOffsetY;
+                document.getElementById('ySlider').dispatchEvent(new Event('input'));
+            });
+
+            document.getElementById('btnLeft').addEventListener('click', () => {
+                avatarOffsetX -= moveStep;
+                document.getElementById('xSlider').value = avatarOffsetX;
+                document.getElementById('xSlider').dispatchEvent(new Event('input'));
+            });
+
+            document.getElementById('btnRight').addEventListener('click', () => {
+                avatarOffsetX += moveStep;
+                document.getElementById('xSlider').value = avatarOffsetX;
+                document.getElementById('xSlider').dispatchEvent(new Event('input'));
+            });
+
+            // Reprocess button
+            document.getElementById('reprocessBtn').addEventListener('click', reprocessVideo);
+
+            // Click outside modal to close
+            window.addEventListener('click', (e) => {
+                const modal = document.getElementById('positionModal');
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+
+        function updateLivePreview() {
+            const overlay = document.getElementById('avatarOverlay');
+            const frameDiv = document.getElementById('previewFrame');
+            const size = parseFloat(document.getElementById('modalSizeSlider').value);
+            
+            // Calcular tamanho em pixels baseado no frame
+            const frameRect = frameDiv.getBoundingClientRect();
+            const frameWidth = frameDiv.offsetWidth;
+            const frameHeight = frameDiv.offsetHeight;
+            const avatarSize = (size / 100) * Math.min(frameWidth, frameHeight);
+            
+            // Calcular posição baseado na posição selecionada
+            const position = document.querySelector('select[name="avatarPosition"]')?.value || 'bottom-right';
+            const margin = parseInt(document.querySelector('input[name="avatarMargin"]')?.value || 15);
+            
+            let baseX, baseY;
+            
+            // Posições base
+            switch (position) {
+                case 'top-left':
+                    baseX = margin;
+                    baseY = margin;
+                    break;
+                case 'top-center':
+                    baseX = frameWidth / 2 - avatarSize / 2;
+                    baseY = margin;
+                    break;
+                case 'top-right':
+                    baseX = frameWidth - avatarSize - margin;
+                    baseY = margin;
+                    break;
+                case 'middle-left':
+                    baseX = margin;
+                    baseY = frameHeight / 2 - avatarSize / 2;
+                    break;
+                case 'middle-center':
+                case 'center':
+                    baseX = frameWidth / 2 - avatarSize / 2;
+                    baseY = frameHeight / 2 - avatarSize / 2;
+                    break;
+                case 'middle-right':
+                    baseX = frameWidth - avatarSize - margin;
+                    baseY = frameHeight / 2 - avatarSize / 2;
+                    break;
+                case 'bottom-left':
+                    baseX = margin;
+                    baseY = frameHeight - avatarSize - margin;
+                    break;
+                case 'bottom-center':
+                    baseX = frameWidth / 2 - avatarSize / 2;
+                    baseY = frameHeight - avatarSize - margin;
+                    break;
+                case 'bottom-right':
+                default:
+                    baseX = frameWidth - avatarSize - margin;
+                    baseY = frameHeight - avatarSize - margin;
+                    break;
+            }
+            
+            // Adicionar offsets do usuário
+            const finalX = baseX + avatarOffsetX;
+            const finalY = baseY + avatarOffsetY;
+            
+            console.log(`🎯 Preview: size=${size}%, pos=(${finalX.toFixed(0)}, ${finalY.toFixed(0)}), offset=(${avatarOffsetX}, ${avatarOffsetY})`);
+            
+            // Atualizar posição e tamanho do overlay
+            overlay.style.width = avatarSize + 'px';
+            overlay.style.height = avatarSize + 'px';
+            overlay.style.left = finalX + 'px';
+            overlay.style.top = finalY + 'px';
+        }
+
+        function openModal(videoUrl, formData, avatarFile) {
+            const modal = document.getElementById('positionModal');
+            const frameVideo = document.getElementById('frameVideo');
+            
+            // Usar o URL de download direto
+            let downloadUrl = videoUrl;
+            if (!videoUrl.startsWith('http')) {
+                // Se for um caminho relativo, adicionar base URL
+                downloadUrl = window.location.origin + '/outputs/' + videoUrl.split('/').pop();
+            }
+            
+            console.log('🎬 Abrindo modal com vídeo:', downloadUrl);
+            console.log('🎨 Arquivo avatar:', avatarFile?.name);
+            
+            // Armazenar arquivo do avatar para preview
+            currentAvatarFile = avatarFile;
+            
+            // Carregar vídeo
+            frameVideo.src = downloadUrl;
+            frameVideo.type = 'video/mp4';
+            frameVideo.autoplay = false;
+            frameVideo.controls = true;
+            frameVideo.playsinline = true;
+            frameVideo.muted = true;
+            frameVideo.loop = true;
+            
+            // Monitorar erros de carregamento
+            frameVideo.onerror = (error) => {
+                console.error('❌ Erro ao carregar vídeo:', error);
+                showMessage('❌ Erro ao carregar vídeo. Verifique se o servidor está rodando.', 'error');
+            };
+            
+            frameVideo.addEventListener('loadedmetadata', () => {
+                console.log('✅ Vídeo carregado:', frameVideo.videoWidth, 'x', frameVideo.videoHeight);
+                // Carregar avatar na overlay
+                if (avatarFile) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        if (avatarFile.type.startsWith('image/')) {
+                            document.getElementById('overlayImg').src = e.target.result;
+                            document.getElementById('overlayImg').style.display = 'block';
+                            document.getElementById('overlayVideo').style.display = 'none';
+                            console.log('🖼️ Avatar de imagem carregado:', e.target.result.substring(0, 50) + '...');
+                        } else if (avatarFile.type.startsWith('video/')) {
+                            document.getElementById('overlayVideo').src = URL.createObjectURL(avatarFile);
+                            document.getElementById('overlayVideo').style.display = 'block';
+                            document.getElementById('overlayImg').style.display = 'none';
+                            console.log('🎥 Avatar de vídeo carregado');
+                        }
+                    };
+                    if (avatarFile.type.startsWith('image/')) {
+                        reader.readAsDataURL(avatarFile);
+                    } else if (avatarFile.type.startsWith('video/')) {
+                        reader.readAsDataURL(avatarFile);
+                    }
+                }
+                updateLivePreview();
+            }, { once: true });
+            
+            // Armazenar dados para reprocessamento
+            currentVideoData = downloadUrl;
+            currentFormData = formData;
+            
+            // Resetar offsets
+            avatarOffsetX = 0;
+            avatarOffsetY = 0;
+            document.getElementById('xSlider').value = 0;
+            document.getElementById('ySlider').value = 0;
+            
+            // Resetar controles modais
+            document.getElementById('modalSizeSlider').value = formData.get('avatarSize') || 35;
+            
+            // Atualizar valores exibidos
+            document.getElementById('modalSizeValue').textContent = formData.get('avatarSize') || 35;
+            document.getElementById('modalSizePercent').textContent = formData.get('avatarSize') || 35;
+            document.getElementById('modalCurrentSize').textContent = `${formData.get('avatarSize') || 35}%`;
+            document.getElementById('modalCurrentX').textContent = '0px';
+            document.getElementById('modalCurrentY').textContent = '0px';
+            document.getElementById('xValue').textContent = '0';
+            document.getElementById('yValue').textContent = '0';
+            document.getElementById('xDisplay').textContent = '0';
+            document.getElementById('yDisplay').textContent = '0';
+            document.getElementById('posX').textContent = '0';
+            document.getElementById('posY').textContent = '0';
+            
+            // Mostrar modal
+            modal.style.display = 'block';
+            
+            // Carregar o vídeo primeiro
+            frameVideo.load();
+            
+            // Atualizar preview ao vivo após um pequeno delay
+            setTimeout(() => {
+                updateLivePreview();
+                console.log('▶️ Iniciando reprodução do vídeo...');
+                frameVideo.play().catch(err => {
+                    console.log('⚠️ Autoplay pode estar bloqueado:', err);
+                });
+            }, 500);
+        }
+
+        function closeModal() {
+            const frameVideo = document.getElementById('frameVideo');
+            frameVideo.pause();
+            frameVideo.currentTime = 0;
+            document.getElementById('positionModal').style.display = 'none';
+        }
+
+        async function reprocessVideo() {
+            if (!currentFormData) {
+                showMessage('❌ Erro: Dados não carregados', 'error');
+                return;
+            }
+
+            const newFormData = new FormData();
+            
+            // Copiar dados originais
+            for (let [key, value] of currentFormData.entries()) {
+                newFormData.append(key, value);
+            }
+
+            // Atualizar com novos valores do modal
+            const newSize = document.getElementById('modalSizeSlider').value;
+            newFormData.set('avatarSize', newSize);
+            newFormData.set('avatarOffsetX', avatarOffsetX);
+            newFormData.set('avatarOffsetY', avatarOffsetY);
+
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                console.log('🔄 Iniciando reprocessamento com novas configurações...');
+                console.log('   Tamanho:', newSize + '%');
+                console.log('   Offset X:', avatarOffsetX + 'px');
+                console.log('   Offset Y:', avatarOffsetY + 'px');
+                
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: newFormData
+                });
+
+                const data = await response.json();
+
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('submitBtn').disabled = false;
+
+                if (response.ok && data.status === 'processado') {
+                    showMessage(`✅ Vídeo reprocessado com sucesso!`, 'success');
+                    
+                    const downloadUrl = data.downloadUrl.startsWith('http') 
+                        ? data.downloadUrl 
+                        : `http://localhost:3001${data.downloadUrl}`;
+                    
+                    console.log('📺 Atualizando vídeo no modal:', downloadUrl);
+                    document.getElementById('frameVideo').src = downloadUrl;
+                    document.getElementById('frameVideo').currentTime = 1;
+                    
+                    document.getElementById('downloadFinalBtn').href = downloadUrl;
+                    document.getElementById('downloadFinalBtn').download = 'video-final.mp4';
+                } else if (response.ok && data.status) {
+                    showMessage(`✅ Vídeo reprocessado!`, 'success');
+                    if (data.downloadUrl) {
+                        const downloadUrl = data.downloadUrl.startsWith('http') 
+                            ? data.downloadUrl 
+                            : `http://localhost:3001${data.downloadUrl}`;
+                        
+                        document.getElementById('frameVideo').src = downloadUrl;
+                        document.getElementById('frameVideo').currentTime = 1;
+                        document.getElementById('downloadFinalBtn').href = downloadUrl;
+                        document.getElementById('downloadFinalBtn').download = 'video-final.mp4';
+                    }
+                } else {
+                    showMessage(`❌ Erro: ${data.error || data.message || 'Falha ao reprocessar'}`, 'error');
+                }
+            } catch (error) {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('submitBtn').disabled = false;
+                showMessage(`❌ Erro: ${error.message}`, 'error');
+                console.error('Erro no reprocessamento:', error);
+            }
+        }
+
+        function setupEventListeners() {
+            // Size slider
+            document.getElementById('sizeSlider').addEventListener('input', (e) => {
+                document.getElementById('sizeValue').textContent = e.target.value;
+                updateConfigSummary();
+            });
+
+            // Margin slider
+            document.getElementById('marginSlider').addEventListener('input', (e) => {
+                document.getElementById('marginValue').textContent = e.target.value;
+                updateConfigSummary();
+            });
+
+            // Position buttons
+            document.querySelectorAll('.position-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // Remove active class from all buttons
+                    document.querySelectorAll('.position-btn').forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    btn.classList.add('active');
+                    selectedPosition = btn.getAttribute('data-position');
+                    updateConfigSummary();
+                });
+            });
+
+            // Video preview
+            document.getElementById('videoFile').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const videoElement = document.getElementById('videoPlayer');
+                        const blob = new Blob([event.target.result], { type: file.type });
+                        videoElement.src = URL.createObjectURL(blob);
+                        document.getElementById('videoPreview').style.display = 'block';
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+            });
+
+            // Avatar preview (supports both images and videos)
+            document.getElementById('avatarFile').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        if (file.type.startsWith('video/')) {
+                            // Video avatar
+                            document.getElementById('avatarImg').style.display = 'none';
+                            document.getElementById('avatarVideo').style.display = 'block';
+                            const blob = new Blob([event.target.result], { type: file.type });
+                            document.getElementById('avatarVideo').src = URL.createObjectURL(blob);
+                        } else if (file.type.startsWith('image/')) {
+                            // Image avatar
+                            document.getElementById('avatarVideo').style.display = 'none';
+                            document.getElementById('avatarImg').style.display = 'block';
+                            document.getElementById('avatarImg').src = event.target.result;
+                        }
+                        document.getElementById('avatarPreview').style.display = 'block';
+                    };
+                    if (file.type.startsWith('video/')) {
+                        reader.readAsArrayBuffer(file);
+                    } else {
+                        reader.readAsDataURL(file);
+                    }
+                }
+            });
+
+            // Form submission
+            document.getElementById('submitBtn').addEventListener('click', submitForm);
+
+            // Reset form
+            document.getElementById('resetBtn').addEventListener('click', resetForm);
+        }
+
+        function updateConfigSummary() {
+            const size = document.getElementById('sizeSlider').value;
+            const margin = document.getElementById('marginSlider').value;
+            const positions = {
+                'top-left': 'Superior-Esquerda',
+                'top-center': 'Topo-Centro',
+                'top-right': 'Superior-Direita',
+                'center-left': 'Centro-Esquerda',
+                'center': 'Centro',
+                'center-right': 'Centro-Direita',
+                'bottom-left': 'Inferior-Esquerda',
+                'bottom-center': 'Base-Centro',
+                'bottom-right': 'Inferior-Direita'
+            };
+
+            document.getElementById('summarySize').textContent = `${size}%`;
+            document.getElementById('summaryPosition').textContent = positions[selectedPosition];
+            document.getElementById('summaryMargin').textContent = `${margin}px`;
+        }
+
+        function resetForm() {
+            document.getElementById('videoFile').value = '';
+            document.getElementById('avatarFile').value = '';
+            document.getElementById('audioFile').value = '';
+            document.getElementById('videoPreview').style.display = 'none';
+            document.getElementById('avatarPreview').style.display = 'none';
+            document.getElementById('downloadBtn').style.display = 'none';
+            document.getElementById('downloadBtn').href = '#';
+            document.getElementById('sizeSlider').value = 35;
+            document.getElementById('marginSlider').value = 15;
+            document.getElementById('sizeValue').textContent = '35';
+            document.getElementById('marginValue').textContent = '15';
+            selectedPosition = 'center';
+            document.querySelectorAll('.position-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-position="center"]').classList.add('active');
+            document.getElementById('message').innerHTML = '';
+            updateConfigSummary();
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type} active`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageEl.classList.remove('active');
+                }, 5000);
+            }
+        }
+
+        function updateStep(stepNumber) {
+            // Atualizar steps visuais
+            for (let i = 1; i <= 4; i++) {
+                const step = document.getElementById(`step${i}`);
+                if (i < stepNumber) {
+                    step.classList.remove('active');
+                    step.classList.add('completed');
+                } else if (i === stepNumber) {
+                    step.classList.remove('completed');
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            }
+        }
+
+        function showStatusMessage(icon, text, subtext, type) {
+            const statusMsg = document.getElementById('statusMessage');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            const statusSubtext = document.getElementById('statusSubtext');
+
+            statusIcon.textContent = icon;
+            statusText.textContent = text;
+            statusSubtext.textContent = subtext;
+
+            statusMsg.className = `status-message ${type} active`;
+        }
+
+        function hideStatusMessage() {
+            const statusMsg = document.getElementById('statusMessage');
+            statusMsg.classList.remove('active');
+        }
+
+        async function submitForm() {
+            const videoFile = document.getElementById('videoFile').files[0];
+            const avatarFile = document.getElementById('avatarFile').files[0];
+            const audioFile = document.getElementById('audioFile').files[0];
+            const size = document.getElementById('sizeSlider').value;
+            const margin = document.getElementById('marginSlider').value;
+
+            if (!videoFile || !avatarFile) {
+                showMessage('❌ Por favor, selecione vídeo e avatar!', 'error');
+                return;
+            }
+
+            // Step 1 - Upload
+            updateStep(1);
+            showStatusMessage('📤', 'Enviando arquivos...', 'Upload em progresso', 'processing');
+            
+            const formData = new FormData();
+            formData.append('video', videoFile);
+            formData.append('avatar', avatarFile);
+            if (audioFile) {
+                formData.append('customAudio', audioFile);
+            }
+            formData.append('avatarSize', size);
+            formData.append('avatarPosition', selectedPosition);
+            formData.append('avatarMargin', margin);
+
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                // Step 2 - Configuração
+                updateStep(2);
+                showStatusMessage('⚙️', 'Configurando vídeo...', 'Aplicando configurações de avatar', 'processing');
+
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('submitBtn').disabled = false;
+
+                if (response.ok && (data.status === 'processado' || data.status)) {
+                    // Step 3 - Processamento
+                    updateStep(3);
+                    showStatusMessage('⏳', 'Processando vídeo...', 'Aguarde de 1 a 5 minutos para conclusão', 'processing');
+                    
+                    // Step 4 - Concluído
+                    setTimeout(() => {
+                        updateStep(4);
+                        showStatusMessage('✅', 'Vídeo processado com sucesso!', 'Abrindo configuração para personalizar...', 'success');
+                        
+                        showMessage(`✅ ${data.message || 'Vídeo gerado com sucesso!'}`, 'success');
+                        
+                        if (data.downloadUrl) {
+                            currentFormData = formData;
+                            const avatarFile = formData.get('avatar');
+                            
+                            // Abrir modal automaticamente
+                            openModal(data.downloadUrl, formData, avatarFile);
+                            
+                            // Também mostrar botão de download direto
+                            document.getElementById('downloadBtn').href = data.downloadUrl;
+                            document.getElementById('downloadBtn').download = 'video-final.mp4';
+                            document.getElementById('downloadBtn').style.display = 'inline-block';
+                            
+                            console.log('🎬 Modal aberto automaticamente com vídeo processado');
+                        }
+                        
+                        // Esconder mensagem de status após 3 segundos
+                        setTimeout(() => {
+                            hideStatusMessage();
+                        }, 3000);
+                    }, 2000);
+                } else {
+                    updateStep(1);
+                    showMessage(`❌ Erro: ${data.error || data.message || 'Falha ao processar vídeo'}`, 'error');
+                    showStatusMessage('❌', 'Erro no processamento', data.error || data.message || 'Tente novamente', 'error');
+                }
+            } catch (error) {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('submitBtn').disabled = false;
+                updateStep(1);
+                showMessage(`❌ Erro: ${error.message}`, 'error');
+                showStatusMessage('❌', 'Erro ao processar vídeo', error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

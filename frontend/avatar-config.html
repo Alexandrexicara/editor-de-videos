@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Avatar - Rolezando Avatar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 40px;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section h2 {
+            color: #333;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-group label {
+            color: #555;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb:hover {
+            background: #764ba2;
+        }
+
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .position-btn {
+            padding: 15px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .position-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .position-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .preview-box {
+            width: 100%;
+            aspect-ratio: 9/16;
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .avatar-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0.3;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            background: rgba(102, 126, 234, 0.2);
+            border: 2px dashed #667eea;
+            transition: all 0.3s;
+        }
+
+        .upload-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border: 2px dashed #ddd;
+        }
+
+        .upload-section h3 {
+            color: #333;
+        }
+
+        #avatarInput {
+            display: none;
+        }
+
+        .upload-btn {
+            padding: 15px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .upload-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .file-name {
+            color: #666;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-group label {
+            color: #555;
+            font-weight: 600;
+        }
+
+        .form-group input[type="file"],
+        .form-group input[type="text"] {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input[type="file"]:focus,
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .btn-submit {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #666;
+            border: 2px solid #ddd;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+            border-color: #999;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            color: #555;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .config-summary {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .config-summary p {
+            color: #666;
+            font-size: 0.9em;
+            margin: 5px 0;
+        }
+
+        .config-summary strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Configurar Avatar</h1>
+            <p>Ajuste o tamanho e posição do seu avatar no vídeo</p>
+        </div>
+
+        <div class="content">
+            <!-- Seção de Controles -->
+            <div class="section">
+                <h2>🎨 Ajustes do Avatar</h2>
+
+                <!-- Tamanho do Avatar -->
+                <div class="control-group">
+                    <label>Tamanho do Avatar</label>
+                    <input type="range" id="sizeSlider" min="10" max="60" value="35">
+                    <div class="value-display">Tamanho: <span id="sizeValue">35</span>% da tela</div>
+                </div>
+
+                <!-- Posição do Avatar -->
+                <div class="control-group">
+                    <label>Posição do Avatar</label>
+                    <div class="position-grid">
+                        <button class="position-btn" data-position="top-left">↖️ Superior<br>Esquerda</button>
+                        <button class="position-btn" data-position="top-center">⬆️ Superior<br>Centro</button>
+                        <button class="position-btn" data-position="top-right">↗️ Superior<br>Direita</button>
+
+                        <button class="position-btn" data-position="middle-left">⬅️ Centro<br>Esquerda</button>
+                        <button class="position-btn" data-position="middle-center">◼️ Centro<br>Centro</button>
+                        <button class="position-btn" data-position="middle-right">➡️ Centro<br>Direita</button>
+
+                        <button class="position-btn" data-position="bottom-left">↙️ Inferior<br>Esquerda</button>
+                        <button class="position-btn" data-position="bottom-center">⬇️ Inferior<br>Centro</button>
+                        <button class="position-btn" data-position="bottom-right active" data-position="bottom-right">↘️ Inferior<br>Direita</button>
+                    </div>
+                </div>
+
+                <!-- Margem -->
+                <div class="control-group">
+                    <label>Margem (espaço das bordas)</label>
+                    <input type="range" id="marginSlider" min="5" max="50" value="15">
+                    <div class="value-display">Margem: <span id="marginValue">15</span>px</div>
+                </div>
+
+                <!-- Offset X (Horizontal) -->
+                <div class="control-group">
+                    <label>Ajuste Horizontal (X)</label>
+                    <input type="range" id="offsetXSlider" min="-100" max="100" value="0">
+                    <div class="value-display">Offset X: <span id="offsetXValue">0</span>px (→ direita, ← esquerda)</div>
+                </div>
+
+                <!-- Offset Y (Vertical) -->
+                <div class="control-group">
+                    <label>Ajuste Vertical (Y)</label>
+                    <input type="range" id="offsetYSlider" min="-100" max="100" value="0">
+                    <div class="value-display">Offset Y: <span id="offsetYValue">0</span>px (↓ baixo, ↑ cima)</div>
+                </div>
+
+                <!-- Resumo de Configurações -->
+                <div class="config-summary">
+                    <p>📋 <strong>Configuração Atual:</strong></p>
+                    <p>Tamanho: <strong><span id="summarySize">35</span>%</strong></p>
+                    <p>Posição: <strong><span id="summaryPosition">Inferior Direita</span></strong></p>
+                    <p>Margem: <strong><span id="summaryMargin">15</span>px</strong></p>
+                    <p>Offset X: <strong><span id="summaryOffsetX">0</span>px</strong></p>
+                    <p>Offset Y: <strong><span id="summaryOffsetY">0</span>px</strong></p>
+                </div>
+
+                <div class="info-box">
+                    💡 <strong>Dica:</strong> O avatar será posicionado como uma camada sobre o vídeo. Use "Inferior Direita" para não tapar o rosto da pessoa no vídeo.
+                </div>
+            </div>
+
+            <!-- Seção de Preview e Upload -->
+            <div class="section">
+                <h2>📸 Preview e Upload</h2>
+
+                <!-- Preview -->
+                <div class="preview-box">
+                    <span class="preview-label">Preview (9:16)</span>
+                    <img id="previewImage" class="avatar-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23ccc'/%3E%3C/svg%3E" alt="Preview">
+                    <div id="avatarOverlay" class="avatar-overlay"></div>
+                </div>
+
+                <!-- Upload -->
+                <div class="upload-section">
+                    <h3>📤 Selecione seu Avatar</h3>
+                    <input type="file" id="avatarInput" accept="image/*">
+                    <button class="upload-btn" onclick="document.getElementById('avatarInput').click()">
+                        Escolher Imagem
+                    </button>
+                    <div id="fileName" class="file-name" style="display: none;">
+                        Nenhum arquivo selecionado
+                    </div>
+                </div>
+
+                <!-- Formulário de Envio -->
+                <form id="uploadForm" class="form-section">
+                    <div class="form-group">
+                        <label>📹 Vídeo</label>
+                        <input type="file" id="videoInput" accept="video/*" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🎵 Áudio (opcional)</label>
+                        <input type="file" id="audioInput" accept="audio/*">
+                    </div>
+
+                    <!-- Campos ocultos para configurações -->
+                    <input type="hidden" id="avatarSize" name="avatarSize" value="35">
+                    <input type="hidden" id="avatarPosition" name="avatarPosition" value="bottom-right">
+                    <input type="hidden" id="avatarMargin" name="avatarMargin" value="15">
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-submit">🚀 Processar Vídeo</button>
+                        <button type="reset" class="btn btn-reset">🔄 Limpar</button>
+                    </div>
+                </form>
+
+                <div class="info-box">
+                    ✨ <strong>Pronto para enviar:</strong> Selecione o vídeo, áudio (se tiver) e configure o avatar acima. Clique em "Processar" para gerar o vídeo final!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedAvatarFile = null;
+        let currentPosition = 'bottom-right';
+        let currentSize = 35;
+        let currentMargin = 15;
+        let currentOffsetX = 0;
+        let currentOffsetY = 0;
+
+        const positionNames = {
+            'top-left': 'Superior Esquerda',
+            'top-center': 'Superior Centro',
+            'top-right': 'Superior Direita',
+            'middle-left': 'Centro Esquerda',
+            'middle-center': 'Centro Centro',
+            'middle-right': 'Centro Direita',
+            'bottom-left': 'Inferior Esquerda',
+            'bottom-center': 'Inferior Centro',
+            'bottom-right': 'Inferior Direita'
+        };
+
+        // Controle de Tamanho
+        document.getElementById('sizeSlider').addEventListener('input', (e) => {
+            currentSize = e.target.value;
+            document.getElementById('sizeValue').textContent = currentSize;
+            document.getElementById('summarySize').textContent = currentSize;
+            updatePreview();
+        });
+
+        // Controle de Margem
+        document.getElementById('marginSlider').addEventListener('input', (e) => {
+            currentMargin = e.target.value;
+            document.getElementById('marginValue').textContent = currentMargin;
+            document.getElementById('summaryMargin').textContent = currentMargin;
+            updatePreview();
+        });
+
+        // Controle de Offset X (Horizontal)
+        document.getElementById('offsetXSlider').addEventListener('input', (e) => {
+            currentOffsetX = e.target.value;
+            document.getElementById('offsetXValue').textContent = currentOffsetX;
+            document.getElementById('summaryOffsetX').textContent = currentOffsetX;
+            updatePreview();
+        });
+
+        // Controle de Offset Y (Vertical)
+        document.getElementById('offsetYSlider').addEventListener('input', (e) => {
+            currentOffsetY = e.target.value;
+            document.getElementById('offsetYValue').textContent = currentOffsetY;
+            document.getElementById('summaryOffsetY').textContent = currentOffsetY;
+            updatePreview();
+        });
+
+        // Controle de Posição
+        document.querySelectorAll('.position-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.position-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPosition = btn.dataset.position;
+                document.getElementById('avatarPosition').value = currentPosition;
+                document.getElementById('summaryPosition').textContent = positionNames[currentPosition];
+                updatePreview();
+            });
+        });
+
+        // Upload de Avatar
+        document.getElementById('avatarInput').addEventListener('change', (e) => {
+            selectedAvatarFile = e.target.files[0];
+            if (selectedAvatarFile) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('previewImage').src = event.target.result;
+                    document.getElementById('fileName').textContent = selectedAvatarFile.name;
+                    document.getElementById('fileName').style.display = 'block';
+                    updatePreview();
+                };
+                reader.readAsDataURL(selectedAvatarFile);
+            }
+        });
+
+        // Atualizar Preview
+        function updatePreview() {
+            const overlay = document.getElementById('avatarOverlay');
+            const previewBox = document.querySelector('.preview-box');
+            
+            const boxWidth = previewBox.offsetWidth;
+            const boxHeight = previewBox.offsetHeight;
+            
+            const avatarWidth = (boxWidth * currentSize) / 100;
+            const avatarHeight = (boxHeight * currentSize) / 100;
+            
+            overlay.style.width = avatarWidth + 'px';
+            overlay.style.height = avatarHeight + 'px';
+            
+            const margin = (currentMargin / 100) * boxWidth;
+            
+            // Posicionamento com suporte a offsets
+            const positions = {
+                'top-left': { top: margin + parseInt(currentOffsetY), left: margin + parseInt(currentOffsetX), right: 'auto', bottom: 'auto' },
+                'top-center': { top: margin + parseInt(currentOffsetY), left: '50%', right: 'auto', bottom: 'auto', transform: `translateX(calc(-50% + ${currentOffsetX}px))` },
+                'top-right': { top: margin + parseInt(currentOffsetY), left: 'auto', right: margin - parseInt(currentOffsetX), bottom: 'auto' },
+                'middle-left': { top: '50%', left: margin + parseInt(currentOffsetX), right: 'auto', bottom: 'auto', transform: `translateY(calc(-50% + ${currentOffsetY}px))` },
+                'middle-center': { top: '50%', left: '50%', right: 'auto', bottom: 'auto', transform: `translate(calc(-50% + ${currentOffsetX}px), calc(-50% + ${currentOffsetY}px))` },
+                'middle-right': { top: '50%', left: 'auto', right: margin - parseInt(currentOffsetX), bottom: 'auto', transform: `translateY(calc(-50% + ${currentOffsetY}px))` },
+                'bottom-left': { top: 'auto', left: margin + parseInt(currentOffsetX), right: 'auto', bottom: margin - parseInt(currentOffsetY) },
+                'bottom-center': { top: 'auto', left: '50%', right: 'auto', bottom: margin - parseInt(currentOffsetY), transform: `translateX(calc(-50% + ${currentOffsetX}px))` },
+                'bottom-right': { top: 'auto', left: 'auto', right: margin - parseInt(currentOffsetX), bottom: margin - parseInt(currentOffsetY) }
+            };
+            
+            const posStyle = positions[currentPosition];
+            Object.assign(overlay.style, posStyle);
+        }
+
+        // Envio do Formulário
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const videoInput = document.getElementById('videoInput');
+            const audioInput = document.getElementById('audioInput');
+
+            if (!selectedAvatarFile) {
+                alert('❌ Por favor, selecione um avatar!');
+                return;
+            }
+
+            if (!videoInput.files[0]) {
+                alert('❌ Por favor, selecione um vídeo!');
+                return;
+            }
+
+            // Preparar FormData
+            const formData = new FormData();
+            formData.append('avatar', selectedAvatarFile);
+            formData.append('video', videoInput.files[0]);
+            if (audioInput.files[0]) {
+                formData.append('customAudio', audioInput.files[0]);
+            }
+
+            // Adicionar configurações
+            formData.append('avatarSize', document.getElementById('sizeSlider').value);
+            formData.append('avatarPosition', currentPosition);
+            formData.append('avatarMargin', document.getElementById('marginSlider').value);
+            formData.append('avatarOffsetX', document.getElementById('offsetXSlider').value || 0);
+            formData.append('avatarOffsetY', document.getElementById('offsetYSlider').value || 0);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'processado') {
+                    alert(`✅ Vídeo processado com sucesso!\n\nDownload: ${data.downloadUrl}`);
+                    document.getElementById('uploadForm').reset();
+                    document.getElementById('fileName').style.display = 'none';
+                } else {
+                    alert(`❌ Erro: ${data.message}`);
+                }
+            } catch (error) {
+                alert(`❌ Erro ao enviar: ${error.message}`);
+            }
+        });
+
+        // Inicializar preview
+        updatePreview();
+        document.querySelector('[data-position="bottom-right"]').classList.add('active');
+    </script>
+</body>
+</html>

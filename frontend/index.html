@@ -1,0 +1,389 @@
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rolezando AI – Vídeos com Avatar</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0d1425 100%);
+    color: #fff;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+header {
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(10, 14, 39, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+header h1 {
+    font-family: 'Poppins', sans-serif;
+    color: #FF006E;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+header .actions {
+    display: flex;
+    gap: 15px;
+}
+
+header .actions a {
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(135deg, #FF006E 0%, #9D4EDD 100%);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 0, 110, 0.3);
+}
+
+header .actions a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 0, 110, 0.4);
+}
+
+.hero {
+    text-align: center;
+    padding: 100px 40px;
+}
+
+.hero h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 56px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #FF006E 0%, #9D4EDD 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 30px;
+    letter-spacing: -1px;
+}
+
+.hero p {
+    font-size: 18px;
+    max-width: 700px;
+    margin: auto;
+    opacity: 0.85;
+    color: #d0d0d0;
+    line-height: 1.8;
+}
+
+.section {
+    padding: 80px 40px;
+    max-width: 1100px;
+    margin: auto;
+}
+
+.section h3 {
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 44px;
+    font-weight: 700;
+    margin-bottom: 50px;
+    background: linear-gradient(135deg, #FF006E 0%, #06FFA5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.step {
+    background: rgba(255, 0, 110, 0.05);
+    padding: 40px 30px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 0, 110, 0.15);
+    transition: all 0.3s ease;
+}
+
+.step:hover {
+    background: rgba(255, 0, 110, 0.1);
+    border-color: rgba(255, 0, 110, 0.3);
+    transform: translateY(-5px);
+}
+
+.step h4 {
+    font-family: 'Poppins', sans-serif;
+    color: #FF006E;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.step p {
+    color: #b0b0b0;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.pricing {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+.price-card {
+    background: rgba(157, 78, 221, 0.05);
+    border-radius: 16px;
+    padding: 40px 30px;
+    text-align: center;
+    border: 2px solid rgba(157, 78, 221, 0.2);
+    transition: all 0.3s ease;
+}
+
+.price-card:hover {
+    border-color: rgba(157, 78, 221, 0.5);
+    background: rgba(157, 78, 221, 0.1);
+    transform: scale(1.02);
+}
+
+.price-card h4 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: #fff;
+    font-weight: 600;
+}
+
+.price-card span {
+    font-family: 'Poppins', sans-serif;
+    font-size: 42px;
+    color: #9D4EDD;
+    display: block;
+    margin: 20px 0;
+    font-weight: 700;
+}
+
+.price-card p {
+    color: #b0b0b0;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.price-card button {
+    background: linear-gradient(135deg, #FF006E 0%, #06FFA5 100%);
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    width: 100%;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.price-card button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 0, 110, 0.4);
+}
+
+.editor-btn {
+    background: linear-gradient(135deg, #FF006E 0%, #9D4EDD 100%);
+    color: #fff;
+    padding: 16px 40px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(255, 0, 110, 0.3);
+}
+
+.editor-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 0, 110, 0.5);
+}
+
+footer {
+    text-align: center;
+    padding: 40px 20px;
+    background: rgba(10, 14, 39, 0.8);
+    border-top: 1px solid rgba(255, 0, 110, 0.1);
+    color: #999;
+    font-size: 14px;
+    margin-top: 60px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎬 Rolezando</h1>
+    <div class="actions">
+        <a href="login.html">Login</a>
+        <a href="cadastro.html">Cadastrar</a>
+    </div>
+</header>
+
+<section class="hero">
+    <h2>Crie Vídeos com Avatar 3D em Minutos</h2>
+    <p>
+        Transforme vídeos reais em conteúdos narrados com avatar falante,
+        gestos naturais e sincronização perfeita.  
+        Pague apenas pelo que usar, sem mensalidade.
+    </p>
+</section>
+
+<section class="section">
+    <h3>Como Funciona</h3>
+
+    <div class="steps">
+        <div class="step">
+            <h4>1️⃣ Envie seu vídeo</h4>
+            <p>Você envia o vídeo base ou apenas o áudio que deseja narrar.</p>
+        </div>
+
+        <div class="step">
+            <h4>2️⃣ Escolha o avatar</h4>
+            <p>Selecione o avatar 3D e a voz que irão apresentar seu conteúdo.</p>
+        </div>
+
+        <div class="step">
+            <h4>3️⃣ IA gera o vídeo</h4>
+            <p>O sistema sincroniza voz, boca, gestos e entrega o vídeo final.</p>
+        </div>
+
+        <div class="step">
+            <h4>4️⃣ Baixe e publique</h4>
+            <p>Você baixa o vídeo pronto e usa onde quiser.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <h3>Comprar Créditos</h3>
+
+    <div class="pricing">
+        <div class="price-card">
+            <h4>Créditos Básico</h4>
+            <span>R$ 20</span>
+            <p>Ideal para testes</p>
+            <button onclick="comprarCreditos('basico', 20)">Comprar</button>
+        </div>
+
+        <div class="price-card">
+            <h4>Créditos Intermediário</h4>
+            <span>R$ 30</span>
+            <button onclick="comprarCreditos('intermediario', 30)">Comprar</button>
+        </div>
+
+        <div class="price-card">
+            <h4>Créditos Avançado</h4>
+            <span>R$ 40</span>
+            <button onclick="comprarCreditos('avancado', 40)">Comprar</button>
+        </div>
+
+        <div class="price-card">
+            <h4>Créditos Profissional</h4>
+            <span>R$ 50</span>
+            <button onclick="comprarCreditos('profissional', 50)">Comprar</button>
+        </div>
+    </div>
+
+    <!-- Botão para acessar o editor após compra -->
+    <div style="text-align: center; margin-top: 50px;">
+        <button onclick="acessarEditor()" class="editor-btn">
+            🎬 Acessar Editor de Vídeos
+        </button>
+        <p style="margin-top: 15px; color: #999; font-size: 13px;">(Requer login e créditos)</p>
+    </div>
+</section>
+
+<footer>
+    © 2026 – Rolezando AI • Pague apenas pelo que usar • Sem mensalidade • <a href="#" style="color: #FFD700; text-decoration: none;">Contato</a>
+</footer>
+
+<script>
+// Sistema de créditos e acesso ao editor
+let creditosComprados = 0;
+let tipoCredito = '';
+
+function comprarCreditos(tipo, valor) {
+    // Verificar se está logado
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Simular compra de créditos (em produção integraria com pagamento real)
+    creditosComprados = valor;
+    tipoCredito = tipo;
+    
+    alert(`✅ Créditos ${tipo.toUpperCase()} comprados com sucesso! Valor: R$ ${valor}
+
+Agora você pode acessar o editor de vídeos.`);
+    
+    // Salvar no localStorage para persistência
+    localStorage.setItem('creditos_comprados', creditosComprados);
+    localStorage.setItem('tipo_credito', tipoCredito);
+    localStorage.setItem('data_compra', new Date().toISOString());
+}
+
+function acessarEditor() {
+    // Verificar se está logado
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        alert('⚠️ Você precisa estar logado para acessar o editor!');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Verificar se comprou créditos
+    const creditosSalvos = localStorage.getItem('creditos_comprados');
+    
+    if (!creditosSalvos || parseInt(creditosSalvos) <= 0) {
+        alert('⚠️ Você precisa comprar créditos primeiro!\n\nEscolha um plano acima e clique em "Comprar".');
+        return;
+    }
+    
+    // Redirecionar para o editor de criação
+    window.location.href = 'avatar-config.html';
+}
+
+// Verificar créditos salvos ao carregar a página
+window.addEventListener('load', function() {
+    const creditosSalvos = localStorage.getItem('creditos_comprados');
+    if (creditosSalvos && parseInt(creditosSalvos) > 0) {
+        const tipo = localStorage.getItem('tipo_credito') || 'básico';
+        console.log(`✅ Créditos ${tipo} detectados: R$ ${creditosSalvos}`);
+    }
+});
+</script>
+
+</body>
+</html>

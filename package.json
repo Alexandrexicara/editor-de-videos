@@ -1,0 +1,68 @@
+{
+  "name": "rolezando-avatar-editor",
+  "version": "1.0.0",
+  "description": "Sistema de edição de vídeo com avatar interativo - Versão Desktop",
+  "main": "main.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "frontend": "npx serve frontend",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"npm run dev\" \"electron .\"",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "video",
+    "avatar",
+    "editor",
+    "threejs",
+    "ffmpeg",
+    "desktop",
+    "electron"
+  ],
+  "author": "Celio Santos Silva",
+  "license": "MIT",
+  "build": {
+    "appId": "com.rolezando.avatareditor",
+    "productName": "Rolezando Avatar Editor",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "ffmpeg-static": "^5.3.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "electron": "^40.1.0",
+    "electron-builder": "^26.4.0",
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

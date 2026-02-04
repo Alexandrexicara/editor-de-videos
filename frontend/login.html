@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Rolezando AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0d1425 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(10, 14, 39, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 0, 110, 0.15);
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo h1 {
+            font-family: 'Poppins', sans-serif;
+            color: #FF006E;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .logo p {
+            color: #b0b0b0;
+            font-size: 13px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #fff;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 0, 110, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder {
+            color: #666;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 0, 110, 0.4);
+            box-shadow: 0 0 0 3px rgba(255, 0, 110, 0.1);
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 13px;
+        }
+
+        .remember-forgot label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #b0b0b0;
+        }
+
+        .remember-forgot input[type="checkbox"] {
+            cursor: pointer;
+            accent-color: #FF006E;
+        }
+
+        .remember-forgot a {
+            color: #FF006E;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .remember-forgot a:hover {
+            color: #06FFA5;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #FF006E 0%, #9D4EDD 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 20px rgba(255, 0, 110, 0.2);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 0, 110, 0.35);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            color: #555;
+            font-size: 12px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 0, 110, 0.1);
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 0, 110, 0.2);
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .social-btn:hover {
+    background: rgba(255, 0, 110, 0.1);
+    border-color: rgba(255, 0, 110, 0.4);
+        }
+
+        .signup-link {
+            text-align: center;
+            color: #b0b0b0;
+            font-size: 13px;
+        }
+
+        .signup-link a {
+            color: #FF006E;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .signup-link a:hover {
+            color: #06FFA5;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 40px 30px;
+                max-width: 100%;
+            }
+
+            .logo h1 {
+                font-size: 28px;
+            }
+
+            .remember-forgot {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            body {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                max-width: 100%;
+            }
+
+            .logo h1 {
+                font-size: 24px;
+            }
+
+            .logo p {
+                font-size: 12px;
+            }
+
+            .form-group label {
+                font-size: 13px;
+            }
+
+            .form-group input {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            .login-btn {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .remember-forgot {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+                font-size: 12px;
+            }
+
+            .social-btn {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .signup-link {
+                font-size: 12px;
+            }
+
+            body {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .login-container {
+                padding: 20px 15px;
+            }
+
+            .logo h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🎬 Rolezando</h1>
+            <p>Crie vídeos com avatar em minutos</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    placeholder="seu@email.com" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="••••••••" 
+                    required
+                >
+            </div>
+
+            <div class="remember-forgot">
+                <label>
+                    <input type="checkbox" id="remember">
+                    Lembrar-me
+                </label>
+                <a href="#forgot">Esqueceu a senha?</a>
+            </div>
+
+            <button type="submit" class="login-btn">Entrar</button>
+        </form>
+
+        <div class="divider">
+            <span>OU</span>
+        </div>
+
+        <div class="social-login">
+            <button class="social-btn">🔵 Google</button>
+            <button class="social-btn">🔗 GitHub</button>
+        </div>
+
+        <div class="signup-link">
+            Não tem conta? <a href="cadastro.html">Cadastre-se grátis</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    window.location.href = 'criaçao.html';
+                } else {
+                    alert('❌ Email ou senha inválidos');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('❌ Erro ao fazer login');
+            }
+        });
+    </script>
+</body>
+</html>
