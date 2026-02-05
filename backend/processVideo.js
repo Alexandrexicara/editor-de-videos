@@ -7,6 +7,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const config = require('./config');
+const fetch = require('node-fetch'); // Para chamadas à API SyncLabs em qualquer versão do Node
 const ffmpegStatic = require('ffmpeg-static');
 
 console.log(`📍 FFmpeg path: ${ffmpegStatic}`);
@@ -114,7 +115,8 @@ class VideoProcessor {
             // ETAPA 2: Transcrever áudio para texto
             const transcript = await this.transcribeAudio(fileName, finalAudioPath);
             
-            // ETAPA 3: Gerar animação do avatar com duração correta (PASSANDO customAudioPath)
+            // ETAPA 3: Gerar animação do avatar com duração correta
+            // (usa SyncLabs ou Wav2Lip quando disponíveis; se falhar, cai em avatar estático)
             const avatarPath = await this.generateAvatarAnimation(
                 transcript, 
                 fileName, 
@@ -123,7 +125,7 @@ class VideoProcessor {
                 customAvatarPath
             );
             
-            // ETAPA 4: JUNTAR ÁUDIO + AVATAR (ETAPA OBRIGATÓRIA QUE FALTAVA!)
+            // ETAPA 4: JUNTAR ÁUDIO + AVATAR (overlay sobre o vídeo original)
             const finalVideoPath = await this.mergeAudioWithAvatar(
                 fileName, 
                 finalAudioPath,
@@ -286,6 +288,35 @@ class VideoProcessor {
         });
     }
 
+    // Cortar áudio para limitar duração antes de enviar para a API
+    trimAudio(inputPath, outputPath, maxSeconds = 20) {
+        return new Promise((resolve, reject) => {
+            console.log(`✂️  Cortando áudio para no máximo ${maxSeconds}s para a API...`);
+
+            const ffmpeg = spawn(ffmpegStatic, [
+                '-y',
+                '-i', inputPath,
+                '-t', String(maxSeconds),
+                '-acodec', 'copy',
+                outputPath
+            ]);
+
+            ffmpeg.on('error', error => {
+                console.error('❌ Erro ao cortar áudio:', error);
+                reject(error);
+            });
+
+            ffmpeg.on('close', code => {
+                if (code !== 0) {
+                    reject(new Error(`FFmpeg trim failed with code ${code}`));
+                } else {
+                    console.log('✅ Áudio cortado com sucesso para a API!');
+                    resolve(outputPath);
+                }
+            });
+        });
+    }
+
     // Gerar avatar ANIMADO com Wav2Lip (local)
     async generateAvatarWav2Lip(avatarPath, audioPath, outputPath, duration) {
         return new Promise((resolve, reject) => {
@@ -302,8 +333,11 @@ class VideoProcessor {
             
             // Comando Python para executar Wav2Lip
             const pythonScript = path.join(__dirname, '../Wav2Lip/inference.py');
-            
-            const pythonProcess = spawn('python', [
+
+            // Preferir Python 3.8 via launcher do Windows (py -3.8)
+            // ou usar o binário configurado em PYTHON_WAV2LIP
+            const pythonBin = process.env.PYTHON_WAV2LIP || 'py';
+            const baseArgs = [
                 pythonScript,
                 '--checkpoint_path', checkpointPath,
                 '--face', avatarPath,
@@ -314,7 +348,13 @@ class VideoProcessor {
                 '--pads', '0', '10', '0', '0',
                 '--face_det_batch_size', '8',
                 '--wav2lip_batch_size', '64'
-            ]);
+            ];
+
+            const pythonArgs = (pythonBin === 'py')
+                ? ['-3.8', ...baseArgs]   // py -3.8 inference.py ...
+                : baseArgs;              // C:\Python38\python.exe inference.py ...
+
+            const pythonProcess = spawn(pythonBin, pythonArgs);
 
             let outputLog = '';
             let errorLog = '';
@@ -358,9 +398,14 @@ class VideoProcessor {
         // Se tem API key E avatar é IMAGEM, tentar SyncLabs primeiro
         if (syncApiKey !== 'sua-api-key-aqui' && !isAvatarVideo) {
             try {
-                // Comprimir áudio para evitar erro 413
+                // 1) Cortar áudio para evitar erro 413 (limite de payload)
+                const trimmedAudioPath = path.join(config.diretorios.temporarios, `trimmed_audio_${Date.now()}.m4a`);
+                // Limitar para ~20 segundos (ajustável)
+                await this.trimAudio(audioPath, trimmedAudioPath, 20);
+
+                // 2) Comprimir áudio cortado para evitar erro 413
                 const compressedAudioPath = path.join(config.diretorios.temporarios, `compressed_audio_${Date.now()}.m4a`);
-                await this.compressAudio(audioPath, compressedAudioPath);
+                await this.compressAudio(trimmedAudioPath, compressedAudioPath);
                 
                 // Tentar com SyncLabs
                 return await this.generateWithSyncLabs(avatarPath, compressedAudioPath, outputPath);
@@ -373,12 +418,24 @@ class VideoProcessor {
             console.log('🎬 Avatar é vídeo, pulando SyncLabs (requer imagem)...');
         }
         
-        // Fallback 1: Tentar Wav2Lip
+        // Fallback local (Wav2Lip) – opcional, mas pode falhar se o ambiente Python não estiver pronto.
+        // Mesmo que falhe, garantimos pelo menos avatar estático ou PNG direto.
         try {
             return await this.generateAvatarWav2Lip(avatarPath, audioPath, outputPath, duration);
         } catch (error) {
-            console.log('❌ Wav2Lip indisponível, usando avatar estático...');
-            console.log('🔄 Usando fallback: gerando avatar estático...');
+            console.log('❌ Wav2Lip indisponível:', error.message || error);
+
+            // 🎯 IMPORTANTE PARA VOCÊ:
+            // Se o avatar é PNG (com fundo removido), NÃO vamos mais converter para vídeo aqui.
+            // Em vez disso, devolvemos o próprio PNG para ser usado direto no overlay,
+            // preservando a transparência (sem quadrado branco).
+            const isPng = avatarPath && avatarPath.toLowerCase().endsWith('.png');
+            if (isPng) {
+                console.log('🖼 Avatar PNG detectado – usando imagem direta no overlay, preservando transparência.');
+                return avatarPath;
+            }
+
+            console.log('🔄 Usando fallback: gerando avatar estático em vídeo...');
             return this.generateStaticAvatar(avatarPath, duration, outputPath);
         }
     }
@@ -756,20 +813,51 @@ class VideoProcessor {
             let ffmpegArgs;
             
             if (videoPath && fs.existsSync(videoPath)) {
-                // Verificar se avatar é PNG com transparência
-                const isAvatarPNG = avatarPath.toLowerCase().endsWith('.png');
+                // Verificar tipo do avatar para decidir tratamento de fundo
+                const avatarExt = path.extname(avatarPath).toLowerCase();
+                const isAvatarPNG = avatarExt === '.png';
+                const isAvatarVideo = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v'].includes(avatarExt);
                 
-                // Filtro: scale avatar (não o vídeo) + overlay sobre vídeo com suporte a transparência
+                // Verificar se é um vídeo já processado com fundo removido
+                const isAlreadyProcessed = isAvatarVideo && (
+                    avatarPath.toLowerCase().includes('chroma') || 
+                    avatarPath.toLowerCase().includes('nobg') ||
+                    avatarPath.toLowerCase().includes('no-bg') ||
+                    avatarPath.toLowerCase().includes('removed') ||
+                    avatarPath.toLowerCase().includes('transparent')
+                );
+                
+                // Filtro: scale avatar (não o vídeo) + overlay sobre vídeo
                 let filterComplex;
+
                 if (isAvatarPNG) {
                     // Para PNG com transparência: usar format=rgba para preservar alpha
                     filterComplex = `[1:v]scale=iw*${sizePercent}:ih*${sizePercent},format=rgba[avatar_scaled];` +
                                    `[0:v]format=rgba[bg];` +
                                    `[bg][avatar_scaled]overlay=${overlayX}:${overlayY}:format=auto[out]`;
                     console.log('🎨 PNG com transparência - usando rgba com overlay format=auto');
-                } else {
+                } else if (isAvatarVideo) {
+                    // Para v�deo de avatar - usar diretamente SEM CHROMA KEY
+                    // Comentando chroma key que estava causando problemas
+                    const blend = '0.08';
+
+                    filterComplex =
+                    // REMOVIDO CHROMA KEY PROBLEM�TICO
+                    /*
+                    const whiteColor = '0xFFFFFF';
+                    const similarity = '0.12';
+                    const blend = '0.08';
+
+                    filterComplex = [1:v]scale=iw*${sizePercent}:ih*${sizePercent}[avatar_scaled]; +
+                                   [0:v][avatar_scaled]overlay=${overlayX}:${overlayY}[out];
+                    console.log('?? V�deo de avatar - usando diretamente SEM chroma key');
+                        [0:v][avatar_nobg]overlay=${overlayX}:${overlayY}[out];
+                    */
+                    
+                    // Usar avatar diretamente sem processamento adicional
                     filterComplex = `[1:v]scale=iw*${sizePercent}:ih*${sizePercent}[avatar_scaled];` +
                                    `[0:v][avatar_scaled]overlay=${overlayX}:${overlayY}[out]`;
+                    console.log('🎥 Vídeo de avatar - CORRIGIDO: usando diretamente sem chroma key');
                 }
                 
                 ffmpegArgs = [
