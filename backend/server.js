@@ -7,12 +7,13 @@ const path = require('path');
 const fs = require('fs');
 const { processVideo } = require('./processVideo');
 const config = require('./config');
+const StorageManager = require('./storageManager');
 
 // Configurar multer para upload de arquivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Determinar diretório baseado no tipo de arquivo
-    if (file.fieldname === 'avatar') {
+    if (file.fieldname === 'avatar1' || file.fieldname === 'avatar2') {
       cb(null, './avatars');
     } else if (file.fieldname === 'customAudio') {
       cb(null, './audios'); // Novo diretório para áudios personalizados
@@ -37,7 +38,7 @@ const upload = multer({
       cb(null, true);
     } else if (file.fieldname === 'customAudio' && file.mimetype.startsWith('audio/')) {
       cb(null, true);
-    } else if (file.fieldname === 'avatar' && 
+    } else if ((file.fieldname === 'avatar1' || file.fieldname === 'avatar2') && 
                (file.mimetype.startsWith('image/') || 
                 file.mimetype.startsWith('video/') ||
                 file.mimetype === 'model/gltf-binary' ||
@@ -60,12 +61,14 @@ app.use(express.json());
 app.post('/upload', upload.fields([
   { name: 'video', maxCount: 1 }, 
   { name: 'customAudio', maxCount: 1 },
-  { name: 'avatar', maxCount: 1 }
+  { name: 'avatar1', maxCount: 1 },
+  { name: 'avatar2', maxCount: 1 }
 ]), async (req, res) => {
   try {
     const videoFile = req.files?.video?.[0];
     const audioFile = req.files?.customAudio?.[0];
-    const avatarFile = req.files?.avatar?.[0];
+    const avatarFile1 = req.files?.avatar1?.[0];
+    const avatarFile2 = req.files?.avatar2?.[0];
     
     if (!videoFile) {
       return res.status(400).json({ 
@@ -76,26 +79,70 @@ app.post('/upload', upload.fields([
     console.log('📥 Arquivo(s) recebido(s):');
     if (videoFile) console.log('  Vídeo:', videoFile.originalname);
     if (audioFile) console.log('  Áudio:', audioFile.originalname);
-    if (avatarFile) console.log('  Avatar:', avatarFile.originalname);
+    if (avatarFile1) console.log('  Avatar 1:', avatarFile1.originalname);
+    if (avatarFile2) console.log('  Avatar 2:', avatarFile2.originalname);
     
-    // Obter configurações do avatar
-    const avatarConfig = {
-      size: parseInt(req.body.avatarSize) || 35,
-      position: req.body.avatarPosition || 'bottom-right',
-      margin: parseInt(req.body.avatarMargin) || 15,
-      offsetX: parseInt(req.body.avatarOffsetX) || 0,
-      offsetY: parseInt(req.body.avatarOffsetY) || 0
-    };
+    // Obter configurações dos avatares
+    const avatarConfigs = [];
+    
+    // Configuração do Avatar 1
+    avatarConfigs.push({
+      size: parseInt(req.body.avatarSize1) || 35,
+      position: req.body.avatarPosition1 || 'top-right',
+      margin: parseInt(req.body.avatarMargin1) || 15,
+      offsetX: parseInt(req.body.avatarOffsetX1) || 0,
+      offsetY: parseInt(req.body.avatarOffsetY1) || 0,
+      useChromaKey: req.body.useChromaKey1 === 'true' || req.body.useChromaKey1 === true,
+      chromaColor: req.body.chromaColor1 || 'green',
+      chromaThreshold: parseFloat(req.body.chromaThreshold1) || 0.1,
+      enableTiming: 'first' // Avatar 1 aparece na primeira metade
+    });
+    
+    // Configuração do Avatar 2
+    avatarConfigs.push({
+      size: parseInt(req.body.avatarSize2) || 25,
+      position: req.body.avatarPosition2 || 'bottom-left',
+      margin: parseInt(req.body.avatarMargin2) || 15,
+      offsetX: parseInt(req.body.avatarOffsetX2) || 0,
+      offsetY: parseInt(req.body.avatarOffsetY2) || 0,
+      useChromaKey: req.body.useChromaKey2 === 'true' || req.body.useChromaKey2 === true,
+      chromaColor: req.body.chromaColor2 || 'green',
+      chromaThreshold: parseFloat(req.body.chromaThreshold2) || 0.1,
+      enableTiming: 'second' // Avatar 2 aparece na segunda metade
+    });
 
-    console.log('⚙️  Configuração do Avatar:', avatarConfig);
-    console.log('📍 Offset personalizado: X=' + avatarConfig.offsetX + 'px, Y=' + avatarConfig.offsetY + 'px');
+    console.log('⚙️  Configurações dos Avatares:');
+    avatarConfigs.forEach((config, index) => {
+      console.log(`  Avatar ${index + 1}:`, config);
+      console.log(`    Offset: X=${config.offsetX}px, Y=${config.offsetY}px`);
+      console.log(`    Chroma Key: ${config.useChromaKey ? `SIM (${config.chromaColor}, threshold: ${config.chromaThreshold})` : 'NÃO'}`);
+      console.log(`    Timing: ${config.enableTiming === 'first' ? 'PRIMEIRA METADE' : 'SEGUNDA METADE'}`);
+    });
+    
+    // Verificar espaço em disco antes de processar
+    try {
+      storageManager.validateFileSize(videoFile.path);
+    } catch (err) {
+      return res.status(400).json({
+        error: 'Arquivo muito grande',
+        message: err.message
+      });
+    }
+    
+    // Checar se há espaço livre antes de processar
+    storageManager.checkAndCleanup();
+    
+    // Preparar lista de avatares
+    const avatarPaths = [];
+    if (avatarFile1) avatarPaths.push(avatarFile1.path);
+    if (avatarFile2) avatarPaths.push(avatarFile2.path);
     
     // Processar o arquivo (vídeo ou áudio)
     const resultPath = await processVideo(
       videoFile.path, 
       audioFile?.path,
-      avatarFile?.path,
-      avatarConfig
+      avatarPaths,
+      avatarConfigs
     );
     
     // Retornar sucesso com informações do arquivo processado
@@ -374,6 +421,49 @@ app.get('/videos', (req, res) => {
   });
 });
 
+// Rota para monitorar espaço em disco e estatísticas de armazenamento
+app.get('/api/storage-stats', (req, res) => {
+  try {
+    const stats = storageManager.getStorageStats();
+    res.json({
+      status: 'ok',
+      storage: stats,
+      settings: {
+        maxOutputAgeDays: storageManager.settings.MAX_OUTPUT_AGE_DAYS,
+        maxTempAgeHours: storageManager.settings.MAX_TEMP_AGE_HOURS,
+        minFreeSpaceMB: storageManager.settings.MIN_FREE_SPACE_MB,
+        maxVideoSizeMB: storageManager.settings.MAX_VIDEO_SIZE_MB
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Erro ao obter estatísticas',
+      message: err.message
+    });
+  }
+});
+
+// Rota para triggerar limpeza manual
+app.post('/api/cleanup', (req, res) => {
+  try {
+    console.log('🧹 Limpeza manual iniciada');
+    storageManager.performPreventiveCleanup();
+    
+    const stats = storageManager.getStorageStats();
+    res.json({
+      status: 'limpeza_concluida',
+      message: 'Limpeza de arquivos antigos concluída',
+      storage: stats
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Erro ao executar limpeza',
+      message: err.message
+    });
+  }
+});
+
+
 // Middleware de tratamento de erros
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -393,6 +483,11 @@ app.use((error, req, res, next) => {
 
 // Iniciar servidor
 const PORT = config.porta || 3000;
+
+// Inicializar Storage Manager para gerenciar espaço em disco
+const storageManager = new StorageManager(config);
+storageManager.startMonitoring(30); // Verificar a cada 30 minutos
+
 app.listen(PORT, config.host, () => {
   console.log(`
   ╔══════════════════════════════════════╗

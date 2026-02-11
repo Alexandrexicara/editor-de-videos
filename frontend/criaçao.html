@@ -988,18 +988,42 @@
 
             <!-- Avatar Upload Section -->
             <div class="section">
-                <h2>👤 2. Envie sua Foto de Avatar</h2>
+                <h2>👤 2. Envie seus Avatares</h2>
+                <div class="config-section">
+                    <p style="margin-bottom: 20px; color: #666; font-size: 0.95em;">
+                        <strong>Funcionamento:</strong> Para vídeos, o primeiro avatar aparece e quando termina, o segundo começa. 
+                        Para imagens, o tempo é dividido igualmente (50% para cada avatar).
+                    </p>
+                </div>
+                
+                <!-- Avatar Principal -->
                 <div class="form-group">
-                    <label for="avatarFile">Selecione a imagem ou vídeo do avatar:</label>
-                    <input type="file" id="avatarFile" accept="image/*,video/*" required>
+                    <label for="avatarFile1">Avatar Principal (Canto Superior Direito):</label>
+                    <input type="file" id="avatarFile1" accept="image/*,video/*" required>
                     <div class="file-info">Formatos aceitos: JPG, PNG, GIF, BMP, WebP, MP4, WebM (máximo 100MB)</div>
                 </div>
-                <div id="avatarPreview" class="preview-section" style="display:none;">
-                    <p><strong>Preview do Avatar:</strong></p>
+                <div id="avatarPreview1" class="preview-section" style="display:none;">
+                    <p><strong>Preview do Avatar Principal:</strong></p>
                     <div class="preview-grid">
                         <div class="preview-item">
-                            <img id="avatarImg" src="" alt="Avatar preview" style="max-height: 150px; display:none;">
-                            <video id="avatarVideo" controls style="max-height: 150px; display:none;"></video>
+                            <img id="avatarImg1" src="" alt="Avatar 1 preview" style="max-height: 150px; display:none;">
+                            <video id="avatarVideo1" controls style="max-height: 150px; display:none;"></video>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Avatar Secundário -->
+                <div class="form-group" style="margin-top: 25px;">
+                    <label for="avatarFile2">Avatar Secundário (Canto Inferior Esquerdo):</label>
+                    <input type="file" id="avatarFile2" accept="image/*,video/*">
+                    <div class="file-info">Formatos aceitos: JPG, PNG, GIF, BMP, WebP, MP4, WebM (opcional - máximo 100MB)</div>
+                </div>
+                <div id="avatarPreview2" class="preview-section" style="display:none;">
+                    <p><strong>Preview do Avatar Secundário:</strong></p>
+                    <div class="preview-grid">
+                        <div class="preview-item">
+                            <img id="avatarImg2" src="" alt="Avatar 2 preview" style="max-height: 150px; display:none;">
+                            <video id="avatarVideo2" controls style="max-height: 150px; display:none;"></video>
                         </div>
                     </div>
                 </div>
@@ -1017,55 +1041,155 @@
 
             <!-- Avatar Configuration Section -->
             <div class="section">
-                <h2>⚙️ 4. Configure o Avatar</h2>
+                <h2>⚙️ 4. Configure os Avatares</h2>
+                
+                <!-- Avatar Principal Configuration -->
                 <div class="config-section">
+                    <h3>👤 Avatar Principal (Superior Direito)</h3>
+                    
                     <!-- Size Control -->
                     <div class="config-group">
-                        <label>Tamanho do Avatar</label>
+                        <label>Tamanho do Avatar Principal</label>
                         <div class="slider-container">
-                            <input type="range" id="sizeSlider" min="10" max="60" value="35">
-                            <span class="slider-value"><span id="sizeValue">35</span>%</span>
+                            <input type="range" id="sizeSlider1" min="10" max="60" value="35">
+                            <span class="slider-value"><span id="sizeValue1">35</span>%</span>
                         </div>
                     </div>
 
                     <!-- Position Control -->
                     <div class="config-group">
-                        <label>Posição do Avatar</label>
+                        <label>Posição do Avatar Principal</label>
                         <div class="position-grid">
-                            <button class="position-btn" data-position="top-left">↖️ Superior-Esq</button>
-                            <button class="position-btn" data-position="top-center">⬆️ Topo-Centro</button>
-                            <button class="position-btn" data-position="top-right">↗️ Superior-Dir</button>
-                            <button class="position-btn" data-position="center-left">⬅️ Centro-Esq</button>
-                            <button class="position-btn" data-position="center" style="background: #667eea; color: white; border-color: #667eea;">🎯 Centro</button>
-                            <button class="position-btn" data-position="center-right">➡️ Centro-Dir</button>
-                            <button class="position-btn" data-position="bottom-left">↙️ Inferior-Esq</button>
-                            <button class="position-btn" data-position="bottom-center">⬇️ Base-Centro</button>
-                            <button class="position-btn" data-position="bottom-right">↘️ Inferior-Dir</button>
+                            <button class="position-btn" data-avatar="1" data-position="top-left">↖️ Superior-Esq</button>
+                            <button class="position-btn" data-avatar="1" data-position="top-center">⬆️ Topo-Centro</button>
+                            <button class="position-btn" data-avatar="1" data-position="top-right" style="background: #667eea; color: white; border-color: #667eea;">↗️ Superior-Dir</button>
+                            <button class="position-btn" data-avatar="1" data-position="center-left">⬅️ Centro-Esq</button>
+                            <button class="position-btn" data-avatar="1" data-position="center">🎯 Centro</button>
+                            <button class="position-btn" data-avatar="1" data-position="center-right">➡️ Centro-Dir</button>
+                            <button class="position-btn" data-avatar="1" data-position="bottom-left">↙️ Inferior-Esq</button>
+                            <button class="position-btn" data-avatar="1" data-position="bottom-center">⬇️ Base-Centro</button>
+                            <button class="position-btn" data-avatar="1" data-position="bottom-right">↘️ Inferior-Dir</button>
                         </div>
                     </div>
 
                     <!-- Margin Control -->
                     <div class="config-group">
-                        <label>Margem (espaço das bordas)</label>
+                        <label>Margem do Avatar Principal</label>
                         <div class="slider-container">
-                            <input type="range" id="marginSlider" min="5" max="50" value="15">
-                            <span class="slider-value"><span id="marginValue">15</span>px</span>
+                            <input type="range" id="marginSlider1" min="5" max="50" value="15">
+                            <span class="slider-value"><span id="marginValue1">15</span>px</span>
                         </div>
                     </div>
 
-                    <!-- Configuration Summary -->
+                    <!-- Chroma Key Control -->
+                    <div class="config-group">
+                        <label>Remover Fundo (Chroma Key)</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="chromaKey1" style="width: 20px; height: 20px; cursor: pointer;">
+                            <span>Ativar remoção de fundo</span>
+                        </div>
+                    </div>
+
+                    <!-- Chroma Color Control -->
+                    <div class="config-group" id="chromaColor1Group" style="display: none;">
+                        <label>Cor do Fundo</label>
+                        <select id="chromaColor1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="green">Verde (padrão)</option>
+                            <option value="blue">Azul</option>
+                            <option value="red">Vermelho</option>
+                        </select>
+                    </div>
+
+                    <!-- Chroma Threshold Control -->
+                    <div class="config-group" id="chromaThreshold1Group" style="display: none;">
+                        <label>Sensibilidade de Remoção</label>
+                        <div class="slider-container">
+                            <input type="range" id="chromaThreshold1" min="0.01" max="0.5" step="0.01" value="0.1">
+                            <span class="slider-value"><span id="chromaThresholdValue1">0.10</span></span>
+                        </div>
+                        <small style="color: #999; margin-top: 5px; display: block;">Valores maiores = mais sensível</small>
+                    </div>
+                </div>
+                
+                <!-- Avatar Secundário Configuration -->
+                <div class="config-section" style="margin-top: 25px;">
+                    <h3>👤 Avatar Secundário (Inferior Esquerdo)</h3>
+                    
+                    <!-- Size Control -->
+                    <div class="config-group">
+                        <label>Tamanho do Avatar Secundário</label>
+                        <div class="slider-container">
+                            <input type="range" id="sizeSlider2" min="10" max="60" value="25">
+                            <span class="slider-value"><span id="sizeValue2">25</span>%</span>
+                        </div>
+                    </div>
+
+                    <!-- Position Control -->
+                    <div class="config-group">
+                        <label>Posição do Avatar Secundário</label>
+                        <div class="position-grid">
+                            <button class="position-btn" data-avatar="2" data-position="top-left">↖️ Superior-Esq</button>
+                            <button class="position-btn" data-avatar="2" data-position="top-center">⬆️ Topo-Centro</button>
+                            <button class="position-btn" data-avatar="2" data-position="top-right">↗️ Superior-Dir</button>
+                            <button class="position-btn" data-avatar="2" data-position="center-left">⬅️ Centro-Esq</button>
+                            <button class="position-btn" data-avatar="2" data-position="center">🎯 Centro</button>
+                            <button class="position-btn" data-avatar="2" data-position="center-right">➡️ Centro-Dir</button>
+                            <button class="position-btn" data-avatar="2" data-position="bottom-left" style="background: #667eea; color: white; border-color: #667eea;">↙️ Inferior-Esq</button>
+                            <button class="position-btn" data-avatar="2" data-position="bottom-center">⬇️ Base-Centro</button>
+                            <button class="position-btn" data-avatar="2" data-position="bottom-right">↘️ Inferior-Dir</button>
+                        </div>
+                    </div>
+
+                    <!-- Margin Control -->
+                    <div class="config-group">
+                        <label>Margem do Avatar Secundário</label>
+                        <div class="slider-container">
+                            <input type="range" id="marginSlider2" min="5" max="50" value="15">
+                            <span class="slider-value"><span id="marginValue2">15</span>px</span>
+                        </div>
+                    </div>
+
+                    <!-- Chroma Key Control -->
+                    <div class="config-group">
+                        <label>Remover Fundo (Chroma Key)</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="chromaKey2" style="width: 20px; height: 20px; cursor: pointer;">
+                            <span>Ativar remoção de fundo</span>
+                        </div>
+                    </div>
+
+                    <!-- Chroma Color Control -->
+                    <div class="config-group" id="chromaColor2Group" style="display: none;">
+                        <label>Cor do Fundo</label>
+                        <select id="chromaColor2" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="green">Verde (padrão)</option>
+                            <option value="blue">Azul</option>
+                            <option value="red">Vermelho</option>
+                        </select>
+                    </div>
+
+                    <!-- Chroma Threshold Control -->
+                    <div class="config-group" id="chromaThreshold2Group" style="display: none;">
+                        <label>Sensibilidade de Remoção</label>
+                        <div class="slider-container">
+                            <input type="range" id="chromaThreshold2" min="0.01" max="0.5" step="0.01" value="0.1">
+                            <span class="slider-value"><span id="chromaThresholdValue2">0.10</span></span>
+                        </div>
+                        <small style="color: #999; margin-top: 5px; display: block;">Valores maiores = mais sensível</small>
+                    </div>
+                </div>
+
+                <!-- Configuration Summary -->
+                <div class="config-section" style="margin-top: 25px;">
+                    <h3>📋 Resumo das Configurações</h3>
                     <div class="config-summary">
                         <div class="config-summary-item">
-                            <strong>Tamanho:</strong>
-                            <span id="summarySize">35%</span>
+                            <strong>Avatar Principal:</strong>
+                            <span>Tamanho: <span id="summarySize1">35</span>%, Posição: <span id="summaryPosition1">Superior-Direita</span></span>
                         </div>
                         <div class="config-summary-item">
-                            <strong>Posição:</strong>
-                            <span id="summaryPosition">Centro</span>
-                        </div>
-                        <div class="config-summary-item">
-                            <strong>Margem:</strong>
-                            <span id="summaryMargin">15px</span>
+                            <strong>Avatar Secundário:</strong>
+                            <span>Tamanho: <span id="summarySize2">25</span>%, Posição: <span id="summaryPosition2">Inferior-Esquerda</span></span>
                         </div>
                     </div>
                 </div>
@@ -1178,7 +1302,8 @@
     </div>
 
     <script>
-        let selectedPosition = 'center';
+        let selectedPosition1 = 'top-right';
+        let selectedPosition2 = 'bottom-left';
         let currentVideoData = null;
         let currentFormData = null;
 
@@ -1189,9 +1314,12 @@
             updateConfigSummary();
         });
 
-        let avatarOffsetX = 0;
-        let avatarOffsetY = 0;
-        let currentAvatarFile = null;
+        let avatarOffsetX1 = 0;
+        let avatarOffsetY1 = 0;
+        let avatarOffsetX2 = 0;
+        let avatarOffsetY2 = 0;
+        let currentAvatarFile1 = null;
+        let currentAvatarFile2 = null;
 
         // Modal Event Listeners
         function setupModalEventListeners() {
@@ -1519,15 +1647,25 @@
         }
 
         function setupEventListeners() {
-            // Size slider
-            document.getElementById('sizeSlider').addEventListener('input', (e) => {
-                document.getElementById('sizeValue').textContent = e.target.value;
+            // Size sliders
+            document.getElementById('sizeSlider1').addEventListener('input', (e) => {
+                document.getElementById('sizeValue1').textContent = e.target.value;
+                updateConfigSummary();
+            });
+            
+            document.getElementById('sizeSlider2').addEventListener('input', (e) => {
+                document.getElementById('sizeValue2').textContent = e.target.value;
                 updateConfigSummary();
             });
 
-            // Margin slider
-            document.getElementById('marginSlider').addEventListener('input', (e) => {
-                document.getElementById('marginValue').textContent = e.target.value;
+            // Margin sliders
+            document.getElementById('marginSlider1').addEventListener('input', (e) => {
+                document.getElementById('marginValue1').textContent = e.target.value;
+                updateConfigSummary();
+            });
+            
+            document.getElementById('marginSlider2').addEventListener('input', (e) => {
+                document.getElementById('marginValue2').textContent = e.target.value;
                 updateConfigSummary();
             });
 
@@ -1535,13 +1673,43 @@
             document.querySelectorAll('.position-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // Remove active class from all buttons
-                    document.querySelectorAll('.position-btn').forEach(b => b.classList.remove('active'));
+                    const avatarNum = btn.getAttribute('data-avatar');
+                    const position = btn.getAttribute('data-position');
+                    
+                    // Remove active class from buttons of same avatar
+                    document.querySelectorAll(`.position-btn[data-avatar="${avatarNum}"]`).forEach(b => b.classList.remove('active'));
                     // Add active class to clicked button
                     btn.classList.add('active');
-                    selectedPosition = btn.getAttribute('data-position');
+                    
+                    if (avatarNum === '1') {
+                        selectedPosition1 = position;
+                    } else {
+                        selectedPosition2 = position;
+                    }
                     updateConfigSummary();
                 });
+            });
+
+            // Chroma Key checkboxes
+            document.getElementById('chromaKey1').addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                document.getElementById('chromaColor1Group').style.display = isChecked ? 'block' : 'none';
+                document.getElementById('chromaThreshold1Group').style.display = isChecked ? 'block' : 'none';
+            });
+
+            document.getElementById('chromaKey2').addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                document.getElementById('chromaColor2Group').style.display = isChecked ? 'block' : 'none';
+                document.getElementById('chromaThreshold2Group').style.display = isChecked ? 'block' : 'none';
+            });
+
+            // Chroma Threshold sliders
+            document.getElementById('chromaThreshold1').addEventListener('input', (e) => {
+                document.getElementById('chromaThresholdValue1').textContent = parseFloat(e.target.value).toFixed(2);
+            });
+
+            document.getElementById('chromaThreshold2').addEventListener('input', (e) => {
+                document.getElementById('chromaThresholdValue2').textContent = parseFloat(e.target.value).toFixed(2);
             });
 
             // Video preview
@@ -1559,25 +1727,52 @@
                 }
             });
 
-            // Avatar preview (supports both images and videos)
-            document.getElementById('avatarFile').addEventListener('change', (e) => {
+            // Avatar previews (supports both images and videos)
+            document.getElementById('avatarFile1').addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         if (file.type.startsWith('video/')) {
                             // Video avatar
-                            document.getElementById('avatarImg').style.display = 'none';
-                            document.getElementById('avatarVideo').style.display = 'block';
+                            document.getElementById('avatarImg1').style.display = 'none';
+                            document.getElementById('avatarVideo1').style.display = 'block';
                             const blob = new Blob([event.target.result], { type: file.type });
-                            document.getElementById('avatarVideo').src = URL.createObjectURL(blob);
+                            document.getElementById('avatarVideo1').src = URL.createObjectURL(blob);
                         } else if (file.type.startsWith('image/')) {
                             // Image avatar
-                            document.getElementById('avatarVideo').style.display = 'none';
-                            document.getElementById('avatarImg').style.display = 'block';
-                            document.getElementById('avatarImg').src = event.target.result;
+                            document.getElementById('avatarVideo1').style.display = 'none';
+                            document.getElementById('avatarImg1').style.display = 'block';
+                            document.getElementById('avatarImg1').src = event.target.result;
                         }
-                        document.getElementById('avatarPreview').style.display = 'block';
+                        document.getElementById('avatarPreview1').style.display = 'block';
+                    };
+                    if (file.type.startsWith('video/')) {
+                        reader.readAsArrayBuffer(file);
+                    } else {
+                        reader.readAsDataURL(file);
+                    }
+                }
+            });
+            
+            document.getElementById('avatarFile2').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        if (file.type.startsWith('video/')) {
+                            // Video avatar
+                            document.getElementById('avatarImg2').style.display = 'none';
+                            document.getElementById('avatarVideo2').style.display = 'block';
+                            const blob = new Blob([event.target.result], { type: file.type });
+                            document.getElementById('avatarVideo2').src = URL.createObjectURL(blob);
+                        } else if (file.type.startsWith('image/')) {
+                            // Image avatar
+                            document.getElementById('avatarVideo2').style.display = 'none';
+                            document.getElementById('avatarImg2').style.display = 'block';
+                            document.getElementById('avatarImg2').src = event.target.result;
+                        }
+                        document.getElementById('avatarPreview2').style.display = 'block';
                     };
                     if (file.type.startsWith('video/')) {
                         reader.readAsArrayBuffer(file);
@@ -1595,8 +1790,11 @@
         }
 
         function updateConfigSummary() {
-            const size = document.getElementById('sizeSlider').value;
-            const margin = document.getElementById('marginSlider').value;
+            const size1 = document.getElementById('sizeSlider1').value;
+            const size2 = document.getElementById('sizeSlider2').value;
+            const margin1 = document.getElementById('marginSlider1').value;
+            const margin2 = document.getElementById('marginSlider2').value;
+            
             const positions = {
                 'top-left': 'Superior-Esquerda',
                 'top-center': 'Topo-Centro',
@@ -1609,26 +1807,56 @@
                 'bottom-right': 'Inferior-Direita'
             };
 
-            document.getElementById('summarySize').textContent = `${size}%`;
-            document.getElementById('summaryPosition').textContent = positions[selectedPosition];
-            document.getElementById('summaryMargin').textContent = `${margin}px`;
+            document.getElementById('summarySize1').textContent = size1;
+            document.getElementById('summaryPosition1').textContent = positions[selectedPosition1];
+            document.getElementById('summarySize2').textContent = size2;
+            document.getElementById('summaryPosition2').textContent = positions[selectedPosition2];
         }
 
         function resetForm() {
             document.getElementById('videoFile').value = '';
-            document.getElementById('avatarFile').value = '';
+            document.getElementById('avatarFile1').value = '';
+            document.getElementById('avatarFile2').value = '';
             document.getElementById('audioFile').value = '';
             document.getElementById('videoPreview').style.display = 'none';
-            document.getElementById('avatarPreview').style.display = 'none';
+            document.getElementById('avatarPreview1').style.display = 'none';
+            document.getElementById('avatarPreview2').style.display = 'none';
             document.getElementById('downloadBtn').style.display = 'none';
             document.getElementById('downloadBtn').href = '#';
-            document.getElementById('sizeSlider').value = 35;
-            document.getElementById('marginSlider').value = 15;
-            document.getElementById('sizeValue').textContent = '35';
-            document.getElementById('marginValue').textContent = '15';
-            selectedPosition = 'center';
+            
+            // Reset sliders
+            document.getElementById('sizeSlider1').value = 35;
+            document.getElementById('sizeSlider2').value = 25;
+            document.getElementById('marginSlider1').value = 15;
+            document.getElementById('marginSlider2').value = 15;
+            
+            // Reset display values
+            document.getElementById('sizeValue1').textContent = '35';
+            document.getElementById('sizeValue2').textContent = '25';
+            document.getElementById('marginValue1').textContent = '15';
+            document.getElementById('marginValue2').textContent = '15';
+            
+            // Reset chroma key settings
+            document.getElementById('chromaKey1').checked = false;
+            document.getElementById('chromaKey2').checked = false;
+            document.getElementById('chromaColor1').value = 'green';
+            document.getElementById('chromaColor2').value = 'green';
+            document.getElementById('chromaThreshold1').value = 0.1;
+            document.getElementById('chromaThreshold2').value = 0.1;
+            document.getElementById('chromaThresholdValue1').textContent = '0.10';
+            document.getElementById('chromaThresholdValue2').textContent = '0.10';
+            document.getElementById('chromaColor1Group').style.display = 'none';
+            document.getElementById('chromaColor2Group').style.display = 'none';
+            document.getElementById('chromaThreshold1Group').style.display = 'none';
+            document.getElementById('chromaThreshold2Group').style.display = 'none';
+            
+            // Reset positions
+            selectedPosition1 = 'top-right';
+            selectedPosition2 = 'bottom-left';
             document.querySelectorAll('.position-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('[data-position="center"]').classList.add('active');
+            document.querySelector('[data-avatar="1"][data-position="top-right"]').classList.add('active');
+            document.querySelector('[data-avatar="2"][data-position="bottom-left"]').classList.add('active');
+            
             document.getElementById('message').innerHTML = '';
             updateConfigSummary();
         }
@@ -1681,13 +1909,16 @@
 
         async function submitForm() {
             const videoFile = document.getElementById('videoFile').files[0];
-            const avatarFile = document.getElementById('avatarFile').files[0];
+            const avatarFile1 = document.getElementById('avatarFile1').files[0];
+            const avatarFile2 = document.getElementById('avatarFile2').files[0];
             const audioFile = document.getElementById('audioFile').files[0];
-            const size = document.getElementById('sizeSlider').value;
-            const margin = document.getElementById('marginSlider').value;
+            const size1 = document.getElementById('sizeSlider1').value;
+            const size2 = document.getElementById('sizeSlider2').value;
+            const margin1 = document.getElementById('marginSlider1').value;
+            const margin2 = document.getElementById('marginSlider2').value;
 
-            if (!videoFile || !avatarFile) {
-                showMessage('❌ Por favor, selecione vídeo e avatar!', 'error');
+            if (!videoFile || !avatarFile1) {
+                showMessage('❌ Por favor, selecione vídeo e pelo menos o avatar principal!', 'error');
                 return;
             }
 
@@ -1697,13 +1928,32 @@
             
             const formData = new FormData();
             formData.append('video', videoFile);
-            formData.append('avatar', avatarFile);
+            formData.append('avatar1', avatarFile1);
+            if (avatarFile2) {
+                formData.append('avatar2', avatarFile2);
+            }
             if (audioFile) {
                 formData.append('customAudio', audioFile);
             }
-            formData.append('avatarSize', size);
-            formData.append('avatarPosition', selectedPosition);
-            formData.append('avatarMargin', margin);
+            formData.append('avatarSize1', size1);
+            formData.append('avatarSize2', size2);
+            formData.append('avatarPosition1', selectedPosition1);
+            formData.append('avatarPosition2', selectedPosition2);
+            formData.append('avatarMargin1', margin1);
+            formData.append('avatarMargin2', margin2);
+            
+            // Adicionar dados de chroma key
+            formData.append('useChromaKey1', document.getElementById('chromaKey1').checked);
+            if (document.getElementById('chromaKey1').checked) {
+                formData.append('chromaColor1', document.getElementById('chromaColor1').value);
+                formData.append('chromaThreshold1', document.getElementById('chromaThreshold1').value);
+            }
+            
+            formData.append('useChromaKey2', document.getElementById('chromaKey2').checked);
+            if (document.getElementById('chromaKey2').checked) {
+                formData.append('chromaColor2', document.getElementById('chromaColor2').value);
+                formData.append('chromaThreshold2', document.getElementById('chromaThreshold2').value);
+            }
 
             document.getElementById('loading').classList.add('active');
             document.getElementById('submitBtn').disabled = true;
