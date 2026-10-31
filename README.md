@@ -157,3 +157,8 @@ MIT License - Veja o arquivo LICENSE para detalhes
 ## MCP (integração com assistentes de IA)
 
 O projeto inclui um servidor MCP local para consultar o estado do editor, listar vídeos gerados, verificar armazenamento e acionar o processador existente com arquivos locais autorizados. Consulte [`MCP_SETUP.md`](MCP_SETUP.md) para instalação e configuração. A integração não altera o pipeline de voz nem oferece ações de exclusão.
+
+
+## Carteira e pagamentos
+
+A página `/conta.html` mostra saldo, pacotes em BRL/USD, pagamentos SumUp e histórico de créditos. Para configurar o ambiente e ativar os pagamentos, siga `BILLING_SETUP.md` e configure as variáveis privadas a partir de `.env.example`. O backend exige PostgreSQL e sessão autenticada para processar vídeos; um crédito é reservado e só é consumido após o vídeo ser concluído.
