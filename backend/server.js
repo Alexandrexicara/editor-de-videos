@@ -340,8 +340,8 @@ app.get('/status', (req, res) => {
     message: 'Servidor Rolezando Avatar funcionando!',
     config: {
       usarAudioDoVideo: config.usarAudioDoVideo,
-      porta: config.porta,
-      host: config.host
+      porta: Number(process.env.PORT || config.porta),
+      host: process.env.HOST || '0.0.0.0'
     }
   });
 });
