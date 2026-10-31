@@ -225,7 +225,7 @@ app.get('/outputs/:filename', billing.requireAuth, async (req, res) => {
     res.status(500).json({ error: 'Erro ao acessar vídeo.' });
   }
 });
-app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(express.static(path.join(__dirname, '../frontend'), { index: false }));
 
 // Cadastro, login, sessão, carteira e pagamentos são registrados em backend/billing.js.
 
