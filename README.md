@@ -153,3 +153,20 @@ MIT License - Veja o arquivo LICENSE para detalhes
 ---
 
 💡 **Dica**: O sistema usa a configuração 🔥 `usarAudioDoVideo: true` por padrão, extraindo automaticamente o áudio do vídeo original para sincronizar com o avatar!
+
+## Configuração de pagamentos SumUp
+
+A integração SumUp deve ser executada exclusivamente no backend. Para a conta própria da plataforma, configure no ambiente do Render (ou no `.env` local, que não deve ser enviado ao Git):
+
+```env
+SUMUP_API_KEY=
+SUMUP_MERCHANT_CODE=
+SUMUP_MODE=production
+SUMUP_CURRENCY=BRL
+```
+
+`SUMUP_API_KEY` é a chave secreta de API criada no painel SumUp. `SUMUP_MERCHANT_CODE` identifica a conta comerciante. A chave nunca deve aparecer no frontend, em commits, logs ou documentação.
+
+Para um produto SaaS que permita que outras igrejas/lojistas conectem suas próprias contas SumUp, será necessário implementar OAuth 2.0 separadamente. Nesse cenário, configure também `SUMUP_OAUTH_CLIENT_ID`, `SUMUP_OAUTH_CLIENT_SECRET` e `SUMUP_REDIRECT_URI` como segredos/variáveis privadas. Esses dados não substituem a API key da conta própria.
+
+O arquivo `.env.example` contém apenas nomes de variáveis e valores vazios. Ele não contém credenciais reais. A integração de checkout e confirmação de pagamentos ainda precisa ser implementada e testada antes de receber pagamentos reais.
