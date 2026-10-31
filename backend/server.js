@@ -57,6 +57,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 const billing = registerBilling(app);
 
 // Rotas de upload (antes do static para evitar conflitos)
