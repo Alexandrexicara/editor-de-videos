@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 // server.js - Servidor Express para processamento de vídeos
 
 const express = require('express');
