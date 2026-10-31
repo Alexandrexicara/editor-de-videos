@@ -71,7 +71,7 @@ function verifySession(token) {
   if (!token || typeof token !== 'string') return null;
   const parts = token.split('.');
   if (parts.length !== 2) return null;
-  const expected = crypto.createHmac('sha256', env('SESSION_SECRET')).update(parts[0]).digest();
+  const expected = crypto.createHmac('sha256', sessionKey()).update(parts[0]).digest();
   const received = Buffer.from(parts[1], 'base64url');
   if (expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) return null;
   try {
