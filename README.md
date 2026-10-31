@@ -153,3 +153,7 @@ MIT License - Veja o arquivo LICENSE para detalhes
 ---
 
 💡 **Dica**: O sistema usa a configuração 🔥 `usarAudioDoVideo: true` por padrão, extraindo automaticamente o áudio do vídeo original para sincronizar com o avatar!
+
+## MCP (integração com assistentes de IA)
+
+O projeto inclui um servidor MCP local para consultar o estado do editor, listar vídeos gerados, verificar armazenamento e acionar o processador existente com arquivos locais autorizados. Consulte [`MCP_SETUP.md`](MCP_SETUP.md) para instalação e configuração. A integração não altera o pipeline de voz nem oferece ações de exclusão.
