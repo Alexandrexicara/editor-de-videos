@@ -16,7 +16,7 @@
 - HOST=0.0.0.0
 - PORT: porta fornecida pelo serviço.
 
-Não coloque credenciais reais no GitHub. O banco cria as tabelas automaticamente; database/schema.sql documenta a estrutura.
+Não coloque credenciais reais no GitHub. O banco cria as tabelas automaticamente; database/schema.sql documenta a estrutura. Como o driver pg foi adicionado, execute npm install no projeto para atualizar package-lock.json antes de usar npm ci ou publicar em um host que exija lockfile sincronizado.
 
 ## Fluxo implementado
 1. Cadastro/login real com senha derivada por scrypt e cookie HttpOnly.
