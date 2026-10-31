@@ -24,6 +24,8 @@
     <a href="#projeto"><span>▣</span><span>Minha série</span></a>
     <a href="#episodios"><span>▶</span><span>Episódios</span></a>
     <a href="#roteiro"><span>✎</span><span>Roteiro e cenas</span></a>
+    <a href="#personagens"><span>♙</span><span>Personagens</span></a>
+    <a href="#locacoes"><span>⌖</span><span>Locações</span></a>
     <a href="#integracoes"><span>⌘</span><span>Integrações</span></a>
   </nav>
   <div class="side-bottom"><b>Seu estúdio, suas histórias.</b><p>Organize ideias, personagens e cenas antes de conectar os motores de geração.</p></div>
@@ -37,6 +39,7 @@
     <div class="stat"><span>Projetos neste navegador</span><strong id="statProjects">0</strong></div>
     <div class="stat"><span>Episódios planejados</span><strong id="statEpisodes">0</strong></div>
     <div class="stat"><span>Cenas no roteiro</span><strong id="statScenes">0</strong></div>
+    <div class="stat"><span>Personagens</span><strong id="statCharacters">0</strong></div>
   </div>
   <div class="section-head" id="projeto"><div><h3>Projeto da série</h3><p>Defina a identidade da produção antes de começar o roteiro.</p></div><span class="tag">RASCUNHO LOCAL</span></div>
   <div class="workspace">
@@ -69,6 +72,34 @@
     <div class="scene-list" id="sceneList"><div class="empty">Adicione uma cena para começar seu storyboard.</div></div>
     <div class="footnote">Dica: descreva primeiro o que acontece, depois o cenário, a iluminação, o movimento de câmera e a emoção desejada.</div>
   </section>
+  <div class="section-head" id="personagens"><div><h3>Bíblia de personagens</h3><p>Cadastre protagonistas, coadjuvantes e antagonistas com identidade visual e personalidade consistentes.</p></div></div>
+  <div class="workspace">
+    <section class="panel">
+      <h4>Novo personagem</h4><p class="sub">Crie uma ficha que servirá de referência para roteiro, imagem e continuidade.</p>
+      <form id="characterForm" class="form-grid">
+        <div class="field"><label for="characterName">Nome</label><input id="characterName" required placeholder="Nome do personagem"></div>
+        <div class="field"><label for="characterRole">Papel na história</label><select id="characterRole"><option>Protagonista</option><option>Antagonista</option><option>Coadjuvante</option><option>Participação especial</option></select></div>
+        <div class="field full"><label for="characterPersonality">Personalidade e história</label><textarea id="characterPersonality" placeholder="Motivações, passado, objetivos, conflitos e jeito de falar..."></textarea></div>
+        <div class="field"><label for="characterLook">Aparência / figurino</label><input id="characterLook" placeholder="Características visuais constantes"></div>
+        <div class="field"><label for="characterVoice">Voz / interpretação</label><input id="characterVoice" placeholder="Timbre, sotaque e emoção"></div>
+        <div class="field full"><button class="btn primary" type="submit">＋ Salvar personagem</button></div>
+      </form>
+    </section>
+    <section class="panel"><h4>Elenco cadastrado</h4><p class="sub">Referências de continuidade dos personagens.</p><div class="list" id="characterList"><div class="empty">Seu elenco aparecerá aqui.</div></div></section>
+  </div>
+  <div class="section-head" id="locacoes"><div><h3>Locações e direção de arte</h3><p>Organize cenários recorrentes, atmosfera, cores e elementos visuais.</p></div></div>
+  <div class="workspace">
+    <section class="panel">
+      <h4>Nova locação</h4><p class="sub">Registre cenários para manter a identidade visual entre episódios.</p>
+      <form id="locationForm" class="form-grid">
+        <div class="field"><label for="locationName">Nome do cenário</label><input id="locationName" required placeholder="Ex.: Casa da protagonista"></div>
+        <div class="field"><label for="locationType">Tipo</label><select id="locationType"><option>Interior</option><option>Exterior</option><option>Estúdio / cenário virtual</option><option>Fantasia / ficção</option></select></div>
+        <div class="field full"><label for="locationDescription">Descrição visual</label><textarea id="locationDescription" placeholder="Arquitetura, época, iluminação, paleta de cores e objetos marcantes..."></textarea></div>
+        <div class="field full"><button class="btn" type="submit">＋ Salvar locação</button></div>
+      </form>
+    </section>
+    <section class="panel"><h4>Biblioteca de cenários</h4><p class="sub">Locações disponíveis para suas cenas.</p><div class="list" id="locationList"><div class="empty">Suas locações aparecerão aqui.</div></div></section>
+  </div>
   <div class="section-head" id="integracoes"><div><h3>Central de integrações</h3><p>Conectores preparados para a próxima etapa de desenvolvimento.</p></div></div>
   <div class="workspace">
     <section class="panel"><h4>Motor criativo</h4><p class="sub">Conexões que poderão ser ativadas quando você fornecer as credenciais.</p>
@@ -97,22 +128,26 @@
 (function(){
 'use strict';
 const KEY='rolezando_cine_series_v1';
-const state={projects:[],episodes:[],scenes:[]};
+const state={projects:[],episodes:[],scenes:[],characters:[],locations:[]};
 const $=id=>document.getElementById(id);
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600)}
-function read(){try{const data=JSON.parse(localStorage.getItem(KEY)||'{}');state.projects=Array.isArray(data.projects)?data.projects:[];state.episodes=Array.isArray(data.episodes)?data.episodes:[];state.scenes=Array.isArray(data.scenes)?data.scenes:[]}catch(e){toast('Não foi possível ler o rascunho salvo neste navegador.')}}
-function save(){localStorage.setItem(KEY,JSON.stringify(state));renderStats()}
-function renderStats(){$('statProjects').textContent=state.projects.length;$('statEpisodes').textContent=state.episodes.length;$('statScenes').textContent=state.scenes.length}
+function read(){try{const data=JSON.parse(localStorage.getItem(KEY)||'{}');state.projects=Array.isArray(data.projects)?data.projects:[];state.episodes=Array.isArray(data.episodes)?data.episodes:[];state.scenes=Array.isArray(data.scenes)?data.scenes:[];state.characters=Array.isArray(data.characters)?data.characters:[];state.locations=Array.isArray(data.locations)?data.locations:[]}catch(e){toast('Não foi possível ler o rascunho salvo neste navegador.')}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));renderStats()}catch(e){toast('Não foi possível salvar. O armazenamento do navegador pode estar cheio.')}}
+function renderStats(){$('statProjects').textContent=state.projects.length;$('statEpisodes').textContent=state.episodes.length;$('statScenes').textContent=state.scenes.length;$('statCharacters').textContent=state.characters.length}
 function renderEpisodes(){const box=$('episodeList');box.innerHTML='';if(!state.episodes.length){box.innerHTML='<div class="empty">Seus episódios aparecerão aqui.</div>';return}state.episodes.forEach((ep,i)=>{const el=document.createElement('div');el.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent='EP '+ep.number+' · '+ep.title;const small=document.createElement('small');small.textContent=ep.status;info.append(title,small);const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.episodes.splice(i,1);save();renderEpisodes()});el.append(info,del);box.append(el)})}
 function renderScenes(){const box=$('sceneList');box.innerHTML='';if(!state.scenes.length){box.innerHTML='<div class="empty">Adicione uma cena para começar seu storyboard.</div>';return}state.scenes.forEach((scene,i)=>{const el=document.createElement('div');el.className='scene';const num=document.createElement('div');num.className='scene-num';num.textContent=String(i+1).padStart(2,'0');const info=document.createElement('div');const title=document.createElement('strong');title.textContent=scene.title;const small=document.createElement('small');small.textContent=[scene.location,scene.camera,scene.description].filter(Boolean).join(' · ');info.append(title,small);const del=document.createElement('button');del.type='button';del.setAttribute('aria-label','Remover cena');del.textContent='×';del.addEventListener('click',()=>{state.scenes.splice(i,1);save();renderScenes()});el.append(num,info,del);box.append(el)})}
 function saveProject(){const project={id:Date.now(),title:$('seriesTitle').value.trim(),genre:$('genre').value,format:$('format').value,seasons:Number($('seasonCount').value)||1,episodeLength:$('episodeLength').value,synopsis:$('synopsis').value.trim(),updatedAt:new Date().toISOString()};if(!project.title){toast('Informe o nome da série.');return}const idx=state.projects.findIndex(p=>p.title.toLowerCase()===project.title.toLowerCase());if(idx>=0)state.projects[idx]=project;else state.projects.push(project);save();toast('Ficha da série salva neste navegador.')}
+function renderCharacters(){const box=$('characterList');box.innerHTML='';if(!state.characters.length){box.innerHTML='<div class="empty">Seu elenco aparecerá aqui.</div>';return}state.characters.forEach((c,i)=>{const el=document.createElement('div');el.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent=c.name;const small=document.createElement('small');small.textContent=[c.role,c.look,c.voice].filter(Boolean).join(' · ');info.append(title,small);const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.characters.splice(i,1);save();renderCharacters()});el.append(info,del);box.append(el)})}
+function renderLocations(){const box=$('locationList');box.innerHTML='';if(!state.locations.length){box.innerHTML='<div class="empty">Suas locações aparecerão aqui.</div>';return}state.locations.forEach((l,i)=>{const el=document.createElement('div');el.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent=l.name;const small=document.createElement('small');small.textContent=[l.type,l.description].filter(Boolean).join(' · ');info.append(title,small);const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.locations.splice(i,1);save();renderLocations()});el.append(info,del);box.append(el)})}
+$('characterForm').addEventListener('submit',e=>{e.preventDefault();state.characters.push({name:$('characterName').value.trim(),role:$('characterRole').value,personality:$('characterPersonality').value.trim(),look:$('characterLook').value.trim(),voice:$('characterVoice').value.trim()});save();renderCharacters();e.target.reset();toast('Personagem salvo na bíblia da série.')});
+$('locationForm').addEventListener('submit',e=>{e.preventDefault();state.locations.push({name:$('locationName').value.trim(),type:$('locationType').value,description:$('locationDescription').value.trim()});save();renderLocations();e.target.reset();toast('Locação adicionada à biblioteca.')});
 $('projectForm').addEventListener('submit',e=>{e.preventDefault();saveProject()});
 $('episodeForm').addEventListener('submit',e=>{e.preventDefault();const title=$('episodeTitle').value.trim();if(!title)return;state.episodes.push({number:Number($('episodeNumber').value)||state.episodes.length+1,title,status:$('episodeStatus').value});save();renderEpisodes();$('episodeTitle').value='';$('episodeNumber').value=state.episodes.length+1;toast('Episódio adicionado.')});
 $('addScene').addEventListener('click',()=>{const title=prompt('Título da cena:');if(!title||!title.trim())return;const location=prompt('Local / cenário da cena:')||'';const camera=prompt('Enquadramento ou movimento de câmera:')||'';const description=prompt('O que acontece nesta cena?')||'';state.scenes.push({title:title.trim(),location,camera,description});save();renderScenes();toast('Cena adicionada ao storyboard.')});
-function exportProject(){const data={product:'Cine Séries',version:1,exportedAt:new Date().toISOString(),projects:state.projects,episodes:state.episodes,scenes:state.scenes};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cine-series-projeto.json';a.click();URL.revokeObjectURL(url);toast('Projeto exportado em JSON.')}
+function exportProject(){const data={product:'Cine Séries',version:2,exportedAt:new Date().toISOString(),projects:state.projects,episodes:state.episodes,scenes:state.scenes,characters:state.characters,locations:state.locations};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cine-series-projeto.json';a.click();URL.revokeObjectURL(url);toast('Projeto exportado em JSON.')}
 $('exportTop').addEventListener('click',exportProject);
 $('startProject').addEventListener('click',()=>$('seriesTitle').focus());
-read();renderStats();renderEpisodes();renderScenes();
+read();renderStats();renderEpisodes();renderScenes();renderCharacters();renderLocations();
 })();
 </script>
 </body>
