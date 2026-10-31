@@ -20,7 +20,7 @@ const CATALOG = {
 };
 const pool = process.env.DATABASE_URL ? new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false },
+  ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: true },
   max: Number(process.env.PG_POOL_MAX || 10),
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000
@@ -103,7 +103,8 @@ async function sumup(url, options) {
       Accept: 'application/json',
       ...((options && options.body) ? { 'Content-Type': 'application/json' } : {}),
       ...((options && options.headers) || {})
-    }
+    },
+    signal: AbortSignal.timeout(15000)
   });
   const raw = await response.text();
   let data = {};
