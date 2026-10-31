@@ -357,10 +357,9 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    localStorage.setItem('token', data.token);
-                    window.location.href = 'criaçao.html';
+                    window.location.href = 'conta.html';
                 } else {
-                    alert('❌ Email ou senha inválidos');
+                    alert('❌ ' + (data.message || 'E-mail ou senha inválidos.'));
                 }
             } catch (error) {
                 console.error('Erro:', error);
