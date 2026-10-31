@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 20
       - name: Install production dependencies
-        run: npm install --omit=dev --ignore-scripts --no-package-lock --no-audit --no-fund
+        run: npm install --omit=dev --ignore-scripts  --no-audit --no-fund
       - name: Check JavaScript syntax
         run: npm run check
       - name: Load billing module
