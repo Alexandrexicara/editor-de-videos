@@ -357,7 +357,7 @@ app.get('/videos', billing.requireAuth, async (req, res) => {
 });
 
 // Rota para monitorar espaço em disco e estatísticas de armazenamento
-app.get('/api/storage-stats', (req, res) => {
+app.get('/api/storage-stats', billing.requireAuth, (req, res) => {
   try {
     const stats = storageManager.getStorageStats();
     res.json({
@@ -379,7 +379,7 @@ app.get('/api/storage-stats', (req, res) => {
 });
 
 // Rota para triggerar limpeza manual
-app.post('/api/cleanup', (req, res) => {
+app.post('/api/cleanup', billing.requireAdmin, (req, res) => {
   try {
     console.log('🧹 Limpeza manual iniciada');
     storageManager.performPreventiveCleanup();
