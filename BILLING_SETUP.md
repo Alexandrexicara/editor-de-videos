@@ -38,3 +38,8 @@ Não coloque credenciais reais no GitHub. O banco cria as tabelas automaticament
 A API SumUp documenta BRL e USD como moedas aceitas pelo endpoint de checkout, mas isso não garante que as duas moedas ou todos os métodos estejam habilitados para a conta do estabelecimento. Confirme a disponibilidade na sua conta SumUp e faça um teste ponta a ponta antes de anunciar vendas internacionais.
 Nenhuma credencial ou conta SumUp foi adicionada ao repositório. Sem configurar todas as variáveis acima, o sistema não processa pagamentos reais.
 O MCP existente continua sendo uma integração local via stdio. Ele não é automaticamente um serviço público remoto ou marketplace.
+
+
+## Limite da integração MCP atual
+
+O MCP incluído nesta entrega é local (stdio) e chama o pipeline local diretamente. A carteira controla o processamento feito pelo endpoint web POST /upload; ela ainda não autentica nem cobra chamadas feitas por um cliente MCP local. Para vender acesso MCP pela internet, será necessária uma versão remota HTTP com autenticação por usuário/chave, cobrança de créditos por chamada e limites de uso. Não anuncie o MCP local como serviço pago remoto.
