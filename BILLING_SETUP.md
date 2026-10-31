@@ -7,7 +7,8 @@
 
 ## Variáveis obrigatórias no serviço de hospedagem
 - DATABASE_URL: conexão PostgreSQL.
-- SESSION_SECRET: segredo aleatório longo para assinar cookies de sessão.
+- SESSION_SECRET: segredo aleatório longo (mínimo 32 bytes) para assinar cookies de sessão.
+- ADMIN_API_KEY: segredo administrativo opcional; necessário apenas para acionar a limpeza manual.
 - SUMUP_API_KEY: chave privada da API SumUp.
 - SUMUP_MERCHANT_CODE: código do estabelecimento SumUp.
 - PUBLIC_BASE_URL: URL HTTPS pública do backend.
