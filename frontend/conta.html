@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carteira | Rolezando Avatar</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#0a0e27;color:#f7f7fb;font-family:Inter,Segoe UI,Arial,sans-serif;padding:24px}
+main{max-width:1000px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+h1{margin:0;color:#ff287d}h2{margin:0 0 14px;font-size:20px}.muted{color:#aeb4cc}.panel{background:#151b36;border:1px solid #30395d;border-radius:18px;padding:22px;margin:18px 0}
+.balance{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}.number{font-size:42px;font-weight:800;color:#06ffa5}.btn{border:0;border-radius:10px;padding:12px 18px;background:linear-gradient(120deg,#ff006e,#9d4edd);color:white;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}.btn.secondary{background:#293354}.btn:disabled{opacity:.5;cursor:wait}
+.currency{display:flex;gap:8px;margin-bottom:16px}.currency button{border:1px solid #48527b;border-radius:9px;padding:9px 16px;background:#10162e;color:#fff;cursor:pointer}.currency button.active{background:#5a327e;border-color:#ff287d}
+.packages{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.pack{background:#10162e;border:1px solid #30395d;border-radius:14px;padding:16px}.pack strong{display:block;font-size:26px;margin:8px 0;color:#fff}.pack small{color:#aeb4cc}.pack .btn{width:100%;margin-top:12px}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:11px 8px;border-bottom:1px solid #30395d;font-size:14px}th{color:#aeb4cc}
+.notice{padding:12px;border-radius:10px;background:#202b4d;color:#dbe3ff;margin:14px 0}.error{background:#4b2034;color:#ffd7e5}.success{background:#143b34;color:#caffed}
+a{color:#ff8bb9}@media(max-width:600px){body{padding:14px}.panel{padding:16px}.number{font-size:34px}}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div><h1>🎬 Rolezando Avatar</h1><p class="muted">Sua carteira de créditos e histórico de pagamentos</p></div>
+    <div><a class="btn secondary" href="/cria%C3%A7%C3%A3o.html">Abrir editor</a> <button class="btn secondary" id="logout">Sair</button></div>
+  </header>
+  <section class="panel balance">
+    <div><div class="muted">Saldo disponível</div><div class="number" id="balance">—</div><div class="muted">1 crédito = 1 vídeo concluído</div></div>
+    <div><div class="muted">Preço por vídeo</div><h2 id="unitPrice">R$ 0,10</h2><div class="muted">O crédito é devolvido se o processamento falhar.</div></div>
+  </section>
+  <section class="panel">
+    <h2>Comprar créditos</h2>
+    <p class="muted">Escolha a moeda e o pacote. O saldo só é liberado após confirmação da SumUp.</p>
+    <div class="currency"><button class="active" data-currency="BRL">Brasil · BRL</button><button data-currency="USD">Internacional · USD</button></div>
+    <div class="packages" id="packages"><p class="muted">Carregando pacotes…</p></div>
+    <div id="message" class="notice" hidden></div>
+  </section>
+  <section class="panel">
+    <h2>Histórico da carteira</h2>
+    <div id="history"><p class="muted">Carregando histórico…</p></div>
+  </section>
+</main>
+<script>
+let currency='BRL',catalog=null;
+const $=id=>document.getElementById(id);
+function money(value,code){return new Intl.NumberFormat(code==='BRL'?'pt-BR':'en-US',{style:'currency',currency:code}).format(value)}
+function message(text,type){const el=$('message');el.textContent=text;el.className='notice '+(type||'');el.hidden=false}
+async function api(url,options){const response=await fetch(url,{credentials:'same-origin',...(options||{})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.message||data.error||'Falha na comunicação com o servidor.');return data}
+async function loadWallet(){
+ const me=await api('/api/me');$('balance').textContent=me.user.credits;
+ $('unitPrice').textContent=money(.10,currency);
+ const history=await api('/api/credits/history');
+ const rows=history.ledger||[];
+ if(!rows.length){$('history').innerHTML='<p class="muted">Nenhuma movimentação ainda.</p>';return}
+ const html=rows.map(item=>{
+  const amount=Number(item.amount),sign=amount>0?'+':'';
+  const date=new Date(item.created_at).toLocaleString('pt-BR');
+  return '<tr><td>'+date+'</td><td>'+String(item.description).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</td><td>'+sign+amount+'</td><td>'+item.status+'</td></tr>';
+ }).join('');
+ $('history').innerHTML='<table><thead><tr><th>Data</th><th>Movimentação</th><th>Créditos</th><th>Status</th></tr></thead><tbody>'+html+'</tbody></table>';
+}
+function renderPackages(){
+ const items=catalog.packages[currency]||[];
+ $('unitPrice').textContent=money(.10,currency);
+ $('packages').innerHTML=items.map(p=>'<article class="pack"><small>'+p.credits+' vídeos</small><strong>'+money(p.amount,currency)+'</strong><small>'+money(p.amount/p.credits,currency)+' por vídeo</small><button class="btn" data-package="'+p.id+'">Comprar pacote</button></article>').join('');
+ document.querySelectorAll('[data-package]').forEach(button=>button.addEventListener('click',()=>buy(button.dataset.package,button)));
+}
+async function buy(packageId,button){
+ button.disabled=true;button.textContent='Preparando pagamento…';
+ try{const result=await api('/api/credits/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({packageId,currency})});window.location.href=result.checkoutUrl;}
+ catch(error){message(error.message,'error');button.disabled=false;button.textContent='Comprar pacote';}
+}
+async function checkReturn(){
+ const ref=new URLSearchParams(location.search).get('reference');
+ if(!ref)return;
+ message('Verificando a confirmação do pagamento na SumUp…');
+ for(let attempt=0;attempt<12;attempt++){
+  try{const result=await api('/api/payments/'+encodeURIComponent(ref)+'/status');if(result.payment.status==='PAID'){message('Pagamento confirmado! '+result.credits+' créditos disponíveis na carteira.','success');await loadWallet();return;}if(['FAILED','EXPIRED','failed','expired'].includes(result.payment.status)){message('O pagamento não foi aprovado ou expirou. Nenhum crédito foi debitado.','error');return;}}
+  catch(error){message(error.message,'error');return;}
+  await new Promise(resolve=>setTimeout(resolve,2500));
+ }
+ message('O pagamento ainda está sendo confirmado. Atualize a página em instantes; o saldo só muda após a confirmação da SumUp.');
+}
+document.querySelectorAll('[data-currency]').forEach(button=>button.addEventListener('click',()=>{currency=button.dataset.currency;document.querySelectorAll('[data-currency]').forEach(b=>b.classList.toggle('active',b===button));renderPackages();}));
+$('logout').addEventListener('click',async()=>{try{await api('/api/logout',{method:'POST'});}finally{location.href='/login.html';}});
+(async()=>{try{await api('/api/me');catalog=await api('/api/credits/packages');renderPackages();await loadWallet();await checkReturn();}catch(error){location.href='/login.html';}})();
+</script>
+</body>
+</html>
