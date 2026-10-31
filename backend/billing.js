@@ -307,8 +307,22 @@ function registerBilling(app) {
     } finally { client.release(); }
   }
 
-  async function completeVideoCredit(reservation) {
-    await pool.query("UPDATE wallet_ledger SET status='completed',description='Vídeo concluído; 1 crédito consumido' WHERE id=$1 AND user_id=$2 AND status='reserved'", [reservation.id, reservation.userId]);
+  async function completeVideoCredit(reservation, filename, originalName) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(
+        'INSERT INTO processed_videos (id,user_id,filename,original_name) VALUES ($1,$2,$3,$4) ON CONFLICT (user_id,filename) DO NOTHING',
+        [crypto.randomUUID(), reservation.userId, filename, originalName || null]
+      );
+      const result = await client.query(
+        "UPDATE wallet_ledger SET status='completed',description='Vídeo concluído; 1 crédito consumido' WHERE id=$1 AND user_id=$2 AND status='reserved' RETURNING id",
+        [reservation.id, reservation.userId]
+      );
+      if (!result.rows[0]) throw new Error('Não foi possível confirmar o consumo do crédito reservado.');
+      await client.query('COMMIT');
+    } catch (error) { await client.query('ROLLBACK'); throw error; }
+    finally { client.release(); }
   }
 
   async function refundVideoCredit(reservation) {
