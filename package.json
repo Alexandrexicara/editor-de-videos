@@ -14,7 +14,8 @@
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "mcp": "node mcp/server.js"
+    "mcp": "node mcp/server.js",
+    "check": "node --check backend/server.js && node --check backend/billing.js && node --check mcp/server.js"
   },
   "keywords": [
     "video",
