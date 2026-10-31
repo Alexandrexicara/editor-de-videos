@@ -8,6 +8,7 @@ const fs = require('fs');
 const { processVideo } = require('./processVideo');
 const config = require('./config');
 const StorageManager = require('./storageManager');
+const { registerBilling } = require('./billing');
 
 // Configurar multer para upload de arquivos
 const storage = multer.diskStorage({
@@ -56,14 +57,16 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+const billing = registerBilling(app);
 
 // Rotas de upload (antes do static para evitar conflitos)
-app.post('/upload', upload.fields([
+app.post('/upload', billing.requireAuth, upload.fields([
   { name: 'video', maxCount: 1 }, 
   { name: 'customAudio', maxCount: 1 },
   { name: 'avatar1', maxCount: 1 },
   { name: 'avatar2', maxCount: 1 }
-]), async (req, res) => {
+ ]), async (req, res) => {
+  let creditReservation = null;
   try {
     const videoFile = req.files?.video?.[0];
     const audioFile = req.files?.customAudio?.[0];
@@ -129,8 +132,9 @@ app.post('/upload', upload.fields([
       });
     }
     
-    // Checar se há espaço livre antes de processar
+    // Checar espaço e reservar um crédito antes de iniciar o processamento.
     storageManager.checkAndCleanup();
+    creditReservation = await billing.reserveVideoCredit(req.user.id);
     
     // Preparar lista de avatares
     const avatarPaths = [];
@@ -144,6 +148,9 @@ app.post('/upload', upload.fields([
       avatarPaths,
       avatarConfigs
     );
+    await billing.recordProcessedVideo(req.user.id, path.basename(resultPath), videoFile.originalname);
+    await billing.completeVideoCredit(creditReservation);
+    creditReservation = null;
     
     // Retornar sucesso com informações do arquivo processado
     res.json({
@@ -156,8 +163,12 @@ app.post('/upload', upload.fields([
     });
 
   } catch (error) {
+    if (creditReservation) {
+      try { await billing.refundVideoCredit(creditReservation); }
+      catch (refundError) { console.error('❌ Falha ao devolver crédito:', refundError); }
+    }
     console.error('❌ Erro no processamento:', error);
-    res.status(500).json({
+    res.status(error.status || 500).json({
       error: 'Erro no processamento do arquivo',
       message: error.message
     });
@@ -165,7 +176,7 @@ app.post('/upload', upload.fields([
 });
 
 // Rota para upload de avatar personalizado 📤
-app.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
+app.post('/upload-avatar', billing.requireAuth, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ 
@@ -203,91 +214,10 @@ app.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
 });
 
 // Servir arquivos estáticos
-app.use('/outputs', express.static(path.join(__dirname, '../outputs')));
+app.use('/outputs', billing.requireAuth, express.static(path.join(__dirname, '../outputs')));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Rotas de Autenticação
-app.post('/api/signup', (req, res) => {
-  try {
-    const { firstName, lastName, email, password, terms } = req.body;
-
-    // Validações básicas
-    if (!email || !password || !firstName || !lastName) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Todos os campos são obrigatórios' 
-      });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Senha deve ter no mínimo 6 caracteres' 
-      });
-    }
-
-    if (!terms) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Você deve aceitar os termos' 
-      });
-    }
-
-    // Aqui você implementaria a lógica de salvar no banco de dados
-    // Por enquanto, retornar sucesso para testes
-    const token = Buffer.from(`${email}:${Date.now()}`).toString('base64');
-
-    return res.json({ 
-      success: true, 
-      message: 'Cadastro realizado com sucesso!',
-      token: token,
-      user: {
-        email,
-        firstName,
-        lastName
-      }
-    });
-  } catch (error) {
-    console.error('Erro no signup:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Erro ao criar conta. Tente novamente.' 
-    });
-  }
-});
-
-app.post('/api/login', (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Validações básicas
-    if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email e senha são obrigatórios' 
-      });
-    }
-
-    // Aqui você implementaria a lógica de verificação no banco de dados
-    // Por enquanto, aceitar qualquer credencial para testes
-    const token = Buffer.from(`${email}:${Date.now()}`).toString('base64');
-
-    return res.json({ 
-      success: true, 
-      message: 'Login realizado com sucesso!',
-      token: token,
-      user: {
-        email
-      }
-    });
-  } catch (error) {
-    console.error('Erro no login:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Erro ao fazer login. Tente novamente.' 
-    });
-  }
-});
+// Cadastro, login, sessão, carteira e pagamentos são registrados em backend/billing.js.
 
 // Rotas
 
@@ -302,9 +232,12 @@ app.get('/index.html', (req, res) => {
 });
 
 // Rota para download do vídeo processado
-app.get('/download/:filename', (req, res) => {
+app.get('/download/:filename', billing.requireAuth, async (req, res) => {
   try {
     const filename = req.params.filename;
+    if (!(await billing.userOwnsVideo(req.user.id, filename))) {
+      return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    }
     const filePath = path.join(config.diretorios.outputs, filename);
     
     console.log(`📥 Requisição de download: ${filename}`);
@@ -404,21 +337,13 @@ app.get('/status', (req, res) => {
 });
 
 // Rota para listar vídeos processados
-app.get('/videos', (req, res) => {
-  fs.readdir(config.diretorios.outputs, (err, files) => {
-    if (err) {
-      return res.status(500).json({ error: 'Erro ao ler diretório' });
-    }
-    
-    const videoFiles = files.filter(file => 
-      file.endsWith('.mp4') && file.includes('_final')
-    );
-    
-    res.json({
-      videos: videoFiles,
-      count: videoFiles.length
-    });
-  });
+app.get('/videos', billing.requireAuth, async (req, res) => {
+  try {
+    const videos = await billing.listUserVideos(req.user.id);
+    res.json({ videos, count: videos.length });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao listar vídeos', message: error.message });
+  }
 });
 
 // Rota para monitorar espaço em disco e estatísticas de armazenamento
@@ -482,13 +407,13 @@ app.use((error, req, res, next) => {
 });
 
 // Iniciar servidor
-const PORT = config.porta || 3000;
+const PORT = Number(process.env.PORT || config.porta || 3000);
 
 // Inicializar Storage Manager para gerenciar espaço em disco
 const storageManager = new StorageManager(config);
 storageManager.startMonitoring(30); // Verificar a cada 30 minutos
 
-app.listen(PORT, config.host, () => {
+app.listen(PORT, process.env.HOST || '0.0.0.0', () => {
   console.log(`
   ╔══════════════════════════════════════╗
   ║    🚀 SERVIDOR ROLEZANDO AVATAR     ║
