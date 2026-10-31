@@ -232,7 +232,7 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Rota principal - servir o frontend
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/avatar-config.html'));
+  res.redirect('/login.html');
 });
 
 // Rota para página antiga (compatibilidade)
@@ -429,7 +429,7 @@ app.listen(PORT, process.env.HOST || '0.0.0.0', () => {
   ║                                     ║
   ║  Status: ONLINE                     ║
   ║  Porta: ${PORT}                           ║
-  ║  Host: ${config.host}                  ║
+  ║  Host: ${process.env.HOST || '0.0.0.0'}                  ║
   ║  Áudio do vídeo: ${config.usarAudioDoVideo ? 'ATIVADO 🔥' : 'DESATIVADO'} ║
   ╚══════════════════════════════════════╝
   `);
