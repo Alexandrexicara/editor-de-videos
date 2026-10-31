@@ -31,6 +31,11 @@ function env(name) {
   if (!process.env[name]) throw new Error('Configure a variável ' + name + ' no servidor.');
   return process.env[name];
 }
+function sessionKey() {
+  const key = env('SESSION_SECRET');
+  if (Buffer.byteLength(key, 'utf8') < 32) throw new Error('SESSION_SECRET precisa ter pelo menos 32 bytes aleatórios.');
+  return key;
+}
 async function ensureSchema() {
   if (!pool) throw new Error('PostgreSQL não configurado: falta DATABASE_URL.');
   if (!schemaPromise) {
@@ -59,7 +64,7 @@ function signSession(user) {
   const body = Buffer.from(JSON.stringify({
     sub: user.id, email: user.email, exp: Math.floor(Date.now() / 1000) + SESSION_SECONDS
   })).toString('base64url');
-  const sig = crypto.createHmac('sha256', env('SESSION_SECRET')).update(body).digest('base64url');
+  const sig = crypto.createHmac('sha256', sessionKey()).update(body).digest('base64url');
   return body + '.' + sig;
 }
 function verifySession(token) {
@@ -165,6 +170,15 @@ function registerBilling(app) {
       req.user = user;
       next();
     } catch (error) { res.status(503).json({ success: false, message: error.message }); }
+  };
+  const requireAdmin = (req, res, next) => {
+    const expected = process.env.ADMIN_API_KEY || '';
+    const supplied = String(req.headers['x-admin-key'] || '');
+    const a = Buffer.from(expected);
+    const b = Buffer.from(supplied);
+    if (!expected) return res.status(503).json({ error: 'Ação administrativa desativada: configure ADMIN_API_KEY.' });
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return res.status(403).json({ error: 'Acesso administrativo negado.' });
+    next();
   };
 
   app.post('/api/signup', async (req, res) => {
@@ -359,6 +373,6 @@ function registerBilling(app) {
     return result.rows.map((row) => row.filename);
   }
 
-  return { requireAuth, reserveVideoCredit, completeVideoCredit, refundVideoCredit, recordProcessedVideo, userOwnsVideo, listUserVideos };
+  return { requireAuth, requireAdmin, reserveVideoCredit, completeVideoCredit, refundVideoCredit, recordProcessedVideo, userOwnsVideo, listUserVideos };
 }
 module.exports = { registerBilling };
