@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b14">
+<title>Cine Séries — Estúdio cinematográfico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#080b14;--panel:#111725;--panel2:#171f30;--line:#293449;--text:#f4f6fb;--muted:#98a4b8;--gold:#e8bd72;--violet:#9c83ff;--cyan:#70d7df;--good:#8ed5a7}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -10%,#26304c 0,transparent 42%),var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}button,input,select,textarea{font:inherit}button{cursor:pointer}.shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}.side{padding:26px 18px;border-right:1px solid var(--line);background:rgba(8,11,20,.82);display:flex;flex-direction:column;gap:28px}.brand{display:flex;align-items:center;gap:12px;padding:0 8px}.brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#a56e37);display:grid;place-items:center;color:#17120b;font-size:20px}.brand strong{font:700 18px 'Space Grotesk';letter-spacing:.2px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.nav-label{color:#647087;text-transform:uppercase;letter-spacing:1.4px;font-size:10px;font-weight:700;padding:0 10px}.nav{display:grid;gap:6px}.nav a,.nav button{border:0;text-decoration:none;color:#b5bfd0;background:transparent;text-align:left;padding:11px 12px;border-radius:10px;display:flex;gap:11px;align-items:center;font-size:13px}.nav .active{background:#20283a;color:#fff;box-shadow:inset 2px 0 var(--gold)}.nav a:hover,.nav button:hover{background:#192235}.side-bottom{margin-top:auto;border:1px solid var(--line);background:#101725;border-radius:14px;padding:14px}.side-bottom b{font-size:12px}.side-bottom p{font-size:11px;line-height:1.6;color:var(--muted);margin:7px 0 0}.main{min-width:0;padding:28px clamp(18px,4vw,54px) 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:30px}.eyebrow{color:var(--gold);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700}.top h1{font:700 clamp(26px,3vw,38px) 'Space Grotesk';margin:6px 0 0}.top-actions{display:flex;gap:9px;align-items:center}.btn{border:1px solid var(--line);background:#151e2d;color:var(--text);padding:10px 14px;border-radius:10px;font-weight:600;font-size:12px}.btn.primary{background:linear-gradient(135deg,#e8bd72,#bd8b4d);border:0;color:#17120b}.btn:hover{filter:brightness(1.12)}.hero{border:1px solid #4b4650;border-radius:18px;overflow:hidden;position:relative;min-height:245px;background:linear-gradient(90deg,rgba(9,12,20,.98) 0%,rgba(9,12,20,.84) 48%,rgba(9,12,20,.18) 100%),linear-gradient(135deg,#38425b,#111827 55%,#7b5a47);padding:34px;display:flex;align-items:center}.hero:after{content:'CINEMA';position:absolute;right:4%;bottom:-38px;font:700 clamp(80px,15vw,180px) 'Space Grotesk';letter-spacing:-10px;color:rgba(255,255,255,.055);pointer-events:none}.hero-copy{max-width:570px;position:relative;z-index:1}.hero h2{font:700 clamp(26px,3.5vw,42px) 'Space Grotesk';line-height:1.08;margin:10px 0 12px}.hero p{color:#c0c8d5;line-height:1.65;font-size:13px;max-width:490px}.hero .btn{margin-top:10px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:30px 0 15px}.section-head h3{font:600 19px 'Space Grotesk';margin:0}.section-head p{margin:5px 0 0;color:var(--muted);font-size:11px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:17px}.stat{padding:15px;border:1px solid var(--line);border-radius:13px;background:rgba(17,23,37,.82)}.stat span{color:var(--muted);font-size:11px}.stat strong{display:block;font:600 22px 'Space Grotesk';margin-top:6px}.workspace{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(250px,.8fr);gap:14px;margin-top:15px}.panel{border:1px solid var(--line);background:rgba(17,23,37,.9);border-radius:15px;padding:18px;min-width:0}.panel h4{font:600 14px 'Space Grotesk';margin:0 0 5px}.sub{color:var(--muted);font-size:11px;margin:0 0 15px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#b8c2d2}.field input,.field select,.field textarea{width:100%;border:1px solid #344157;background:#0b111d;color:var(--text);border-radius:9px;padding:10px 11px;outline:none;font-size:12px}.field textarea{min-height:84px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}.list{display:grid;gap:9px}.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:11px;background:#0e1522}.item strong{font-size:12px}.item small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.tag{border:1px solid #4b4b54;border-radius:30px;padding:4px 8px;color:var(--gold);font-size:9px;white-space:nowrap}.scene-list{display:grid;gap:9px}.scene{display:grid;grid-template-columns:52px 1fr auto;gap:11px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:11px;background:#0e1522}.scene-num{height:43px;border-radius:8px;background:linear-gradient(145deg,#37445d,#171f30);display:grid;place-items:center;color:var(--gold);font:600 14px 'Space Grotesk'}.scene strong{font-size:11px}.scene small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.scene button{background:transparent;border:0;color:#aab5c8;font-size:17px}.api{display:flex;align-items:center;gap:9px;border:1px dashed #46516a;border-radius:11px;padding:12px;margin-top:12px}.dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px #e8bd72}.api b{font-size:11px}.api small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.footnote{color:#76849b;font-size:10px;line-height:1.6;margin-top:18px}.empty{color:var(--muted);font-size:11px;text-align:center;padding:22px 8px;border:1px dashed #344157;border-radius:10px}.toast{position:fixed;bottom:20px;right:20px;background:#202b3e;border:1px solid #45536c;padding:12px 16px;border-radius:10px;font-size:12px;display:none;z-index:9}.toast.show{display:block}
+@media(max-width:900px){.shell{grid-template-columns:76px minmax(0,1fr)}.side{padding:20px 10px;align-items:center}.brand{padding:0}.brand>div:last-child,.nav-label,.nav a span,.nav button span,.side-bottom{display:none}.nav{width:100%}.nav a,.nav button{justify-content:center;font-size:18px}.workspace{grid-template-columns:1fr}}@media(max-width:600px){.main{padding:20px 13px 40px}.top{align-items:flex-start}.top-actions .btn:first-child{display:none}.hero{padding:23px;min-height:230px}.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:1/-1}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.section-head{align-items:flex-start;flex-direction:column}.top h1{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="side">
+  <div class="brand"><div class="brand-mark">✦</div><div><strong>CINE SÉRIES</strong><small>Creative Studio</small></div></div>
+  <div class="nav-label">Estúdio</div>
+  <nav class="nav">
+    <a class="active" href="#inicio"><span>▦</span><span>Visão geral</span></a>
+    <a href="#projeto"><span>▣</span><span>Minha série</span></a>
+    <a href="#episodios"><span>▶</span><span>Episódios</span></a>
+    <a href="#roteiro"><span>✎</span><span>Roteiro e cenas</span></a>
+    <a href="#integracoes"><span>⌘</span><span>Integrações</span></a>
+  </nav>
+  <div class="side-bottom"><b>Seu estúdio, suas histórias.</b><p>Organize ideias, personagens e cenas antes de conectar os motores de geração.</p></div>
+</aside>
+<main class="main" id="inicio">
+  <header class="top"><div><div class="eyebrow">Rolezando Creative Suite / Módulo 02</div><h1>Seu próximo universo começa aqui.</h1></div><div class="top-actions"><a class="btn" href="index.html">← Rolezando Editor</a><button class="btn primary" id="exportTop">Exportar projeto ↓</button></div></header>
+  <section class="hero">
+    <div class="hero-copy"><div class="eyebrow">Roteiro • Direção • Produção</div><h2>Transforme uma ideia em uma série cinematográfica.</h2><p>Planeje temporadas, escreva episódios, construa personagens e organize cada cena em um fluxo de produção. O espaço está preparado para receber integrações de IA, voz, imagem e vídeo.</p><button class="btn primary" id="startProject">＋ Criar minha série</button></div>
+  </section>
+  <div class="stats">
+    <div class="stat"><span>Projetos neste navegador</span><strong id="statProjects">0</strong></div>
+    <div class="stat"><span>Episódios planejados</span><strong id="statEpisodes">0</strong></div>
+    <div class="stat"><span>Cenas no roteiro</span><strong id="statScenes">0</strong></div>
+  </div>
+  <div class="section-head" id="projeto"><div><h3>Projeto da série</h3><p>Defina a identidade da produção antes de começar o roteiro.</p></div><span class="tag">RASCUNHO LOCAL</span></div>
+  <div class="workspace">
+    <section class="panel">
+      <h4>Identidade da produção</h4><p class="sub">Os campos abaixo formam a ficha principal do seu projeto.</p>
+      <form id="projectForm" class="form-grid">
+        <div class="field full"><label for="seriesTitle">Nome da série</label><input id="seriesTitle" placeholder="Ex.: A Última Fronteira" required></div>
+        <div class="field"><label for="genre">Gênero</label><select id="genre"><option>Drama</option><option>Suspense</option><option>Ficção científica</option><option>Ação e aventura</option><option>Comédia</option><option>Fantasia</option><option>Documentário</option><option>Romance</option></select></div>
+        <div class="field"><label for="format">Formato</label><select id="format"><option>Série cinematográfica</option><option>Minissérie</option><option>Web série</option><option>Animação</option><option>Documental</option></select></div>
+        <div class="field"><label for="seasonCount">Temporadas planejadas</label><input id="seasonCount" type="number" min="1" max="20" value="1"></div>
+        <div class="field"><label for="episodeLength">Duração por episódio</label><select id="episodeLength"><option>1–3 minutos</option><option>3–8 minutos</option><option>8–15 minutos</option><option>15–30 minutos</option><option>30–60 minutos</option></select></div>
+        <div class="field full"><label for="synopsis">Sinopse / ideia central</label><textarea id="synopsis" placeholder="Conte o universo, o conflito principal e o que torna sua série única..."></textarea></div>
+        <div class="field full"><button class="btn primary" type="submit">Salvar ficha da série</button></div>
+      </form>
+    </section>
+    <section class="panel" id="episodios">
+      <h4>Temporada e episódios</h4><p class="sub">Monte a sequência narrativa da sua produção.</p>
+      <form id="episodeForm" class="form-grid">
+        <div class="field full"><label for="episodeTitle">Título do episódio</label><input id="episodeTitle" placeholder="Ex.: O Primeiro Sinal" required></div>
+        <div class="field"><label for="episodeNumber">Número</label><input id="episodeNumber" type="number" min="1" value="1"></div>
+        <div class="field"><label for="episodeStatus">Etapa</label><select id="episodeStatus"><option>Ideia</option><option>Roteiro</option><option>Pré-produção</option><option>Pronto para produzir</option></select></div>
+        <div class="field full"><button class="btn" type="submit">＋ Adicionar episódio</button></div>
+      </form>
+      <div class="list" id="episodeList"><div class="empty">Seus episódios aparecerão aqui.</div></div>
+    </section>
+  </div>
+  <div class="section-head" id="roteiro"><div><h3>Roteiro e construção de cenas</h3><p>Organize a sequência visual e narrativa de cada episódio.</p></div><button class="btn" id="addScene">＋ Nova cena</button></div>
+  <section class="panel">
+    <h4>Sequência de cenas</h4><p class="sub">Registre ambiente, ação, enquadramento e direção de cada tomada.</p>
+    <div class="scene-list" id="sceneList"><div class="empty">Adicione uma cena para começar seu storyboard.</div></div>
+    <div class="footnote">Dica: descreva primeiro o que acontece, depois o cenário, a iluminação, o movimento de câmera e a emoção desejada.</div>
+  </section>
+  <div class="section-head" id="integracoes"><div><h3>Central de integrações</h3><p>Conectores preparados para a próxima etapa de desenvolvimento.</p></div></div>
+  <div class="workspace">
+    <section class="panel"><h4>Motor criativo</h4><p class="sub">Conexões que poderão ser ativadas quando você fornecer as credenciais.</p>
+      <div class="list">
+        <div class="item"><div><strong>IA de roteiro</strong><small>Sinopse, diálogos, continuidade e revisão</small></div><span class="tag">A CONFIGURAR</span></div>
+        <div class="item"><div><strong>Geração de imagens</strong><small>Personagens, cenários e storyboard</small></div><span class="tag">A CONFIGURAR</span></div>
+        <div class="item"><div><strong>Geração de vídeo</strong><small>Clipes cinematográficos por cena</small></div><span class="tag">A CONFIGURAR</span></div>
+        <div class="item"><div><strong>Voz e trilha sonora</strong><small>Narração, falas e áudio de produção</small></div><span class="tag">A CONFIGURAR</span></div>
+      </div>
+    </section>
+    <section class="panel"><h4>Pipeline de produção</h4><p class="sub">Etapas previstas para o fluxo completo.</p>
+      <div class="list">
+        <div class="item"><div><strong>01 · Desenvolvimento</strong><small>Universo, personagens e roteiro</small></div><span class="tag">PLANEJAMENTO</span></div>
+        <div class="item"><div><strong>02 · Pré-produção</strong><small>Storyboard, estilo e cenas</small></div><span class="tag">PLANEJAMENTO</span></div>
+        <div class="item"><div><strong>03 · Produção</strong><small>Imagem, vídeo, voz e trilha</small></div><span class="tag">API FUTURA</span></div>
+        <div class="item"><div><strong>04 · Pós-produção</strong><small>Edição, legendas e exportação</small></div><span class="tag">API FUTURA</span></div>
+      </div>
+      <div class="api"><span class="dot"></span><div><b>Integrações ainda não conectadas</b><small>Nenhuma chave de API é necessária para organizar seus projetos nesta etapa.</small></div></div>
+    </section>
+  </div>
+  <p class="footnote">Cine Séries é um módulo separado do editor de avatares. Nesta primeira etapa, os rascunhos ficam salvos neste navegador e podem ser exportados em JSON. Geração real de mídia, sincronização em nuvem e cobrança por créditos serão conectadas em etapas posteriores.</p>
+</main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+const KEY='rolezando_cine_series_v1';
+const state={projects:[],episodes:[],scenes:[]};
+const $=id=>document.getElementById(id);
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600)}
+function read(){try{const data=JSON.parse(localStorage.getItem(KEY)||'{}');state.projects=Array.isArray(data.projects)?data.projects:[];state.episodes=Array.isArray(data.episodes)?data.episodes:[];state.scenes=Array.isArray(data.scenes)?data.scenes:[]}catch(e){toast('Não foi possível ler o rascunho salvo neste navegador.')}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));renderStats()}
+function renderStats(){$('statProjects').textContent=state.projects.length;$('statEpisodes').textContent=state.episodes.length;$('statScenes').textContent=state.scenes.length}
+function renderEpisodes(){const box=$('episodeList');box.innerHTML='';if(!state.episodes.length){box.innerHTML='<div class="empty">Seus episódios aparecerão aqui.</div>';return}state.episodes.forEach((ep,i)=>{const el=document.createElement('div');el.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent='EP '+ep.number+' · '+ep.title;const small=document.createElement('small');small.textContent=ep.status;info.append(title,small);const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.episodes.splice(i,1);save();renderEpisodes()});el.append(info,del);box.append(el)})}
+function renderScenes(){const box=$('sceneList');box.innerHTML='';if(!state.scenes.length){box.innerHTML='<div class="empty">Adicione uma cena para começar seu storyboard.</div>';return}state.scenes.forEach((scene,i)=>{const el=document.createElement('div');el.className='scene';const num=document.createElement('div');num.className='scene-num';num.textContent=String(i+1).padStart(2,'0');const info=document.createElement('div');const title=document.createElement('strong');title.textContent=scene.title;const small=document.createElement('small');small.textContent=[scene.location,scene.camera,scene.description].filter(Boolean).join(' · ');info.append(title,small);const del=document.createElement('button');del.type='button';del.setAttribute('aria-label','Remover cena');del.textContent='×';del.addEventListener('click',()=>{state.scenes.splice(i,1);save();renderScenes()});el.append(num,info,del);box.append(el)})}
+function saveProject(){const project={id:Date.now(),title:$('seriesTitle').value.trim(),genre:$('genre').value,format:$('format').value,seasons:Number($('seasonCount').value)||1,episodeLength:$('episodeLength').value,synopsis:$('synopsis').value.trim(),updatedAt:new Date().toISOString()};if(!project.title){toast('Informe o nome da série.');return}const idx=state.projects.findIndex(p=>p.title.toLowerCase()===project.title.toLowerCase());if(idx>=0)state.projects[idx]=project;else state.projects.push(project);save();toast('Ficha da série salva neste navegador.')}
+$('projectForm').addEventListener('submit',e=>{e.preventDefault();saveProject()});
+$('episodeForm').addEventListener('submit',e=>{e.preventDefault();const title=$('episodeTitle').value.trim();if(!title)return;state.episodes.push({number:Number($('episodeNumber').value)||state.episodes.length+1,title,status:$('episodeStatus').value});save();renderEpisodes();$('episodeTitle').value='';$('episodeNumber').value=state.episodes.length+1;toast('Episódio adicionado.')});
+$('addScene').addEventListener('click',()=>{const title=prompt('Título da cena:');if(!title||!title.trim())return;const location=prompt('Local / cenário da cena:')||'';const camera=prompt('Enquadramento ou movimento de câmera:')||'';const description=prompt('O que acontece nesta cena?')||'';state.scenes.push({title:title.trim(),location,camera,description});save();renderScenes();toast('Cena adicionada ao storyboard.')});
+function exportProject(){const data={product:'Cine Séries',version:1,exportedAt:new Date().toISOString(),projects:state.projects,episodes:state.episodes,scenes:state.scenes};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cine-series-projeto.json';a.click();URL.revokeObjectURL(url);toast('Projeto exportado em JSON.')}
+$('exportTop').addEventListener('click',exportProject);
+$('startProject').addEventListener('click',()=>$('seriesTitle').focus());
+read();renderStats();renderEpisodes();renderScenes();
+})();
+</script>
+</body>
+</html>
