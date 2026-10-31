@@ -148,8 +148,7 @@ app.post('/upload', billing.requireAuth, upload.fields([
       avatarPaths,
       avatarConfigs
     );
-    await billing.recordProcessedVideo(req.user.id, path.basename(resultPath), videoFile.originalname);
-    await billing.completeVideoCredit(creditReservation);
+    await billing.completeVideoCredit(creditReservation, path.basename(resultPath), videoFile.originalname);
     creditReservation = null;
     
     // Retornar sucesso com informações do arquivo processado
@@ -214,7 +213,17 @@ app.post('/upload-avatar', billing.requireAuth, upload.single('avatar'), async (
 });
 
 // Servir arquivos estáticos
-app.use('/outputs', billing.requireAuth, express.static(path.join(__dirname, '../outputs')));
+app.get('/outputs/:filename', billing.requireAuth, async (req, res) => {
+  try {
+    const filename = path.basename(req.params.filename);
+    if (filename !== req.params.filename || !(await billing.userOwnsVideo(req.user.id, filename))) {
+      return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    }
+    res.sendFile(path.resolve(config.diretorios.outputs, filename));
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao acessar vídeo.' });
+  }
+});
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Cadastro, login, sessão, carteira e pagamentos são registrados em backend/billing.js.
