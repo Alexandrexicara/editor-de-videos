@@ -177,7 +177,7 @@ function registerBilling(app) {
       const password = String(body.password || '');
       if (!first || !last || !email || !password || !body.terms) return res.status(400).json({ success: false, message: 'Preencha os campos e aceite os termos.' });
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ success: false, message: 'E-mail inválido.' });
-      if (password.length < 8) return res.status(400).json({ success: false, message: 'A senha precisa ter pelo menos 8 caracteres.' });
+      if (password.length < 8 || password.length > 256) return res.status(400).json({ success: false, message: 'A senha precisa ter entre 8 e 256 caracteres.' });
       const salt = crypto.randomBytes(16).toString('hex');
       const hash = await passwordHash(password, salt);
       const user = { id: crypto.randomUUID(), email, firstName: first, lastName: last };
@@ -208,10 +208,12 @@ function registerBilling(app) {
   app.post('/api/logout', (req, res) => { clearCookie(res); res.json({ success: true }); });
 
   app.get('/api/me', requireAuth, async (req, res) => {
-    const result = await pool.query('SELECT id,email,first_name,last_name,credits,created_at FROM users WHERE id=$1', [req.user.id]);
-    const u = result.rows[0];
-    if (!u) return res.status(401).json({ success: false });
-    res.json({ success: true, user: { id: u.id, email: u.email, firstName: u.first_name, lastName: u.last_name, credits: u.credits, createdAt: u.created_at } });
+    try {
+      const result = await pool.query('SELECT id,email,first_name,last_name,credits,created_at FROM users WHERE id=$1', [req.user.id]);
+      const u = result.rows[0];
+      if (!u) return res.status(401).json({ success: false });
+      res.json({ success: true, user: { id: u.id, email: u.email, firstName: u.first_name, lastName: u.last_name, credits: u.credits, createdAt: u.created_at } });
+    } catch (error) { res.status(503).json({ success: false, message: error.message }); }
   });
 
   app.get('/api/credits/packages', (req, res) => {
@@ -221,14 +223,18 @@ function registerBilling(app) {
   });
 
   app.get('/api/credits/balance', requireAuth, async (req, res) => {
-    const result = await pool.query('SELECT credits FROM users WHERE id=$1', [req.user.id]);
-    res.json({ credits: result.rows[0]?.credits || 0 });
+    try {
+      const result = await pool.query('SELECT credits FROM users WHERE id=$1', [req.user.id]);
+      res.json({ credits: result.rows[0]?.credits || 0 });
+    } catch (error) { res.status(503).json({ message: error.message }); }
   });
 
   app.get('/api/credits/history', requireAuth, async (req, res) => {
-    const ledger = await pool.query('SELECT id,amount,entry_type AS type,status,description,created_at FROM wallet_ledger WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100', [req.user.id]);
-    const payments = await pool.query('SELECT id,package_id,amount_minor,currency,credits,status,created_at,paid_at FROM payments WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50', [req.user.id]);
-    res.json({ ledger: ledger.rows, payments: payments.rows });
+    try {
+      const ledger = await pool.query('SELECT id,amount,entry_type AS type,status,description,created_at FROM wallet_ledger WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100', [req.user.id]);
+      const payments = await pool.query('SELECT id,package_id,amount_minor,currency,credits,status,created_at,paid_at FROM payments WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50', [req.user.id]);
+      res.json({ ledger: ledger.rows, payments: payments.rows });
+    } catch (error) { res.status(503).json({ message: error.message }); }
   });
 
   app.post('/api/credits/checkout', requireAuth, async (req, res) => {
