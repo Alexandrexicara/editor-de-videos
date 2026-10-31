@@ -16,7 +16,7 @@
 - HOST=0.0.0.0
 - PORT: porta fornecida pelo serviço.
 
-Não coloque credenciais reais no GitHub. O banco cria as tabelas automaticamente; database/schema.sql documenta a estrutura. Como as dependências MCP, Zod e pg foram adicionadas em etapas separadas, execute npm install no projeto para sincronizar package-lock.json antes de usar npm ci ou publicar em um host que exija lockfile sincronizado.
+Não coloque credenciais reais no GitHub. O banco cria as tabelas automaticamente; database/schema.sql documenta a estrutura. O package-lock.json foi sincronizado para as dependências MCP, Zod e pg. Antes de produção, valide a instalação no ambiente de hospedagem com npm install; depois disso, npm ci pode usar o lockfile versionado.
 
 ## Fluxo implementado
 1. Cadastro/login real com senha derivada por scrypt e cookie HttpOnly.
