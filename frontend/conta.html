@@ -49,13 +49,19 @@ async function loadWallet(){
  $('unitPrice').textContent=money(.10,currency);
  const history=await api('/api/credits/history');
  const rows=history.ledger||[];
- if(!rows.length){$('history').innerHTML='<p class="muted">Nenhuma movimentação ainda.</p>';return}
- const html=rows.map(item=>{
+ const ledgerHtml=rows.map(item=>{
   const amount=Number(item.amount),sign=amount>0?'+':'';
   const date=new Date(item.created_at).toLocaleString('pt-BR');
-  return '<tr><td>'+date+'</td><td>'+String(item.description).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</td><td>'+sign+amount+'</td><td>'+item.status+'</td></tr>';
+  const description=String(item.description).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  return '<tr><td>'+date+'</td><td>'+description+'</td><td>'+sign+amount+'</td><td>'+item.status+'</td></tr>';
  }).join('');
- $('history').innerHTML='<table><thead><tr><th>Data</th><th>Movimentação</th><th>Créditos</th><th>Status</th></tr></thead><tbody>'+html+'</tbody></table>';
+ const payments=history.payments||[];
+ const paymentHtml=payments.map(item=>{
+  const date=new Date(item.created_at).toLocaleString('pt-BR');
+  return '<tr><td>'+date+'</td><td>'+money(Number(item.amount_minor)/100,item.currency)+'</td><td>'+item.credits+'</td><td>'+item.status+'</td></tr>';
+ }).join('');
+ $('history').innerHTML=(ledgerHtml?'<h3>Movimentações de créditos</h3><table><thead><tr><th>Data</th><th>Movimentação</th><th>Créditos</th><th>Status</th></tr></thead><tbody>'+ledgerHtml+'</tbody></table>':'<p class="muted">Nenhuma movimentação de créditos ainda.</p>')+
+ '<h3 style="margin-top:24px">Pagamentos SumUp</h3>'+(paymentHtml?'<table><thead><tr><th>Data</th><th>Valor</th><th>Créditos</th><th>Status</th></tr></thead><tbody>'+paymentHtml+'</tbody></table>':'<p class="muted">Nenhum pagamento registrado.</p>');
 }
 function renderPackages(){
  const items=catalog.packages[currency]||[];
