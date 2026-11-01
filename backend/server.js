@@ -685,6 +685,123 @@ app.use((error, req, res, next) => {
   });
 });
 
+
+/* Cine Séries — renderização MP4 do plano de montagem com FFmpeg. */
+const cineRenderUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 40 * 1024 * 1024, files: 80, fields: 2, fieldSize: 2 * 1024 * 1024 }
+});
+const cineFfmpegPath = require('ffmpeg-static') || 'ffmpeg';
+const { spawn: cineSpawn } = require('child_process');
+
+app.post('/api/cine/render', billing.requireAuth, cineRenderUpload.array('media', 80), async (req, res) => {
+  let reservation = null;
+  let workDir = null;
+  try {
+    const manifest = JSON.parse(String(req.body?.manifest || '{}'));
+    const scenes = Array.isArray(manifest.scenes) ? manifest.scenes : [];
+    if (!scenes.length || scenes.length > 40) return res.status(400).json({ error: 'A montagem precisa ter de 1 a 40 cenas.' });
+    if (!req.files?.length) return res.status(400).json({ error: 'Envie as imagens e os áudios da montagem.' });
+
+    const media = new Map();
+    for (const file of req.files) {
+      const name = path.basename(file.originalname || '');
+      if (!/^(image|audio)-[a-zA-Z0-9_-]{1,100}\.(jpg|jpeg|png|webp|mp3|wav|m4a|ogg)$/i.test(name)) {
+        return res.status(400).json({ error: 'Um dos arquivos enviados tem nome ou formato inválido.' });
+      }
+      media.set(name, file);
+    }
+    scenes.forEach((scene, index) => {
+      const duration = Number(scene.duration);
+      if (!Number.isFinite(duration) || duration < 1 || duration > 600) throw Object.assign(new Error('Duração inválida na cena ' + (index + 1) + '.'), { status: 400 });
+      if (!media.has(scene.imageFile)) throw Object.assign(new Error('A cena "' + String(scene.title || index + 1).slice(0, 100) + '" está sem imagem enviada. Selecione uma imagem principal para cada cena.'), { status: 400 });
+      (Array.isArray(scene.audio) ? scene.audio : []).forEach(track => {
+        if (!media.has(track.file)) throw Object.assign(new Error('Um áudio da montagem não foi enviado.'), { status: 400 });
+      });
+    });
+
+    const totalDuration = scenes.reduce((sum, scene) => sum + Number(scene.duration), 0);
+    if (totalDuration > 1800) return res.status(400).json({ error: 'A duração máxima por renderização é de 30 minutos.' });
+
+    await fs.promises.mkdir(config.diretorios.temporarios, { recursive: true });
+    await fs.promises.mkdir(config.diretorios.outputs, { recursive: true });
+    workDir = path.join(config.diretorios.temporarios, 'cine-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9));
+    await fs.promises.mkdir(workDir, { recursive: true });
+    const saved = new Map();
+    for (const [name, file] of media) {
+      const target = path.join(workDir, name);
+      await fs.promises.writeFile(target, file.buffer);
+      saved.set(name, target);
+    }
+
+    const args = ['-y', '-hide_banner', '-loglevel', 'error'];
+    scenes.forEach(scene => {
+      args.push('-loop', '1', '-t', String(Number(scene.duration)), '-i', saved.get(scene.imageFile));
+    });
+    const audioInputs = [];
+    scenes.forEach((scene, sceneIndex) => {
+      (Array.isArray(scene.audio) ? scene.audio : []).forEach(track => {
+        const inputIndex = scenes.length + audioInputs.length;
+        args.push('-i', saved.get(track.file));
+        audioInputs.push({ inputIndex, startAt: Math.max(0, Number(track.startAt) || 0) + scenes.slice(0, sceneIndex).reduce((sum, item) => sum + Number(item.duration), 0), volume: Math.max(0, Math.min(1, Number(track.volume ?? 1))) });
+      });
+    });
+
+    const filters = [];
+    scenes.forEach((scene, index) => {
+      filters.push('[' + index + ':v]scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p,setpts=PTS-STARTPTS[v' + index + ']');
+    });
+    let videoLabel = 'v0';
+    let accumulated = Number(scenes[0].duration);
+    for (let index = 1; index < scenes.length; index++) {
+      const duration = 0.4;
+      const requested = String(scenes[index - 1].transition || 'cut');
+      const allowed = ['fade', 'fadeblack', 'wipeleft', 'slideright', 'circleopen', 'dissolve'];
+      const transition = requested === 'cut' ? 'fade' : (allowed.includes(requested) ? requested : 'fade');
+      const nextLabel = 'vx' + index;
+      filters.push('[' + videoLabel + '][v' + index + ']xfade=transition=' + transition + ':duration=' + duration + ':offset=' + Math.max(0, accumulated - duration).toFixed(3) + '[' + nextLabel + ']');
+      videoLabel = nextLabel;
+      accumulated += Number(scenes[index].duration) - duration;
+    }
+
+    if (audioInputs.length) {
+      audioInputs.forEach((track, index) => {
+        filters.push('[' + track.inputIndex + ':a]aresample=44100,adelay=' + Math.round(track.startAt * 1000) + '|' + Math.round(track.startAt * 1000) + ',volume=' + track.volume.toFixed(2) + '[a' + index + ']');
+      });
+      filters.push(audioInputs.map((_, index) => '[a' + index + ']').join('') + 'amix=inputs=' + audioInputs.length + ':duration=longest:dropout_transition=2,alimiter=limit=0.95[aout]');
+    } else {
+      filters.push('anullsrc=r=44100:cl=stereo,atrim=duration=' + totalDuration.toFixed(3) + '[aout]');
+    }
+
+    const filename = 'cine-series-' + Date.now() + '.mp4';
+    const outputPath = path.join(config.diretorios.outputs, filename);
+    args.push('-filter_complex', filters.join(';'), '-map', '[' + videoLabel + ']', '-map', '[aout]', '-t', String(totalDuration), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', outputPath);
+
+    reservation = await billing.reserveVideoCredit(req.user.id);
+    await new Promise((resolve, reject) => {
+      const child = cineSpawn(cineFfmpegPath, args, { stdio: ['ignore', 'ignore', 'pipe'] });
+      let stderr = '';
+      child.stderr.on('data', chunk => { stderr = (stderr + chunk.toString()).slice(-6000); });
+      child.on('error', reject);
+      child.on('close', code => code === 0 ? resolve() : reject(new Error(stderr || 'FFmpeg encerrou com código ' + code)));
+    });
+    await billing.completeVideoCredit(reservation, filename, String(manifest.title || 'Cine Séries').slice(0, 180));
+    reservation = null;
+    const stat = await fs.promises.stat(outputPath);
+    res.json({ status: 'rendered', fileName: filename, downloadUrl: '/download/' + encodeURIComponent(filename), sizeBytes: stat.size, durationSeconds: totalDuration, scenes: scenes.length });
+  } catch (error) {
+    if (reservation) {
+      try { await billing.refundVideoCredit(reservation); } catch (refundError) { console.error('Cine render credit refund failed:', refundError); }
+    }
+    console.error('Cine Séries render error:', error);
+    res.status(error.status || 500).json({ error: error.status ? error.message : 'Não foi possível renderizar o episódio. Verifique o FFmpeg e os arquivos enviados.' });
+  } finally {
+    if (workDir) {
+      try { await fs.promises.rm(workDir, { recursive: true, force: true }); } catch (cleanupError) { console.error('Cine render temp cleanup failed:', cleanupError); }
+    }
+  }
+});
+
 // Iniciar servidor
 const PORT = Number(process.env.PORT || config.porta || 3000);
 
