@@ -276,6 +276,23 @@
           <div class="asset-help" id="cineTimelineStatus" aria-live="polite">Adicione faixas da biblioteca para montar a cena.</div>
           <div class="list" id="cineTimelineTracks" style="margin-top:12px"><div class="empty">Nenhuma faixa na linha do tempo.</div></div>
         </div>
+        <div class="panel" id="cineSubtitlePanel" style="margin-top:16px">
+          <h4>Legendas do episódio — SRT / VTT</h4>
+          <p class="sub">Gere arquivos de legenda a partir dos diálogos cadastrados nas cenas. Os tempos são estimados pela quantidade de palavras e precisam ser revisados antes da edição final.</p>
+          <div class="form-grid">
+            <div class="field"><label for="cineSubtitleEpisode">Episódio</label><select id="cineSubtitleEpisode"><option value="">Todos os episódios</option></select></div>
+            <div class="field"><label for="cineSubtitleStart">Começar em (segundos)</label><input id="cineSubtitleStart" type="number" min="0" step="0.5" value="0"></div>
+            <div class="field"><label for="cineSubtitleWpm">Velocidade estimada (palavras/minuto)</label><input id="cineSubtitleWpm" type="number" min="60" max="300" step="5" value="150"></div>
+            <div class="field"><label for="cineSubtitleGap">Intervalo entre falas (segundos)</label><input id="cineSubtitleGap" type="number" min="0" max="3" step="0.1" value="0.35"></div>
+            <div class="field full" style="display:flex;gap:9px;flex-wrap:wrap">
+              <button class="btn primary" type="button" id="previewCineSubtitles">Pré-visualizar legendas</button>
+              <button class="btn" type="button" id="downloadCineSrt" disabled>↓ Baixar SRT</button>
+              <button class="btn" type="button" id="downloadCineVtt" disabled>↓ Baixar VTT</button>
+            </div>
+          </div>
+          <div class="asset-help" id="cineSubtitleStatus" aria-live="polite" style="margin:10px 0">Selecione um episódio e gere a prévia. Os arquivos podem ser importados em editores de vídeo.</div>
+          <div class="list" id="cineSubtitlePreview"><div class="empty">A prévia das legendas aparecerá aqui.</div></div>
+        </div>
       </div>
       <div class="api"><span class="dot"></span><div><b>Integrações ainda não conectadas</b><small>Nenhuma chave de API é necessária para organizar seus projetos nesta etapa.</small></div></div>
     </section>
@@ -564,10 +581,59 @@ async function generateSceneDialogueTracks(){
 }
 $('generateSceneDialogues').addEventListener('click',generateSceneDialogueTracks);
 
-function exportProject(){const data={product:'Cine Séries',version:5,exportedAt:new Date().toISOString(),projects:state.projects,episodes:state.episodes,scenes:state.scenes,characters:state.characters,locations:state.locations,assets:state.assets,audioAssets:state.audioAssets,scripts:state.scripts,timelineTracks:state.timelineTracks};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cine-series-projeto.json';a.click();URL.revokeObjectURL(url);toast('Projeto exportado em JSON.')}
+let generatedSubtitleEntries=[];
+function refreshSubtitleEpisodePicker(){
+ const picker=$('cineSubtitleEpisode');if(!picker)return;const current=picker.value;
+ picker.innerHTML='<option value="">Todos os episódios</option>';
+ state.episodes.forEach(ep=>{const option=document.createElement('option');option.value=String(ep.number);option.textContent='EP '+ep.number+' · '+ep.title;picker.append(option)});
+ if([...picker.options].some(option=>option.value===current))picker.value=current;
+}
+function subtitleTime(seconds,separator=','){
+ const safe=Math.max(0,Number(seconds)||0),hours=Math.floor(safe/3600),minutes=Math.floor((safe%3600)/60),whole=Math.floor(safe%60),millis=Math.round((safe-Math.floor(safe))*1000);
+ const h=String(hours).padStart(2,'0'),m=String(minutes).padStart(2,'0'),s=String(whole).padStart(2,'0'),ms=String(millis).padStart(3,'0');
+ return h+':'+m+':'+s+separator+ms;
+}
+function buildSubtitleEntries(){
+ const episodeFilter=$('cineSubtitleEpisode').value,wpm=Math.min(300,Math.max(60,Number($('cineSubtitleWpm').value)||150));
+ const gap=Math.min(3,Math.max(0,Number($('cineSubtitleGap').value)||0)),offset=Math.max(0,Number($('cineSubtitleStart').value)||0);
+ const scenes=state.scenes.filter(scene=>!episodeFilter||String(scene.episodeNumber||'')===episodeFilter);
+ let cursor=offset,entries=[];
+ scenes.forEach(scene=>(Array.isArray(scene.dialogue)?scene.dialogue:[]).forEach(line=>{
+  const text=String(line.text||'').trim();if(!text)return;
+  const words=text.split(/\s+/).filter(Boolean).length,duration=Math.max(1.1,words/(wpm/60)+0.25);
+  const speaker=String(line.character||'').trim(),caption=(speaker?speaker+': ':'')+text;
+  entries.push({start:cursor,end:cursor+duration,text:caption,sceneTitle:scene.title,episodeNumber:scene.episodeNumber||''});
+  cursor+=duration+gap;
+ }));
+ return entries;
+}
+function downloadSubtitleFile(content,name,type){
+ const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+function subtitleFormats(entries){
+ const srt=entries.map((entry,index)=>(index+1)+'\n'+subtitleTime(entry.start)+' --> '+subtitleTime(entry.end)+'\n'+entry.text).join('\n\n')+'\n';
+ const vtt='WEBVTT\n\n'+entries.map(entry=>subtitleTime(entry.start,'.')+' --> '+subtitleTime(entry.end,'.')+'\n'+entry.text).join('\n\n')+'\n';
+ return {srt,vtt};
+}
+$('previewCineSubtitles').addEventListener('click',()=>{
+ generatedSubtitleEntries=buildSubtitleEntries();
+ const box=$('cineSubtitlePreview');box.innerHTML='';
+ if(!generatedSubtitleEntries.length){box.innerHTML='<div class="empty">Nenhum diálogo encontrado nas cenas deste episódio. Importe um roteiro com falas primeiro.</div>';$('downloadCineSrt').disabled=true;$('downloadCineVtt').disabled=true;$('cineSubtitleStatus').textContent='Não há falas para legendar.';return}
+ generatedSubtitleEntries.slice(0,100).forEach((entry,index)=>{
+  const row=document.createElement('div');row.className='item';
+  const info=document.createElement('div'),title=document.createElement('strong'),meta=document.createElement('small');
+  title.textContent=(index+1)+'. '+entry.text;meta.textContent=subtitleTime(entry.start)+' → '+subtitleTime(entry.end)+' · '+entry.sceneTitle+(entry.episodeNumber?' · EP '+entry.episodeNumber:'');
+  info.append(title,meta);row.append(info);box.append(row);
+ });
+ $('downloadCineSrt').disabled=false;$('downloadCineVtt').disabled=false;
+ $('cineSubtitleStatus').textContent=generatedSubtitleEntries.length+' legenda(s) estimada(s). Confira a sincronização no editor de vídeo; os tempos ainda não vêm de reconhecimento automático de áudio.';
+});
+$('downloadCineSrt').addEventListener('click',()=>{if(!generatedSubtitleEntries.length)return;const formats=subtitleFormats(generatedSubtitleEntries);downloadSubtitleFile(formats.srt,'cine-series-legendas.srt','application/x-subrip;charset=utf-8')});
+$('downloadCineVtt').addEventListener('click',()=>{if(!generatedSubtitleEntries.length)return;const formats=subtitleFormats(generatedSubtitleEntries);downloadSubtitleFile(formats.vtt,'cine-series-legendas.vtt','text/vtt;charset=utf-8')});
+function exportProject(){const data={product:'Cine Séries',version:6,exportedAt:new Date().toISOString(),projects:state.projects,episodes:state.episodes,scenes:state.scenes,characters:state.characters,locations:state.locations,assets:state.assets,audioAssets:state.audioAssets,scripts:state.scripts,timelineTracks:state.timelineTracks};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cine-series-projeto.json';a.click();URL.revokeObjectURL(url);toast('Projeto exportado em JSON.')}
 $('exportTop').addEventListener('click',exportProject);
 $('startProject').addEventListener('click',()=>$('seriesTitle').focus());
-read();renderStats();renderEpisodes();refreshWriterEpisodePicker();renderScenes();renderCharacters();renderLocations();renderAssets();renderSceneComposerOptions();renderNvidiaScenePicker();renderAudioSceneOptions();renderAudioAssets();renderCineTimeline();
+read();renderStats();renderEpisodes();refreshWriterEpisodePicker();refreshSubtitleEpisodePicker();renderScenes();renderCharacters();renderLocations();renderAssets();renderSceneComposerOptions();renderNvidiaScenePicker();renderAudioSceneOptions();renderAudioAssets();renderCineTimeline();
 })();
 </script>
 </body>
