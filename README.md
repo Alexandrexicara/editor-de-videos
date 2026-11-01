@@ -252,4 +252,8 @@ O Cine Séries inclui um roteirista NVIDIA NIM que recebe a ideia do episódio, 
 - Cada cena permite definir duração em segundos, transição de saída e imagem principal escolhida na biblioteca.
 - O painel calcula duração total estimada e quantas cenas já possuem imagem principal.
 - A exportação `cine-series-plano-de-edicao.json` reúne a sequência, duração, transições, imagem selecionada, câmera, ação, diálogos, notas de continuidade, biblioteca de áudio associada e faixas da timeline.
-- Este JSON é um plano de edição/intercâmbio, não um arquivo de vídeo renderizado. A renderização FFmpeg, composição real das transições e sincronização com a duração real das falas ainda exigem a próxima etapa do pipeline.
+- O botão **Renderizar episódio MP4** envia ao backend as imagens principais e os áudios da linha do tempo, e monta um vídeo H.264/AAC em 1280×720 a 30 fps com FFmpeg. As transições de saída selecionadas são aplicadas entre as cenas; o último quadro é prolongado para preservar a duração total.
+- A renderização exige sessão autenticada e consome um crédito de vídeo da carteira existente. O backend reserva o crédito antes de processar, confirma o consumo após gerar o MP4 e tenta devolver o crédito se houver falha.
+- Todas as cenas precisam ter uma imagem principal. São incluídas as faixas de áudio presentes na linha do tempo; narrações apenas guardadas na biblioteca, mas ainda não adicionadas à timeline, não entram automaticamente na mixagem.
+- O MP4 fica disponível pelo endpoint autenticado de download e é associado ao histórico do usuário. O backend remove os arquivos temporários após a renderização.
+- Limites desta primeira versão: até 40 cenas, 30 minutos e 40 MB por arquivo enviado; a renderização gera 720p/30 fps. As legendas SRT/VTT ainda são exportadas separadamente e não são queimadas no vídeo. A execução real depende de FFmpeg funcional no ambiente de hospedagem e de créditos disponíveis na carteira.
