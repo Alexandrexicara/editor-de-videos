@@ -687,8 +687,13 @@ app.use((error, req, res, next) => {
 
 
 /* Cine Séries — renderização MP4 do plano de montagem com FFmpeg. */
+const cineIncomingDir = path.resolve(config.diretorios.temporarios, 'cine-incoming');
+fs.mkdirSync(cineIncomingDir, { recursive: true });
 const cineRenderUpload = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, cineIncomingDir),
+    filename: (req, file, cb) => cb(null, 'cine-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12) + path.extname(file.originalname).toLowerCase())
+  }),
   limits: { fileSize: 40 * 1024 * 1024, files: 80, fields: 2, fieldSize: 2 * 1024 * 1024 }
 });
 const cineFfmpegPath = require('ffmpeg-static') || 'ffmpeg';
@@ -704,12 +709,14 @@ app.post('/api/cine/render', billing.requireAuth, cineRenderUpload.array('media'
     if (!req.files?.length) return res.status(400).json({ error: 'Envie as imagens e os áudios da montagem.' });
 
     const media = new Map();
+    const uploadBytes = (req.files || []).reduce((sum, file) => sum + Number(file.size || 0), 0);
+    if (uploadBytes > 150 * 1024 * 1024) return res.status(400).json({ error: 'O conjunto de arquivos ultrapassa o limite de 150 MB por episódio.' });
     for (const file of req.files) {
       const name = path.basename(file.originalname || '');
       if (!/^(image|audio)-[a-zA-Z0-9_-]{1,100}\.(jpg|jpeg|png|webp|mp3|wav|m4a|ogg)$/i.test(name)) {
         return res.status(400).json({ error: 'Um dos arquivos enviados tem nome ou formato inválido.' });
       }
-      media.set(name, file);
+      media.set(name, file.path);
     }
     scenes.forEach((scene, index) => {
       const duration = Number(scene.duration);
@@ -728,9 +735,9 @@ app.post('/api/cine/render', billing.requireAuth, cineRenderUpload.array('media'
     workDir = path.join(config.diretorios.temporarios, 'cine-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9));
     await fs.promises.mkdir(workDir, { recursive: true });
     const saved = new Map();
-    for (const [name, file] of media) {
+    for (const [name, sourcePath] of media) {
       const target = path.join(workDir, name);
-      await fs.promises.writeFile(target, file.buffer);
+      await fs.promises.rename(sourcePath, target);
       saved.set(name, target);
     }
 
@@ -802,6 +809,9 @@ app.post('/api/cine/render', billing.requireAuth, cineRenderUpload.array('media'
   } finally {
     if (workDir) {
       try { await fs.promises.rm(workDir, { recursive: true, force: true }); } catch (cleanupError) { console.error('Cine render temp cleanup failed:', cleanupError); }
+    }
+    for (const file of req.files || []) {
+      try { await fs.promises.rm(file.path, { force: true }); } catch (_) {}
     }
   }
 });
