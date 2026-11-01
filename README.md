@@ -36,6 +36,7 @@ Variáveis privadas do servidor (Render ou ambiente local):
 
 - `NVIDIA_API_KEY`: chave da NVIDIA API Catalog. Nunca coloque a chave no frontend nem no Git.
 - `NVIDIA_IMAGE_MODEL` (opcional): modelo de imagem; padrão `black-forest-labs/flux.2-klein-4b`.
+- `NVIDIA_TEXT_MODEL` (opcional): modelo de texto para roteiros; padrão `meta/llama-3.3-70b-instruct`.
 - `ELEVENLABS_API_KEY`: chave já utilizada para narração e efeitos sonoros.
 
 Endpoints:
