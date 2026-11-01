@@ -143,7 +143,13 @@
       <div class="panel" style="margin-top:14px">
         <h4>Elenco de vozes — biblioteca ElevenLabs</h4>
         <p class="sub">Mais de 50 vozes públicas para personagens, com filtros por idade, gênero e idioma. A biblioteca inclui vozes em português e outros idiomas; confira o idioma antes de gerar.</p>
-        <div class="field">
+        <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px">
+          <div class="field"><label for="cineVoiceAge">Faixa de idade</label><select id="cineVoiceAge"><option value="">Todas</option><option value="infantil">Infantil / criança</option><option value="jovem">Jovem</option><option value="adulto">Adulto</option><option value="idoso">Idoso</option></select></div>
+          <div class="field"><label for="cineVoiceGender">Gênero da voz</label><select id="cineVoiceGender"><option value="">Todos</option><option value="female">Feminina</option><option value="male">Masculina</option><option value="neutral">Neutra</option></select></div>
+          <div class="field"><label for="cineVoiceLanguage">Idioma</label><select id="cineVoiceLanguage"><option value="">Todos os idiomas</option></select></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label for="cineVoiceSearch">Pesquisar voz</label><input id="cineVoiceSearch" type="search" placeholder="Nome, personagem ou estilo..."></div>
+        <div class="field" style="margin-top:10px">
           <label for="cineVoiceSelect">Escolha a voz do personagem</label>
           <select id="cineVoiceSelect"><option value="GIuLCSVfgJaUuh7hYOY8">Lucas — Narrador cinematográfico (PT-BR)</option></select>
         </div>
@@ -193,7 +199,7 @@
         <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="cineSfxLoop" type="checkbox"> Criar som em loop contínuo</label>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
           <button class="btn primary" type="button" id="generateCineSfx">♫ Gerar efeito sonoro</button>
-          <span id="cineSfxStatus" class="asset-help" aria-live="polite">A geração consome créditos da conta ElevenLabs.</span>
+          <span id="cineSfxStatus" class="asset-help" aria-live="polite">A duração especificada consome cerca de 40 créditos por segundo (5 s ≈ 200 créditos).</span>
         </div>
         <audio id="cineSfxAudio" controls style="display:none;width:100%;margin-top:14px"></audio>
       </div>
@@ -231,30 +237,27 @@ $('uploadAssets').addEventListener('click',async()=>{const picker=$('assetFiles'
 
 
 
+let cineVoices=[];
+function renderCineVoiceOptions(){
+  const select=$('cineVoiceSelect');if(!select)return;
+  const age=$('cineVoiceAge').value,gender=$('cineVoiceGender').value,language=$('cineVoiceLanguage').value,search=$('cineVoiceSearch').value.trim().toLowerCase();
+  const filtered=cineVoices.filter(v=>(!age||v.category===age)&&(!gender||v.gender===gender)&&(!language||v.language===language)&&(!search||(v.name+' '+(v.tags||[]).join(' ')).toLowerCase().includes(search)));
+  const groups={};
+  filtered.forEach(v=>{const label=v.category==='infantil'?'Infantil / personagens':v.category==='idoso'?'Adultos idosos':v.category==='jovem'?'Jovens':'Adultos';(groups[label] ||= []).push(v)});
+  const current=select.value;select.innerHTML='';
+  Object.entries(groups).forEach(([label,voices])=>{const optgroup=document.createElement('optgroup');optgroup.label=label;voices.forEach(v=>{const option=document.createElement('option');option.value=v.id;option.textContent=v.name+' · '+(v.language||'idioma não informado')+' · '+(v.gender==='female'?'feminina':v.gender==='male'?'masculina':'neutra');optgroup.append(option)});select.append(optgroup)});
+  if(filtered.some(v=>v.id===current))select.value=current;
+  else if(filtered.some(v=>v.id==='GIuLCSVfgJaUuh7hYOY8'))select.value='GIuLCSVfgJaUuh7hYOY8';
+  $('cineVoiceStatus').textContent=filtered.length+' voz(es) encontradas entre '+cineVoices.length+' disponíveis.';
+}
 async function loadCineVoices(){
-  const select=$('cineVoiceSelect');
-  if(!select)return;
   try{
-    const response=await fetch('/api/cine/voices');
-    if(!response.ok)throw new Error('Catálogo indisponível');
-    const data=await response.json();
-    const groups={};
-    (data.voices||[]).forEach(voice=>{
-      const group=voice.category==='infantil'?'Infantil / personagens':voice.category==='idoso'?'Adultos idosos':voice.category==='jovem'?'Jovens':'Adultos';
-      (groups[group] ||= []).push(voice);
-    });
-    select.innerHTML='';
-    Object.entries(groups).forEach(([label,voices])=>{
-      const optgroup=document.createElement('optgroup');optgroup.label=label;
-      voices.forEach(voice=>{
-        const option=document.createElement('option');option.value=voice.id;
-        option.textContent=voice.name+' · '+(voice.language||'idioma não informado')+' · '+(voice.gender||'neutra');
-        option.dataset.language=voice.language||'';optgroup.append(option);
-      });
-      select.append(optgroup);
-    });
-    select.value='GIuLCSVfgJaUuh7hYOY8';
-    $('cineVoiceStatus').textContent=(data.count||0)+' vozes públicas carregadas. Escolha uma e gere a fala.';
+    const response=await fetch('/api/cine/voices');if(!response.ok)throw new Error('Catálogo indisponível');
+    const data=await response.json();cineVoices=data.voices||[];
+    const languages=[...new Set(cineVoices.map(v=>v.language).filter(Boolean))].sort();
+    languages.forEach(code=>{const option=document.createElement('option');option.value=code;option.textContent=code.toUpperCase();$('cineVoiceLanguage').append(option)});
+    ['cineVoiceAge','cineVoiceGender','cineVoiceLanguage','cineVoiceSearch'].forEach(id=>$(id).addEventListener(id==='cineVoiceSearch'?'input':'change',renderCineVoiceOptions));
+    renderCineVoiceOptions();
   }catch(error){$('cineVoiceStatus').textContent='Não foi possível carregar a biblioteca de vozes.'}
 }
 loadCineVoices();
