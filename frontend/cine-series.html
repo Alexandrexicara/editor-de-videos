@@ -162,6 +162,7 @@
           <span id="cineVoiceStatus" class="asset-help" aria-live="polite">A geração usa sua chave privada da ElevenLabs no servidor.</span>
         </div>
         <audio id="cineVoiceAudio" controls style="display:none;width:100%;margin-top:14px"></audio>
+        <a id="cineVoiceDownload" class="btn" download="cine-series-narracao.mp3" style="display:none;margin-top:8px">⬇ Baixar narração</a>
       </div>
       <div class="panel" style="margin-top:14px">
         <h4>Animais, pássaros e efeitos sonoros</h4>
@@ -202,6 +203,7 @@
           <span id="cineSfxStatus" class="asset-help" aria-live="polite">A duração especificada consome cerca de 40 créditos por segundo (5 s ≈ 200 créditos).</span>
         </div>
         <audio id="cineSfxAudio" controls style="display:none;width:100%;margin-top:14px"></audio>
+        <a id="cineSfxDownload" class="btn" download="cine-series-efeito-sonoro.mp3" style="display:none;margin-top:8px">⬇ Baixar efeito sonoro</a>
       </div>
 \n      <div class="api"><span class="dot"></span><div><b>Integrações ainda não conectadas</b><small>Nenhuma chave de API é necessária para organizar seus projetos nesta etapa.</small></div></div>
     </section>
@@ -269,7 +271,7 @@ $('generateCineSfx').addEventListener('click',async()=>{
   try{
     const response=await fetch('/api/cine/sound-effect',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({prompt,durationSeconds:Number($('cineSfxDuration').value)||5,loop:$('cineSfxLoop').checked})});
     if(!response.ok){let message='Não foi possível gerar o efeito.';try{message=(await response.json()).error||message}catch(_){}throw new Error(message)}
-    const url=URL.createObjectURL(await response.blob());audio.src=url;audio.style.display='block';audio.load();audio.play().catch(()=>{});status.textContent='Efeito sonoro gerado. Você pode reproduzir e baixar pelo player.';
+    const url=URL.createObjectURL(await response.blob());audio.src=url;audio.style.display='block';$('cineSfxDownload').href=url;$('cineSfxDownload').style.display='inline-block';audio.load();audio.play().catch(()=>{});status.textContent='Efeito sonoro gerado. Você pode reproduzir e baixar pelo player.';
   }catch(error){status.textContent=error.message;toast(error.message)}
   finally{button.disabled=false;button.textContent='♫ Gerar efeito sonoro'}
 });
