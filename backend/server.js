@@ -333,6 +333,67 @@ app.get('/download/:filename', billing.requireAuth, async (req, res) => {
   }
 });
 
+
+/* Cine Séries — narração com voz pública ElevenLabs (PT-BR). */
+const CINE_DEFAULT_VOICE_ID = 'GIuLCSVfgJaUuh7hYOY8';
+const CINE_DEFAULT_VOICE_NAME = 'Lucas - Deep & Profound Narrator';
+
+app.get('/api/cine/voice-config', (req, res) => {
+  res.json({
+    provider: 'ElevenLabs',
+    voiceId: process.env.ELEVENLABS_VOICE_ID || CINE_DEFAULT_VOICE_ID,
+    voiceName: CINE_DEFAULT_VOICE_NAME,
+    language: 'pt-BR',
+    configured: Boolean(process.env.ELEVENLABS_API_KEY)
+  });
+});
+
+app.post('/api/cine/voice', billing.requireAuth, async (req, res) => {
+  try {
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'Configure ELEVENLABS_API_KEY nas variáveis privadas do servidor.' });
+    const text = String(req.body?.text || '').trim();
+    if (!text) return res.status(400).json({ error: 'Digite o texto que deseja transformar em voz.' });
+    if (text.length > 5000) return res.status(400).json({ error: 'O texto pode ter no máximo 5.000 caracteres por geração.' });
+
+    const voiceId = process.env.ELEVENLABS_VOICE_ID || CINE_DEFAULT_VOICE_ID;
+    const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(voiceId) + '?output_format=mp3_44100_128', {
+      method: 'POST',
+      headers: {
+        'xi-api-key': apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.48, similarity_boost: 0.78, style: 0.25, use_speaker_boost: true }
+      }),
+      signal: AbortSignal.timeout(90000)
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('ElevenLabs TTS error:', response.status, detail.slice(0, 500));
+      return res.status(response.status === 401 ? 503 : 502).json({
+        error: response.status === 401
+          ? 'A chave da ElevenLabs foi recusada. Confira ELEVENLABS_API_KEY no servidor.'
+          : 'A ElevenLabs não conseguiu gerar o áudio. Verifique os créditos e os limites da conta.'
+      });
+    }
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Cine-Voice-Id', voiceId);
+    const audio = Buffer.from(await response.arrayBuffer());
+    res.setHeader('Content-Length', audio.length);
+    res.send(audio);
+  } catch (error) {
+    console.error('Cine Séries voice generation error:', error);
+    res.status(error.name === 'TimeoutError' ? 504 : 500).json({
+      error: error.name === 'TimeoutError' ? 'A geração de voz demorou demais. Tente novamente.' : 'Erro ao gerar a narração.'
+    });
+  }
+});
+
 // Rota para verificar status do servidor
 app.get('/status', (req, res) => {
   res.json({
