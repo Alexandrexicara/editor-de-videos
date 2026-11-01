@@ -182,3 +182,11 @@ A interface envia o texto para `POST /api/cine/voice`; o backend chama a ElevenL
 - `POST /api/cine/sound-effect` usa o endpoint oficial `/v1/sound-generation` com `eleven_text_to_sound_v2`, duração de 0,5 a 30 segundos e opção de loop.
 - Efeitos com duração especificada custam aproximadamente 40 créditos por segundo segundo a documentação da ElevenLabs; por exemplo, 5 segundos custam cerca de 200 créditos. A conta ElevenLabs é cobrada diretamente pelo provedor.
 - A biblioteca de vozes é servida por `GET /api/cine/voices`; geração de voz e efeitos exige sessão autenticada e `ELEVENLABS_API_KEY` no servidor.
+
+### Biblioteca de áudio e associação a cenas
+
+- Narrações e efeitos recém-gerados podem ser guardados na biblioteca local do navegador.
+- Os arquivos de áudio são armazenados em IndexedDB; os metadados (tipo, nome, data e cena associada) ficam no rascunho local do Cine Séries.
+- Cada item pode ser ouvido, baixado ou removido. É possível associar o áudio a uma cena existente.
+- A exportação JSON v3 inclui o manifesto/metadados dos áudios, mas não incorpora os bytes dos arquivos. Baixe os áudios individualmente para fazer backup ou transferi-los para outro dispositivo.
+- Limpar os dados do navegador pode apagar os arquivos locais. Ainda não há sincronização em nuvem.
