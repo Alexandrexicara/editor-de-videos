@@ -773,6 +773,10 @@ app.post('/api/cine/render', billing.requireAuth, cineRenderUpload.array('media'
       filters.push('anullsrc=r=44100:cl=stereo,atrim=duration=' + totalDuration.toFixed(3) + '[aout]');
     }
 
+    if (scenes.length > 1) {
+      filters.push('[' + videoLabel + ']tpad=stop_mode=clone:stop_duration=' + (0.4 * (scenes.length - 1)).toFixed(3) + '[vfinal]');
+      videoLabel = 'vfinal';
+    }
     const filename = 'cine-series-' + Date.now() + '.mp4';
     const outputPath = path.join(config.diretorios.outputs, filename);
     args.push('-filter_complex', filters.join(';'), '-map', '[' + videoLabel + ']', '-map', '[aout]', '-t', String(totalDuration), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', outputPath);
