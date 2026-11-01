@@ -138,7 +138,21 @@
         <div class="item"><div><strong>03 · Produção</strong><small>Imagem, vídeo, voz e trilha</small></div><span class="tag">API FUTURA</span></div>
         <div class="item"><div><strong>04 · Pós-produção</strong><small>Edição, legendas e exportação</small></div><span class="tag">API FUTURA</span></div>
       </div>
-      <div class="api"><span class="dot"></span><div><b>Integrações ainda não conectadas</b><small>Nenhuma chave de API é necessária para organizar seus projetos nesta etapa.</small></div></div>
+
+      <div class="panel" style="margin-top:14px">
+        <h4>Narração com ElevenLabs</h4>
+        <p class="sub">Voz pública brasileira selecionada: Lucas — voz grave e cinematográfica.</p>
+        <div class="field">
+          <label for="cineVoiceText">Texto para narração</label>
+          <textarea id="cineVoiceText" maxlength="5000" placeholder="Digite a narração, introdução ou fala que deseja ouvir..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+          <button class="btn primary" type="button" id="generateCineVoice">▶ Gerar narração</button>
+          <span id="cineVoiceStatus" class="asset-help" aria-live="polite">A geração usa sua chave privada da ElevenLabs no servidor.</span>
+        </div>
+        <audio id="cineVoiceAudio" controls style="display:none;width:100%;margin-top:14px"></audio>
+      </div>
+\n      <div class="api"><span class="dot"></span><div><b>Integrações ainda não conectadas</b><small>Nenhuma chave de API é necessária para organizar seus projetos nesta etapa.</small></div></div>
     </section>
   </div>
   <p class="footnote">Cine Séries é um módulo separado do editor de avatares. Nesta primeira etapa, os rascunhos ficam salvos neste navegador e podem ser exportados em JSON. Geração real de mídia, sincronização em nuvem e cobrança por créditos serão conectadas em etapas posteriores.</p>
@@ -170,6 +184,30 @@ function renderAssets(){const box=$('assetList');if(!box)return;box.innerHTML=''
 function optimizeImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(new Error('Falha ao ler '+file.name));reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error('Arquivo de imagem inválido: '+file.name));img.onload=()=>{const max=1600,scale=Math.min(1,max/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.82))};img.src=reader.result};reader.readAsDataURL(file)})}
 $('uploadAssets').addEventListener('click',async()=>{const picker=$('assetFiles');const files=Array.from(picker.files||[]);if(!files.length){toast('Escolha pelo menos uma imagem.');return}const button=$('uploadAssets');button.disabled=true;button.textContent='Otimizando imagens...';let added=0;try{for(const file of files){if(!file.type.startsWith('image/'))continue;if(file.size>2*1024*1024){toast(file.name+' ultrapassa 2 MB.');continue}const dataUrl=await optimizeImage(file);state.assets.push({id:Date.now()+Math.random(),type:$('assetType').value,name:$('assetName').value.trim()||file.name.replace(/\\.[^.]+$/,''),fileName:file.name,mimeType:'image/jpeg',dataUrl,createdAt:new Date().toISOString()});if(save()){added++}else{state.assets.pop();toast('Armazenamento local cheio. Remova algumas imagens e tente novamente.');break}}renderAssets();picker.value='';$('assetName').value='';if(added)toast(added+' imagem(ns) adicionada(s) à biblioteca.')}catch(e){toast(e.message||'Não foi possível processar a imagem.')}finally{button.disabled=false;button.textContent='＋ Adicionar imagens à biblioteca'}});
 
+
+const voiceButton=$('generateCineVoice');
+if(voiceButton){
+  voiceButton.addEventListener('click',async()=>{
+    const text=$('cineVoiceText').value.trim();
+    const status=$('cineVoiceStatus');
+    const audio=$('cineVoiceAudio');
+    if(!text){toast('Digite o texto da narração.');return}
+    voiceButton.disabled=true;
+    voiceButton.textContent='Gerando áudio...';
+    status.textContent='Conectando à ElevenLabs...';
+    audio.pause();audio.removeAttribute('src');audio.style.display='none';
+    try{
+      const response=await fetch('/api/cine/voice',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({text})});
+      if(!response.ok){let message='Não foi possível gerar a narração.';try{const data=await response.json();message=data.error||message}catch(_){}throw new Error(message)}
+      const blob=await response.blob();
+      const url=URL.createObjectURL(blob);
+      audio.src=url;audio.style.display='block';audio.load();
+      status.textContent='Áudio gerado pela voz Lucas (PT-BR).';
+      audio.play().catch(()=>{});
+    }catch(error){status.textContent=error.message;toast(error.message)}
+    finally{voiceButton.disabled=false;voiceButton.textContent='▶ Gerar narração'}
+  });
+}
 function exportProject(){const data={product:'Cine Séries',version:2,exportedAt:new Date().toISOString(),projects:state.projects,episodes:state.episodes,scenes:state.scenes,characters:state.characters,locations:state.locations,assets:state.assets};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cine-series-projeto.json';a.click();URL.revokeObjectURL(url);toast('Projeto exportado em JSON.')}
 $('exportTop').addEventListener('click',exportProject);
 $('startProject').addEventListener('click',()=>$('seriesTitle').focus());
