@@ -190,3 +190,11 @@ A interface envia o texto para `POST /api/cine/voice`; o backend chama a ElevenL
 - Cada item pode ser ouvido, baixado ou removido. É possível associar o áudio a uma cena existente.
 - A exportação JSON v3 inclui o manifesto/metadados dos áudios, mas não incorpora os bytes dos arquivos. Baixe os áudios individualmente para fazer backup ou transferi-los para outro dispositivo.
 - Limpar os dados do navegador pode apagar os arquivos locais. Ainda não há sincronização em nuvem.
+
+### Continuidade visual de personagens e cenas
+
+- O compositor de cenas permite vincular um episódio, uma locação cadastrada, vários personagens e várias imagens de referência.
+- Cada cena salva uma fotografia dos dados visuais/de voz dos personagens selecionados e da descrição da locação, além das notas específicas de continuidade.
+- As imagens referenciadas são identificadas na cena e continuam na biblioteca geral de imagens do projeto; o JSON exportado inclui os dados da biblioteca.
+- Ao cadastrar/remover personagens, locações ou imagens, os seletores do compositor são atualizados.
+- Isto prepara referências consistentes para futuras chamadas de IA; ainda não força automaticamente a mesma aparência em imagens/vídeos gerados, pois o pipeline de geração visual ainda não foi conectado.
