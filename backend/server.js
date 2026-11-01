@@ -551,9 +551,7 @@ app.post('/api/cine/script', billing.requireAuth, async (req, res) => {
           { role: 'user', content: 'IDEIA E DIREÇÃO:\n' + idea + '\n\nCONTEXTO DA PRODUÇÃO:\n' + JSON.stringify(context) }
         ],
         temperature: 0.7,
-        top_p: 0.9,
-        max_tokens: 7000,
-        response_format: { type: 'json_object' },
+        max_tokens: 4096,
         stream: false
       }),
       signal: AbortSignal.timeout(120000)
