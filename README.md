@@ -228,3 +228,11 @@ O Cine Séries inclui um roteirista NVIDIA NIM que recebe a ideia do episódio, 
 - Em uma cena com diálogos importados, use **Gerar todas as falas da cena**. O sistema gera cada fala separadamente, escolhe a voz do personagem correspondente e guarda cada MP3 na biblioteca local com personagem, emoção, voz e cena identificados.
 - A geração é sequencial para reduzir falhas por excesso de chamadas; se uma fala falhar, as faixas já concluídas são preservadas.
 - As emoções são mantidas como metadados do diálogo. A interpretação final também depende da capacidade da voz/modelo ElevenLabs selecionado; esta função ainda não monta automaticamente as faixas em uma linha do tempo nem sincroniza lábios.
+
+
+### Linha do tempo de áudio por cena
+- A biblioteca de áudio oferece a ação **＋ Timeline** em cada arquivo e também permite adicionar de uma vez os áudios associados à cena selecionada.
+- A linha do tempo salva a ordem das faixas, o início de cada uma em segundos e o volume individual. É possível mover, remover e ajustar as faixas.
+- **Reproduzir mixagem** usa o áudio local da biblioteca para tocar as faixas sobrepostas conforme os tempos definidos; **Parar** interrompe a reprodução.
+- A linha do tempo é persistida no rascunho local e incluída na exportação JSON versão 5. Remover um áudio da biblioteca também remove a referência correspondente da linha do tempo.
+- Esta etapa entrega organização e pré-escuta de mixagem no navegador. Ainda não renderiza um arquivo final de vídeo/áudio, não exporta uma mixagem WAV/MP3 e não sincroniza automaticamente imagens, legendas ou lábios.
