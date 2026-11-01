@@ -139,18 +139,63 @@
         <div class="item"><div><strong>04 · Pós-produção</strong><small>Edição, legendas e exportação</small></div><span class="tag">API FUTURA</span></div>
       </div>
 
+
       <div class="panel" style="margin-top:14px">
-        <h4>Narração com ElevenLabs</h4>
-        <p class="sub">Voz pública brasileira selecionada: Lucas — voz grave e cinematográfica.</p>
+        <h4>Elenco de vozes — biblioteca ElevenLabs</h4>
+        <p class="sub">Mais de 50 vozes públicas para personagens, com filtros por idade, gênero e idioma. A biblioteca inclui vozes em português e outros idiomas; confira o idioma antes de gerar.</p>
         <div class="field">
-          <label for="cineVoiceText">Texto para narração</label>
-          <textarea id="cineVoiceText" maxlength="5000" placeholder="Digite a narração, introdução ou fala que deseja ouvir..."></textarea>
+          <label for="cineVoiceSelect">Escolha a voz do personagem</label>
+          <select id="cineVoiceSelect"><option value="GIuLCSVfgJaUuh7hYOY8">Lucas — Narrador cinematográfico (PT-BR)</option></select>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label for="cineVoiceText">Texto da fala / narração</label>
+          <textarea id="cineVoiceText" maxlength="5000" placeholder="Digite a fala deste personagem..."></textarea>
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
-          <button class="btn primary" type="button" id="generateCineVoice">▶ Gerar narração</button>
+          <button class="btn primary" type="button" id="generateCineVoice">▶ Gerar voz</button>
           <span id="cineVoiceStatus" class="asset-help" aria-live="polite">A geração usa sua chave privada da ElevenLabs no servidor.</span>
         </div>
         <audio id="cineVoiceAudio" controls style="display:none;width:100%;margin-top:14px"></audio>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <h4>Animais, pássaros e efeitos sonoros</h4>
+        <p class="sub">Crie sons para cenas: latidos, miados, rugidos, uivos, relinchos, cantos de aves, choro de bebê, passos, chuva, vento, trovões, explosões, água, máquinas e ambientes.</p>
+        <div class="field">
+          <label for="cineSfxPreset">Sugestões de som</label>
+          <select id="cineSfxPreset">
+            <option value="">Escolha um exemplo ou escreva o seu</option>
+            <option value="Realistic dog barking three times, close and clear, outdoor ambience">Cachorro latindo</option>
+            <option value="A domestic cat meowing softly several times">Gato miando</option>
+            <option value="A wolf howling in a distant forest at night">Lobo uivando</option>
+            <option value="A powerful lion roaring in the wild">Leão rugindo</option>
+            <option value="A horse neighing and galloping on dirt">Cavalo relinchando e galopando</option>
+            <option value="A tropical forest full of birds singing and chirping">Pássaros cantando na floresta</option>
+            <option value="A parrot squawking and mimicking short calls">Papagaio vocalizando</option>
+            <option value="An owl hooting at night in a quiet forest">Coruja à noite</option>
+            <option value="A baby crying softly in a nursery, realistic natural infant vocalization">Choro de bebê</option>
+            <option value="Heavy rain and distant thunder during a storm">Chuva e trovões</option>
+            <option value="Strong cinematic wind blowing through trees">Vento cinematográfico</option>
+            <option value="Footsteps walking slowly on gravel">Passos no cascalho</option>
+            <option value="A heavy wooden door creaking open slowly">Porta rangendo</option>
+            <option value="A cinematic explosion with debris falling, no voices">Explosão cinematográfica</option>
+            <option value="Ocean waves washing onto a beach">Ondas do mar</option>
+            <option value="A futuristic robot powering up with electronic servo sounds">Robô futurista</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label for="cineSfxPrompt">Descreva o efeito sonoro</label>
+          <textarea id="cineSfxPrompt" maxlength="1000" placeholder="Ex.: Um bando de araras gritando e voando sobre a floresta tropical..."></textarea>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label for="cineSfxDuration">Duração (segundos)</label>
+          <input id="cineSfxDuration" type="number" min="0.5" max="30" step="0.5" value="5">
+        </div>
+        <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="cineSfxLoop" type="checkbox"> Criar som em loop contínuo</label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+          <button class="btn primary" type="button" id="generateCineSfx">♫ Gerar efeito sonoro</button>
+          <span id="cineSfxStatus" class="asset-help" aria-live="polite">A geração consome créditos da conta ElevenLabs.</span>
+        </div>
+        <audio id="cineSfxAudio" controls style="display:none;width:100%;margin-top:14px"></audio>
       </div>
 \n      <div class="api"><span class="dot"></span><div><b>Integrações ainda não conectadas</b><small>Nenhuma chave de API é necessária para organizar seus projetos nesta etapa.</small></div></div>
     </section>
@@ -185,6 +230,46 @@ function optimizeImage(file){return new Promise((resolve,reject)=>{const reader=
 $('uploadAssets').addEventListener('click',async()=>{const picker=$('assetFiles');const files=Array.from(picker.files||[]);if(!files.length){toast('Escolha pelo menos uma imagem.');return}const button=$('uploadAssets');button.disabled=true;button.textContent='Otimizando imagens...';let added=0;try{for(const file of files){if(!file.type.startsWith('image/'))continue;if(file.size>2*1024*1024){toast(file.name+' ultrapassa 2 MB.');continue}const dataUrl=await optimizeImage(file);state.assets.push({id:Date.now()+Math.random(),type:$('assetType').value,name:$('assetName').value.trim()||file.name.replace(/\\.[^.]+$/,''),fileName:file.name,mimeType:'image/jpeg',dataUrl,createdAt:new Date().toISOString()});if(save()){added++}else{state.assets.pop();toast('Armazenamento local cheio. Remova algumas imagens e tente novamente.');break}}renderAssets();picker.value='';$('assetName').value='';if(added)toast(added+' imagem(ns) adicionada(s) à biblioteca.')}catch(e){toast(e.message||'Não foi possível processar a imagem.')}finally{button.disabled=false;button.textContent='＋ Adicionar imagens à biblioteca'}});
 
 
+
+async function loadCineVoices(){
+  const select=$('cineVoiceSelect');
+  if(!select)return;
+  try{
+    const response=await fetch('/api/cine/voices');
+    if(!response.ok)throw new Error('Catálogo indisponível');
+    const data=await response.json();
+    const groups={};
+    (data.voices||[]).forEach(voice=>{
+      const group=voice.category==='infantil'?'Infantil / personagens':voice.category==='idoso'?'Adultos idosos':voice.category==='jovem'?'Jovens':'Adultos';
+      (groups[group] ||= []).push(voice);
+    });
+    select.innerHTML='';
+    Object.entries(groups).forEach(([label,voices])=>{
+      const optgroup=document.createElement('optgroup');optgroup.label=label;
+      voices.forEach(voice=>{
+        const option=document.createElement('option');option.value=voice.id;
+        option.textContent=voice.name+' · '+(voice.language||'idioma não informado')+' · '+(voice.gender||'neutra');
+        option.dataset.language=voice.language||'';optgroup.append(option);
+      });
+      select.append(optgroup);
+    });
+    select.value='GIuLCSVfgJaUuh7hYOY8';
+    $('cineVoiceStatus').textContent=(data.count||0)+' vozes públicas carregadas. Escolha uma e gere a fala.';
+  }catch(error){$('cineVoiceStatus').textContent='Não foi possível carregar a biblioteca de vozes.'}
+}
+loadCineVoices();
+$('cineSfxPreset').addEventListener('change',e=>{if(e.target.value)$('cineSfxPrompt').value=e.target.value});
+$('generateCineSfx').addEventListener('click',async()=>{
+  const prompt=$('cineSfxPrompt').value.trim(),status=$('cineSfxStatus'),audio=$('cineSfxAudio'),button=$('generateCineSfx');
+  if(!prompt){toast('Descreva o efeito sonoro.');return}
+  button.disabled=true;button.textContent='Gerando efeito...';status.textContent='Criando áudio na ElevenLabs...';audio.pause();audio.removeAttribute('src');audio.style.display='none';
+  try{
+    const response=await fetch('/api/cine/sound-effect',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({prompt,durationSeconds:Number($('cineSfxDuration').value)||5,loop:$('cineSfxLoop').checked})});
+    if(!response.ok){let message='Não foi possível gerar o efeito.';try{message=(await response.json()).error||message}catch(_){}throw new Error(message)}
+    const url=URL.createObjectURL(await response.blob());audio.src=url;audio.style.display='block';audio.load();audio.play().catch(()=>{});status.textContent='Efeito sonoro gerado. Você pode reproduzir e baixar pelo player.';
+  }catch(error){status.textContent=error.message;toast(error.message)}
+  finally{button.disabled=false;button.textContent='♫ Gerar efeito sonoro'}
+});
 const voiceButton=$('generateCineVoice');
 if(voiceButton){
   voiceButton.addEventListener('click',async()=>{
@@ -197,12 +282,12 @@ if(voiceButton){
     status.textContent='Conectando à ElevenLabs...';
     audio.pause();audio.removeAttribute('src');audio.style.display='none';
     try{
-      const response=await fetch('/api/cine/voice',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({text})});
+      const response=await fetch('/api/cine/voice',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({text,voiceId:$('cineVoiceSelect').value})});
       if(!response.ok){let message='Não foi possível gerar a narração.';try{const data=await response.json();message=data.error||message}catch(_){}throw new Error(message)}
       const blob=await response.blob();
       const url=URL.createObjectURL(blob);
       audio.src=url;audio.style.display='block';audio.load();
-      status.textContent='Áudio gerado pela voz Lucas (PT-BR).';
+      status.textContent='Áudio gerado com a voz selecionada: '+$('cineVoiceSelect').selectedOptions[0].textContent+'.';
       audio.play().catch(()=>{});
     }catch(error){status.textContent=error.message;toast(error.message)}
     finally{voiceButton.disabled=false;voiceButton.textContent='▶ Gerar narração'}
