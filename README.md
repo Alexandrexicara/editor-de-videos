@@ -236,3 +236,11 @@ O Cine Séries inclui um roteirista NVIDIA NIM que recebe a ideia do episódio, 
 - **Reproduzir mixagem** usa o áudio local da biblioteca para tocar as faixas sobrepostas conforme os tempos definidos; **Parar** interrompe a reprodução.
 - A linha do tempo é persistida no rascunho local e incluída na exportação JSON versão 5. Remover um áudio da biblioteca também remove a referência correspondente da linha do tempo.
 - Esta etapa entrega organização e pré-escuta de mixagem no navegador. Ainda não renderiza um arquivo final de vídeo/áudio, não exporta uma mixagem WAV/MP3 e não sincroniza automaticamente imagens, legendas ou lábios.
+
+
+## Legendas do Cine Séries (SRT e WebVTT)
+
+- O painel de legendas gera arquivos `.srt` e `.vtt` a partir das falas cadastradas nas cenas, filtrando por episódio ou considerando todos.
+- É possível configurar o tempo inicial, a velocidade estimada de leitura e o intervalo entre falas.
+- A duração e os tempos são estimativas baseadas no texto; revise e sincronize no editor de vídeo antes da publicação. Esta função não faz reconhecimento automático de fala nem sincronização labial.
+- O projeto exportado em JSON passa para a versão 6 e mantém as informações anteriores, incluindo a linha do tempo de áudio.
