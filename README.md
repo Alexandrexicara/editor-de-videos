@@ -162,3 +162,14 @@ O projeto inclui um servidor MCP local para consultar o estado do editor, listar
 ## Carteira e pagamentos
 
 A página `/conta.html` mostra saldo, pacotes em BRL/USD, pagamentos SumUp e histórico de créditos. Para configurar o ambiente e ativar os pagamentos, siga `BILLING_SETUP.md` e configure as variáveis privadas a partir de `.env.example`. O backend exige PostgreSQL e sessão autenticada para processar vídeos; um crédito é reservado e só é consumido após o vídeo ser concluído.
+
+
+## Narração do Cine Séries com ElevenLabs
+
+O Cine Séries inclui uma rota autenticada para gerar narração em MP3 usando a voz pública **Lucas — Deep & Profound Narrator** (PT-BR).
+
+Configure no ambiente privado do servidor:
+- `ELEVENLABS_API_KEY`: sua chave da ElevenLabs (não coloque no GitHub nem no frontend).
+- `ELEVENLABS_VOICE_ID=GIuLCSVfgJaUuh7hYOY8`: ID da voz pública selecionada. Pode ser sobrescrito por variável de ambiente.
+
+A interface envia o texto para `POST /api/cine/voice`; o backend chama a ElevenLabs e devolve o áudio. A rota exige sessão autenticada e limita cada texto a 5.000 caracteres. A configuração pública da voz pode ser consultada em `GET /api/cine/voice-config`, sem expor a chave privada.
