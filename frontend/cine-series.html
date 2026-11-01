@@ -126,6 +126,7 @@
         <div class="field full"><label for="characterPersonality">Personalidade e história</label><textarea id="characterPersonality" placeholder="Motivações, passado, objetivos, conflitos e jeito de falar..."></textarea></div>
         <div class="field"><label for="characterLook">Aparência / figurino</label><input id="characterLook" placeholder="Características visuais constantes"></div>
         <div class="field"><label for="characterVoice">Voz / interpretação</label><input id="characterVoice" placeholder="Timbre, sotaque e emoção"></div>
+        <div class="field full"><label for="characterVoiceId">Voz ElevenLabs deste personagem</label><select id="characterVoiceId"><option value="GIuLCSVfgJaUuh7hYOY8">Lucas — Narrador cinematográfico (PT-BR)</option></select><small class="asset-help">A voz escolhida fica salva na ficha e será usada automaticamente nas falas deste personagem.</small></div>
         <div class="field full"><button class="btn primary" type="submit">＋ Salvar personagem</button></div>
       </form>
     </section>
@@ -251,8 +252,12 @@
         <h4>Biblioteca de áudio e trilha por cena</h4>
         <p class="sub">Guarde as narrações e os efeitos gerados, associe cada arquivo a uma cena e reutilize-os depois. Os arquivos ficam neste navegador.</p>
         <div class="field">
-          <label for="cineAudioScene">Associar áudio a uma cena (opcional)</label>
+          <label for="cineAudioScene">Cena para gerar ou associar áudio</label>
           <select id="cineAudioScene"><option value="">Sem cena associada</option></select>
+        </div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">
+          <button class="btn primary" type="button" id="generateSceneDialogues">♫ Gerar todas as falas da cena</button>
+          <span class="asset-help" id="sceneDialogueStatus" aria-live="polite">Cada personagem usará sua própria voz cadastrada.</span>
         </div>
         <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
           <button class="btn" type="button" id="saveVoiceToLibrary" disabled>＋ Guardar última narração</button>
@@ -355,14 +360,14 @@ fetch('/api/cine/image-config',{credentials:'same-origin'}).then(r=>r.json()).th
 }).catch(()=>$('nvidiaImageStatus').textContent='Não foi possível verificar a configuração NVIDIA.');
 
 function saveProject(){const project={id:Date.now(),title:$('seriesTitle').value.trim(),genre:$('genre').value,format:$('format').value,seasons:Number($('seasonCount').value)||1,episodeLength:$('episodeLength').value,synopsis:$('synopsis').value.trim(),updatedAt:new Date().toISOString()};if(!project.title){toast('Informe o nome da série.');return}const idx=state.projects.findIndex(p=>p.title.toLowerCase()===project.title.toLowerCase());if(idx>=0)state.projects[idx]=project;else state.projects.push(project);save();toast('Ficha da série salva neste navegador.')}
-function renderCharacters(){const box=$('characterList');box.innerHTML='';if(!state.characters.length){box.innerHTML='<div class="empty">Seu elenco aparecerá aqui.</div>';return}state.characters.forEach((c,i)=>{const el=document.createElement('div');el.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent=c.name;const small=document.createElement('small');small.textContent=[c.role,c.look,c.voice].filter(Boolean).join(' · ');info.append(title,small);const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.characters.splice(i,1);save();renderCharacters();renderSceneComposerOptions()});el.append(info,del);box.append(el)})}
+function renderCharacters(){const box=$('characterList');box.innerHTML='';if(!state.characters.length){box.innerHTML='<div class="empty">Seu elenco aparecerá aqui.</div>';return}state.characters.forEach((c,i)=>{const el=document.createElement('div');el.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent=c.name;const small=document.createElement('small');const voice=cineVoices.find(v=>v.id===c.voiceId);small.textContent=[c.role,c.look,c.voice,voice?'Voz: '+voice.name:'Voz padrão'].filter(Boolean).join(' · ');info.append(title,small);const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.characters.splice(i,1);save();renderCharacters();renderSceneComposerOptions()});el.append(info,del);box.append(el)})}
 function renderLocations(){const box=$('locationList');box.innerHTML='';if(!state.locations.length){box.innerHTML='<div class="empty">Suas locações aparecerão aqui.</div>';return}state.locations.forEach((l,i)=>{const el=document.createElement('div');el.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent=l.name;const small=document.createElement('small');small.textContent=[l.type,l.description].filter(Boolean).join(' · ');info.append(title,small);const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.locations.splice(i,1);save();renderLocations();renderAssets();renderSceneComposerOptions()});el.append(info,del);box.append(el)})}
-$('characterForm').addEventListener('submit',e=>{e.preventDefault();state.characters.push({id:'character-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:$('characterName').value.trim(),role:$('characterRole').value,personality:$('characterPersonality').value.trim(),look:$('characterLook').value.trim(),voice:$('characterVoice').value.trim()});save();renderCharacters();renderSceneComposerOptions();e.target.reset();toast('Personagem salvo na bíblia da série.')});
+$('characterForm').addEventListener('submit',e=>{e.preventDefault();state.characters.push({id:'character-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:$('characterName').value.trim(),role:$('characterRole').value,personality:$('characterPersonality').value.trim(),look:$('characterLook').value.trim(),voice:$('characterVoice').value.trim(),voiceId:$('characterVoiceId').value||'GIuLCSVfgJaUuh7hYOY8'});save();renderCharacters();renderSceneComposerOptions();e.target.reset();toast('Personagem salvo na bíblia da série.')});
 $('locationForm').addEventListener('submit',e=>{e.preventDefault();state.locations.push({id:'location-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:$('locationName').value.trim(),type:$('locationType').value,description:$('locationDescription').value.trim()});save();renderLocations();renderSceneComposerOptions();e.target.reset();toast('Locação adicionada à biblioteca.')});
 $('projectForm').addEventListener('submit',e=>{e.preventDefault();saveProject()});
 $('episodeForm').addEventListener('submit',e=>{e.preventDefault();const title=$('episodeTitle').value.trim();if(!title)return;state.episodes.push({number:Number($('episodeNumber').value)||state.episodes.length+1,title,status:$('episodeStatus').value});save();renderEpisodes();renderSceneComposerOptions();refreshWriterEpisodePicker();$('episodeTitle').value='';$('episodeNumber').value=state.episodes.length+1;toast('Episódio adicionado.')});
 $('addScene').addEventListener('click',()=>{$('sceneComposerTitle').focus();$('sceneComposerForm').scrollIntoView({behavior:'smooth',block:'center'})});
-$('sceneComposerForm').addEventListener('submit',e=>{e.preventDefault();const selected=(id)=>Array.from($(id).selectedOptions).map(o=>o.value);const characterIds=selected('sceneComposerCharacters');const assetIds=selected('sceneComposerAssets');const locationId=$('sceneComposerLocation').value;const location=state.locations.find(item=>item.id===locationId);const characterSnapshots=state.characters.filter(item=>characterIds.includes(item.id)).map(item=>({id:item.id,name:item.name,role:item.role,look:item.look,voice:item.voice,personality:item.personality}));const referenceAssets=state.assets.filter(item=>assetIds.includes(String(item.id))).map(item=>({id:item.id,name:item.name||item.fileName,type:item.type,fileName:item.fileName}));state.scenes.push({id:'scene-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),title:$('sceneComposerTitle').value.trim(),episodeNumber:$('sceneComposerEpisode').value||'',location:location?location.name:'',locationId:locationId||'',locationSnapshot:location?{name:location.name,type:location.type,description:location.description}:null,camera:$('sceneComposerCamera').value.trim(),description:$('sceneComposerDescription').value.trim(),characterIds,characterSnapshots,referenceAssets,continuityNotes:$('sceneComposerContinuity').value.trim(),createdAt:new Date().toISOString()});save();renderScenes();renderNvidiaScenePicker();renderAudioSceneOptions();e.target.reset();toast('Cena salva com referências de continuidade.')});
+$('sceneComposerForm').addEventListener('submit',e=>{e.preventDefault();const selected=(id)=>Array.from($(id).selectedOptions).map(o=>o.value);const characterIds=selected('sceneComposerCharacters');const assetIds=selected('sceneComposerAssets');const locationId=$('sceneComposerLocation').value;const location=state.locations.find(item=>item.id===locationId);const characterSnapshots=state.characters.filter(item=>characterIds.includes(item.id)).map(item=>({id:item.id,name:item.name,role:item.role,look:item.look,voice:item.voice,voiceId:item.voiceId||'GIuLCSVfgJaUuh7hYOY8',personality:item.personality}));const referenceAssets=state.assets.filter(item=>assetIds.includes(String(item.id))).map(item=>({id:item.id,name:item.name||item.fileName,type:item.type,fileName:item.fileName}));state.scenes.push({id:'scene-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),title:$('sceneComposerTitle').value.trim(),episodeNumber:$('sceneComposerEpisode').value||'',location:location?location.name:'',locationId:locationId||'',locationSnapshot:location?{name:location.name,type:location.type,description:location.description}:null,camera:$('sceneComposerCamera').value.trim(),description:$('sceneComposerDescription').value.trim(),characterIds,characterSnapshots,referenceAssets,continuityNotes:$('sceneComposerContinuity').value.trim(),createdAt:new Date().toISOString()});save();renderScenes();renderNvidiaScenePicker();renderAudioSceneOptions();e.target.reset();toast('Cena salva com referências de continuidade.')});
 
 
 function refreshWriterEpisodePicker(){
@@ -381,7 +386,7 @@ $('generateNvidiaScript').addEventListener('click',async()=>{
   const episodeNumber=$('writerEpisode').value;
   const episode=state.episodes.find(item=>String(item.number)===episodeNumber)||{};
   const response=await fetch('/api/cine/script',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({
-   idea,episode,series:state.projects[0]||{},characters:state.characters.map(({name,role,look,voice,personality})=>({name,role,look,voice,personality})),
+   idea,episode,series:state.projects[0]||{},characters:state.characters.map(({name,role,look,voice,voiceId,personality})=>({name,role,look,voice,voiceId,personality})),
    locations:state.locations.map(({name,type,description})=>({name,type,description})),
    style:$('writerStyle').value,sceneCount:Number($('writerSceneCount').value)||6
   })});
@@ -446,6 +451,7 @@ async function loadCineVoices(){
   try{
     const response=await fetch('/api/cine/voices');if(!response.ok)throw new Error('Catálogo indisponível');
     const data=await response.json();cineVoices=data.voices||[];
+    const characterVoiceSelect=$('characterVoiceId');if(characterVoiceSelect){characterVoiceSelect.innerHTML='';cineVoices.forEach(v=>{const option=document.createElement('option');option.value=v.id;option.textContent=v.name+' · '+(v.language||'idioma não informado');characterVoiceSelect.append(option)});if(cineVoices.some(v=>v.id==='GIuLCSVfgJaUuh7hYOY8'))characterVoiceSelect.value='GIuLCSVfgJaUuh7hYOY8'}
     const languages=[...new Set(cineVoices.map(v=>v.language).filter(Boolean))].sort();
     languages.forEach(code=>{const option=document.createElement('option');option.value=code;option.textContent=code.toUpperCase();$('cineVoiceLanguage').append(option)});
     ['cineVoiceAge','cineVoiceGender','cineVoiceLanguage','cineVoiceSearch'].forEach(id=>$(id).addEventListener(id==='cineVoiceSearch'?'input':'change',renderCineVoiceOptions));
@@ -489,6 +495,40 @@ if(voiceButton){
     finally{voiceButton.disabled=false;voiceButton.textContent='▶ Gerar narração'}
   });
 }
+
+async function generateSceneDialogueTracks(){
+ const sceneId=$('cineAudioScene').value,scene=state.scenes.find(item=>(item.id||item.title)===sceneId);
+ const status=$('sceneDialogueStatus'),button=$('generateSceneDialogues');
+ if(!scene){toast('Selecione uma cena primeiro.');return}
+ const lines=Array.isArray(scene.dialogue)?scene.dialogue.filter(line=>String(line.text||'').trim()).slice(0,30):[];
+ if(!lines.length){toast('Esta cena ainda não possui falas. Gere um roteiro e importe os diálogos primeiro.');return}
+ button.disabled=true;let completed=0,failed=0;
+ try{
+  for(let i=0;i<lines.length;i++){
+   const line=lines[i],characterName=String(line.character||'Narrador').trim();
+   const character=(scene.characterSnapshots||[]).find(c=>c.name.toLowerCase()===characterName.toLowerCase())||state.characters.find(c=>c.name.toLowerCase()===characterName.toLowerCase());
+   const voiceId=character?.voiceId||'GIuLCSVfgJaUuh7hYOY8';
+   status.textContent='Gerando fala '+(i+1)+' de '+lines.length+' · '+characterName+'...';
+   try{
+    const response=await fetch('/api/cine/voice',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({text:String(line.text).trim(),voiceId})});
+    if(!response.ok){let message='Falha ao gerar a fala de '+characterName;try{const data=await response.json();message=data.error||message}catch(_){}throw new Error(message)}
+    const blob=await response.blob(),id='audio-dialogue-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+    await putAudioBlob(id,blob);
+    const voice=cineVoices.find(v=>v.id===voiceId);
+    const asset={id,kind:'voice',name:scene.title+' — '+characterName,fileName:(scene.title+'-'+characterName+'-'+(i+1)+'.mp3').replace(/[^a-z0-9._-]+/gi,'-'),sceneId:scene.id,sceneTitle:scene.title,characterName,emotion:String(line.emotion||''),voiceId,voiceName:voice?.name||'Voz padrão',text:String(line.text).trim(),mimeType:'audio/mpeg',size:blob.size,createdAt:new Date().toISOString()};
+    state.audioAssets.push(asset);
+    if(!save()){state.audioAssets.pop();await deleteAudioBlob(id);throw new Error('Armazenamento local cheio; libere espaço antes de continuar.')}
+    completed++;
+   }catch(error){failed++;status.textContent=error.message;break}
+  }
+  await renderAudioAssets();
+  status.textContent=completed+' de '+lines.length+' falas geradas e guardadas.'+(failed?' Uma fala falhou; as anteriores foram preservadas.':'');
+  toast(completed+' faixa(s) de voz adicionada(s) à biblioteca.');
+ }catch(error){status.textContent=error.message;toast(error.message)}
+ finally{button.disabled=false}
+}
+$('generateSceneDialogues').addEventListener('click',generateSceneDialogueTracks);
+
 function exportProject(){const data={product:'Cine Séries',version:4,exportedAt:new Date().toISOString(),projects:state.projects,episodes:state.episodes,scenes:state.scenes,characters:state.characters,locations:state.locations,assets:state.assets,audioAssets:state.audioAssets,scripts:state.scripts};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cine-series-projeto.json';a.click();URL.revokeObjectURL(url);toast('Projeto exportado em JSON.')}
 $('exportTop').addEventListener('click',exportProject);
 $('startProject').addEventListener('click',()=>$('seriesTitle').focus());
