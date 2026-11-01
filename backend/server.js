@@ -511,6 +511,99 @@ app.post('/api/cine/image', billing.requireAuth, async (req, res) => {
   }
 });
 
+
+/* Cine Séries — roteirista IA NVIDIA NIM (roteiro, cenas e diálogos). */
+app.post('/api/cine/script', billing.requireAuth, async (req, res) => {
+  try {
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'Configure NVIDIA_API_KEY nas variáveis privadas do servidor.' });
+    const idea = String(req.body?.idea || '').trim();
+    if (!idea) return res.status(400).json({ error: 'Descreva a ideia ou sinopse antes de gerar o roteiro.' });
+    if (idea.length > 12000) return res.status(400).json({ error: 'A ideia pode ter no máximo 12.000 caracteres.' });
+
+    const context = {
+      series: req.body?.series || {},
+      episode: req.body?.episode || {},
+      characters: Array.isArray(req.body?.characters) ? req.body.characters.slice(0, 30) : [],
+      locations: Array.isArray(req.body?.locations) ? req.body.locations.slice(0, 30) : [],
+      style: String(req.body?.style || 'Roteiro audiovisual cinematográfico').slice(0, 300),
+      sceneCount: Math.max(2, Math.min(20, Number(req.body?.sceneCount) || 6))
+    };
+    const model = process.env.NVIDIA_TEXT_MODEL || 'meta/llama-3.3-70b-instruct';
+    const systemPrompt = [
+      'Você é roteirista profissional, showrunner e diretor de séries. Escreva em português brasileiro.',
+      'Crie um roteiro original, coerente, filmável e emocionalmente envolvente.',
+      'Respeite rigorosamente os nomes, aparência, personalidade e relações dos personagens fornecidos. Não invente personagens principais adicionais.',
+      'Mantenha continuidade entre cenas: figurino, objetos, ferimentos, horário, clima, posição dos personagens e fatos narrativos.',
+      'Retorne exclusivamente JSON válido, sem markdown, sem cercas de código e sem comentários.',
+      'Formato obrigatório: {"title":"...","logline":"...","synopsis":"...","scenes":[{"title":"...","location":"...","timeOfDay":"...","action":"Descrição visual e ação filmável","camera":"Plano e movimento de câmera","characters":["Nome"],"dialogue":[{"character":"Nome","text":"Fala em português brasileiro","emotion":"Emoção e intenção"}],"sound":"Ambiência e efeitos sonoros","continuityNotes":"O que precisa permanecer consistente"}]}.',
+      'Cada cena deve conter falas naturais quando houver personagens presentes. Não atribua falas a personagens que não estejam na cena.',
+      'Inclua de 2 a ' + context.sceneCount + ' cenas, com progressão narrativa, abertura, desenvolvimento e gancho/conclusão.'
+    ].join(' ');
+
+    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: 'IDEIA E DIREÇÃO:\n' + idea + '\n\nCONTEXTO DA PRODUÇÃO:\n' + JSON.stringify(context) }
+        ],
+        temperature: 0.7,
+        top_p: 0.9,
+        max_tokens: 7000,
+        response_format: { type: 'json_object' },
+        stream: false
+      }),
+      signal: AbortSignal.timeout(120000)
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('NVIDIA script generation error:', response.status, detail.slice(0, 700));
+      return res.status(response.status === 401 || response.status === 403 ? 503 : 502).json({
+        error: response.status === 401 || response.status === 403
+          ? 'A NVIDIA recusou a chave ou não liberou acesso ao modelo de texto.'
+          : 'A NVIDIA não conseguiu gerar o roteiro. Verifique os limites e a disponibilidade do modelo.'
+      });
+    }
+    const result = await response.json();
+    const content = result?.choices?.[0]?.message?.content;
+    if (!content) return res.status(502).json({ error: 'A NVIDIA respondeu sem conteúdo de roteiro.' });
+    let screenplay;
+    try { screenplay = JSON.parse(content); }
+    catch (_) {
+      const clean = String(content).replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/, '').trim();
+      screenplay = JSON.parse(clean);
+    }
+    if (!Array.isArray(screenplay.scenes) || !screenplay.scenes.length) {
+      return res.status(502).json({ error: 'O roteiro retornado não contém cenas válidas. Tente novamente.' });
+    }
+    screenplay.scenes = screenplay.scenes.slice(0, 20).map((scene, index) => ({
+      title: String(scene.title || 'Cena ' + (index + 1)).slice(0, 160),
+      location: String(scene.location || '').slice(0, 300),
+      timeOfDay: String(scene.timeOfDay || '').slice(0, 100),
+      action: String(scene.action || '').slice(0, 4000),
+      camera: String(scene.camera || '').slice(0, 500),
+      characters: Array.isArray(scene.characters) ? scene.characters.slice(0, 20).map(name => String(name).slice(0, 120)) : [],
+      dialogue: Array.isArray(scene.dialogue) ? scene.dialogue.slice(0, 40).map(line => ({
+        character: String(line.character || '').slice(0, 120),
+        text: String(line.text || '').slice(0, 1500),
+        emotion: String(line.emotion || '').slice(0, 200)
+      })) : [],
+      sound: String(scene.sound || '').slice(0, 500),
+      continuityNotes: String(scene.continuityNotes || '').slice(0, 1000)
+    }));
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ provider: 'NVIDIA NIM', model, screenplay });
+  } catch (error) {
+    console.error('Cine Séries NVIDIA screenplay error:', error);
+    res.status(error.name === 'TimeoutError' ? 504 : 500).json({
+      error: error.name === 'TimeoutError' ? 'A geração do roteiro demorou demais. Tente novamente.' : 'Erro ao gerar o roteiro.'
+    });
+  }
+});
+
 // Rota para verificar status do servidor
 app.get('/status', (req, res) => {
   res.json({
