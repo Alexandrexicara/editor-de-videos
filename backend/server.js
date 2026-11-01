@@ -440,6 +440,75 @@ app.post('/api/cine/sound-effect', billing.requireAuth, async (req, res) => {
   }
 });
 
+
+/* Cine Séries — geração de imagens e continuidade visual com NVIDIA NIM. */
+app.get('/api/cine/image-config', (req, res) => {
+  res.json({ provider: 'NVIDIA NIM', model: process.env.NVIDIA_IMAGE_MODEL || 'black-forest-labs/flux.2-klein-4b', configured: Boolean(process.env.NVIDIA_API_KEY) });
+});
+
+app.post('/api/cine/image', billing.requireAuth, async (req, res) => {
+  try {
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'Configure NVIDIA_API_KEY nas variáveis privadas do servidor para ativar a geração de imagens.' });
+    const prompt = String(req.body?.prompt || '').trim();
+    if (!prompt) return res.status(400).json({ error: 'A descrição da cena está vazia.' });
+    if (prompt.length > 10000) return res.status(400).json({ error: 'A descrição pode ter no máximo 10.000 caracteres.' });
+
+    const rawImages = Array.isArray(req.body?.referenceImages) ? req.body.referenceImages : [];
+    if (rawImages.length > 8) return res.status(400).json({ error: 'Use no máximo 8 imagens de referência por cena.' });
+    const images = rawImages.map((value) => {
+      const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(value || ''));
+      if (!match) throw Object.assign(new Error('Uma imagem de referência está em formato inválido.'), { status: 400 });
+      const bytes = Buffer.from(match[2], 'base64');
+      if (!bytes.length || bytes.length > 5 * 1024 * 1024) throw Object.assign(new Error('Cada imagem de referência deve ter até 5 MB.'), { status: 400 });
+      return { mime: match[1], bytes };
+    });
+
+    const model = process.env.NVIDIA_IMAGE_MODEL || 'black-forest-labs/flux.2-klein-4b';
+    const endpoint = images.length
+      ? 'https://ai.api.nvidia.com/v1/images/edits'
+      : 'https://ai.api.nvidia.com/v1/images/generations';
+    const form = new FormData();
+    form.append('model', model);
+    form.append('prompt', prompt);
+    form.append('n', '1');
+    form.append('response_format', 'b64_json');
+    images.forEach((item, index) => {
+      const ext = item.mime === 'image/png' ? 'png' : item.mime === 'image/webp' ? 'webp' : 'jpg';
+      form.append('image[]', new Blob([item.bytes], { type: item.mime }), 'reference-' + (index + 1) + '.' + ext);
+    });
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + apiKey, Accept: 'application/json' },
+      body: form,
+      signal: AbortSignal.timeout(180000)
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('NVIDIA image generation error:', response.status, detail.slice(0, 700));
+      return res.status(response.status === 401 || response.status === 403 ? 503 : 502).json({
+        error: response.status === 401 || response.status === 403
+          ? 'A NVIDIA recusou a chave ou o acesso ao modelo. Confira NVIDIA_API_KEY e a disponibilidade do modelo na sua conta.'
+          : 'A NVIDIA não conseguiu gerar a imagem. Confira os limites, créditos e disponibilidade do modelo.'
+      });
+    }
+    const result = await response.json();
+    const encoded = result?.data?.[0]?.b64_json || result?.artifacts?.[0]?.base64;
+    if (!encoded) {
+      console.error('NVIDIA image response missing image data:', JSON.stringify(result).slice(0, 700));
+      return res.status(502).json({ error: 'A NVIDIA respondeu, mas não retornou os dados da imagem.' });
+    }
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ image: 'data:image/png;base64,' + encoded, model, provider: 'NVIDIA NIM' });
+  } catch (error) {
+    console.error('Cine Séries NVIDIA image error:', error);
+    res.status(error.status || (error.name === 'TimeoutError' ? 504 : 500)).json({
+      error: error.status ? error.message : error.name === 'TimeoutError' ? 'A geração da imagem demorou demais. Tente novamente.' : 'Erro ao gerar a imagem da cena.'
+    });
+  }
+});
+
 // Rota para verificar status do servidor
 app.get('/status', (req, res) => {
   res.json({
