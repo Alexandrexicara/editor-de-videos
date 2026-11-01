@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 // server.js - Servidor Express para processamento de vídeos
 
 const express = require('express');
@@ -475,7 +477,7 @@ app.post('/api/cine/image', billing.requireAuth, async (req, res) => {
     form.append('response_format', 'b64_json');
     images.forEach((item, index) => {
       const ext = item.mime === 'image/png' ? 'png' : item.mime === 'image/webp' ? 'webp' : 'jpg';
-      form.append('image[]', new Blob([item.bytes], { type: item.mime }), 'reference-' + (index + 1) + '.' + ext);
+      form.append('image', new Blob([item.bytes], { type: item.mime }), 'reference-' + (index + 1) + '.' + ext);
     });
 
     const response = await fetch(endpoint, {
