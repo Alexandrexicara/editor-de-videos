@@ -1,6 +1,7 @@
 // Vozes públicas obtidas da biblioteca de vozes da ElevenLabs em 01/11/2026.
 // A disponibilidade e os direitos de uso dependem dos termos e da conta da ElevenLabs.
 module.exports = [
+  {"id":"GIuLCSVfgJaUuh7hYOY8","name":"Lucas - Deep & Profound Narrator","language":"pt","gender":"male","age":"adulto","category":"adulto","accent":"pt-BR","tags":["narrador","voz grave"]},
   {
     "id": "XosOKxMuhCxK0pbCqm69",
     "name": "Aron Vidal",
