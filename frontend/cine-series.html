@@ -276,7 +276,26 @@
           <div class="asset-help" id="cineTimelineStatus" aria-live="polite">Adicione faixas da biblioteca para montar a cena.</div>
           <div class="list" id="cineTimelineTracks" style="margin-top:12px"><div class="empty">Nenhuma faixa na linha do tempo.</div></div>
         </div>
-        <div class="panel" id="cineSubtitlePanel" style="margin-top:16px">
+        <div class="panel" id="cineAssemblyPanel" style="margin-top:16px">
+        <h4>Montagem do episódio — plano de edição</h4>
+        <p class="sub">Organize a ordem das cenas, duração de cada plano, imagem principal e transição. O plano conecta os materiais já cadastrados e pode ser exportado para orientar a edição/renderização.</p>
+        <div class="form-grid">
+          <div class="field"><label for="cineAssemblyEpisode">Episódio para montar</label><select id="cineAssemblyEpisode"><option value="">Todos os episódios</option></select></div>
+          <div class="field"><label for="cineAssemblyDefaultDuration">Duração inicial por cena (segundos)</label><input id="cineAssemblyDefaultDuration" type="number" min="1" max="600" step="1" value="5"></div>
+          <div class="field full" style="display:flex;gap:9px;flex-wrap:wrap">
+            <button class="btn primary" type="button" id="buildCineAssembly">Montar sequência</button>
+            <button class="btn" type="button" id="exportCineAssembly" disabled>↓ Exportar plano de edição JSON</button>
+          </div>
+        </div>
+        <div class="stats" style="margin-top:12px">
+          <div class="stat"><span>Cenas na montagem</span><strong id="cineAssemblySceneCount">0</strong></div>
+          <div class="stat"><span>Duração estimada</span><strong id="cineAssemblyDuration">00:00</strong></div>
+          <div class="stat"><span>Materiais visuais</span><strong id="cineAssemblyVisualCount">0</strong></div>
+        </div>
+        <div class="asset-help" id="cineAssemblyStatus" aria-live="polite" style="margin:10px 0">Escolha um episódio e monte a sequência de cenas.</div>
+        <div class="list" id="cineAssemblyList"><div class="empty">A sequência de montagem aparecerá aqui.</div></div>
+      </div>
+      <div class="panel" id="cineSubtitlePanel" style="margin-top:16px">
           <h4>Legendas do episódio — SRT / VTT</h4>
           <p class="sub">Gere arquivos de legenda a partir dos diálogos cadastrados nas cenas. Os tempos são estimados pela quantidade de palavras e precisam ser revisados antes da edição final.</p>
           <div class="form-grid">
@@ -581,6 +600,86 @@ async function generateSceneDialogueTracks(){
 }
 $('generateSceneDialogues').addEventListener('click',generateSceneDialogueTracks);
 
+let currentAssemblyScenes=[];
+function refreshAssemblyEpisodePicker(){
+ const picker=$('cineAssemblyEpisode');if(!picker)return;const current=picker.value;
+ picker.innerHTML='<option value="">Todos os episódios</option>';
+ state.episodes.forEach(ep=>{const option=document.createElement('option');option.value=String(ep.number);option.textContent='EP '+ep.number+' · '+ep.title;picker.append(option)});
+ if([...picker.options].some(option=>option.value===current))picker.value=current;
+}
+function assemblyScenes(){
+ const episode=$('cineAssemblyEpisode').value;
+ return state.scenes.filter(scene=>!episode||String(scene.episodeNumber||'')===episode);
+}
+function formatAssemblyDuration(total){
+ const seconds=Math.max(0,Math.round(total||0)),minutes=Math.floor(seconds/60);
+ return String(minutes).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+}
+function renderCineAssembly(){
+ const box=$('cineAssemblyList');if(!box)return;box.innerHTML='';
+ const scenes=currentAssemblyScenes;
+ const total=scenes.reduce((sum,scene)=>sum+Math.max(1,Number(scene.assemblyDuration)||5),0);
+ const visualCount=scenes.filter(scene=>state.assets.some(asset=>String(asset.id)===String(scene.assemblyImageId))).length;
+ $('cineAssemblySceneCount').textContent=scenes.length;
+ $('cineAssemblyDuration').textContent=formatAssemblyDuration(total);
+ $('cineAssemblyVisualCount').textContent=visualCount+'/'+scenes.length;
+ $('exportCineAssembly').disabled=!scenes.length;
+ if(!scenes.length){box.innerHTML='<div class="empty">Nenhuma cena encontrada para este episódio.</div>';return}
+ scenes.forEach((scene,index)=>{
+  const row=document.createElement('article');row.className='item';row.style.alignItems='flex-start';
+  const info=document.createElement('div');info.style.flex='1';info.style.minWidth='0';
+  const title=document.createElement('strong');title.textContent=String(index+1).padStart(2,'0')+' · '+scene.title;
+  const details=document.createElement('small');details.textContent=[scene.camera,scene.location,scene.description].filter(Boolean).join(' · ').slice(0,260);
+  const image=state.assets.find(asset=>String(asset.id)===String(scene.assemblyImageId));
+  if(image?.dataUrl){const img=document.createElement('img');img.src=image.dataUrl;img.alt=image.name||'Imagem da cena';img.style.cssText='display:block;width:100%;max-width:230px;max-height:125px;object-fit:cover;border-radius:8px;margin-top:8px';info.append(title,details,img)}else info.append(title,details);
+  const controls=document.createElement('div');controls.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(105px,1fr));gap:7px;min-width:min(100%,230px)';
+  const durationLabel=document.createElement('label');durationLabel.className='asset-help';durationLabel.textContent='Duração (s)';
+  const duration=document.createElement('input');duration.type='number';duration.min='1';duration.max='600';duration.step='1';duration.value=String(scene.assemblyDuration||5);duration.style.cssText='width:100%;min-width:0;background:#0b111d;color:#fff;border:1px solid #344157;border-radius:8px;padding:8px';
+  duration.addEventListener('change',()=>{scene.assemblyDuration=Math.min(600,Math.max(1,Number(duration.value)||5));save();renderCineAssembly()});
+  const transitionLabel=document.createElement('label');transitionLabel.className='asset-help';transitionLabel.textContent='Transição';
+  const transition=document.createElement('select');transition.style.cssText='width:100%;min-width:0;background:#0b111d;color:#fff;border:1px solid #344157;border-radius:8px;padding:8px';
+  [['cut','Corte seco'],['fade','Dissolver'],['fadeblack','Fade para preto'],['wipeleft','Wipe esquerda'],['slideright','Deslizar direita']].forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;transition.append(option)});
+  transition.value=scene.assemblyTransition||'cut';transition.addEventListener('change',()=>{scene.assemblyTransition=transition.value;save()});
+  const imageLabel=document.createElement('label');imageLabel.className='asset-help';imageLabel.textContent='Imagem principal';
+  const imageSelect=document.createElement('select');imageSelect.style.cssText='grid-column:1/-1;width:100%;min-width:0;background:#0b111d;color:#fff;border:1px solid #344157;border-radius:8px;padding:8px';
+  const none=document.createElement('option');none.value='';none.textContent='Sem imagem definida';imageSelect.append(none);
+  state.assets.forEach(asset=>{const option=document.createElement('option');option.value=String(asset.id);option.textContent=(asset.name||asset.fileName||'Imagem')+' · '+asset.type;imageSelect.append(option)});
+  imageSelect.value=String(scene.assemblyImageId||'');imageSelect.addEventListener('change',()=>{scene.assemblyImageId=imageSelect.value;save();renderCineAssembly()});
+  const move=document.createElement('div');move.style.cssText='grid-column:1/-1;display:flex;gap:6px';
+  const up=document.createElement('button'),down=document.createElement('button');up.type=down.type='button';up.className=down.className='btn';up.textContent='↑ Subir';down.textContent='↓ Descer';
+  up.disabled=index===0;down.disabled=index===scenes.length-1;
+  up.addEventListener('click',()=>moveAssemblyScene(index,-1));down.addEventListener('click',()=>moveAssemblyScene(index,1));
+  move.append(up,down);
+  controls.append(durationLabel,duration,transitionLabel,transition,imageLabel,imageSelect,move);
+  row.append(info,controls);box.append(row);
+ });
+ $('cineAssemblyStatus').textContent='Plano com '+scenes.length+' cena(s). Duração aproximada: '+formatAssemblyDuration(total)+'. A transição selecionada é uma instrução de edição, ainda não renderizada.';
+}
+function moveAssemblyScene(index,direction){
+ const target=index+direction;if(target<0||target>=currentAssemblyScenes.length)return;
+ const a=state.scenes.indexOf(currentAssemblyScenes[index]),b=state.scenes.indexOf(currentAssemblyScenes[target]);
+ if(a<0||b<0)return;[state.scenes[a],state.scenes[b]]=[state.scenes[b],state.scenes[a]];
+ currentAssemblyScenes=assemblyScenes();save();renderScenes();renderCineAssembly();
+}
+$('buildCineAssembly').addEventListener('click',()=>{
+ const defaultDuration=Math.min(600,Math.max(1,Number($('cineAssemblyDefaultDuration').value)||5));
+ currentAssemblyScenes=assemblyScenes();
+ currentAssemblyScenes.forEach(scene=>{if(!Number.isFinite(Number(scene.assemblyDuration))||Number(scene.assemblyDuration)<=0)scene.assemblyDuration=defaultDuration;if(!scene.assemblyTransition)scene.assemblyTransition='cut'});
+ save();renderCineAssembly();
+});
+$('cineAssemblyEpisode').addEventListener('change',()=>{currentAssemblyScenes=assemblyScenes();renderCineAssembly()});
+$('exportCineAssembly').addEventListener('click',()=>{
+ if(!currentAssemblyScenes.length)return;
+ const scenes=currentAssemblyScenes.map((scene,index)=>{
+  const image=state.assets.find(asset=>String(asset.id)===String(scene.assemblyImageId));
+  const audio=state.audioAssets.filter(asset=>asset.sceneId===scene.id).map(asset=>({id:asset.id,name:asset.name,kind:asset.kind,characterName:asset.characterName||'',voiceName:asset.voiceName||'',fileName:asset.fileName}));
+  const tracks=state.timelineTracks.filter(track=>track.sceneId===scene.id).map(track=>({audioId:track.audioId,name:track.name,startAt:Number(track.startAt)||0,volume:Number(track.volume??1),kind:track.kind}));
+  return {order:index+1,sceneId:scene.id,title:scene.title,episodeNumber:scene.episodeNumber||'',durationSeconds:Math.max(1,Number(scene.assemblyDuration)||5),transition:scene.assemblyTransition||'cut',image:image?{id:image.id,name:image.name,fileName:image.fileName,type:image.type}:null,camera:scene.camera||'',location:scene.location||'',action:scene.description||'',dialogue:scene.dialogue||[],continuityNotes:scene.continuityNotes||'',audioAssets:audio,audioTimeline:tracks};
+ });
+ const project={format:'cine-series-edit-plan',version:1,createdAt:new Date().toISOString(),series:state.projects[0]||null,episode:$('cineAssemblyEpisode').value||'all',estimatedDurationSeconds:scenes.reduce((sum,scene)=>sum+scene.durationSeconds,0),scenes};
+ downloadSubtitleFile(JSON.stringify(project,null,2),'cine-series-plano-de-edicao.json','application/json;charset=utf-8');
+ $('cineAssemblyStatus').textContent='Plano JSON exportado com cenas, imagens selecionadas, instruções de transição, diálogos e referências de áudio.';
+});
 let generatedSubtitleEntries=[];
 function refreshSubtitleEpisodePicker(){
  const picker=$('cineSubtitleEpisode');if(!picker)return;const current=picker.value;
@@ -633,7 +732,7 @@ $('downloadCineVtt').addEventListener('click',()=>{if(!generatedSubtitleEntries.
 function exportProject(){const data={product:'Cine Séries',version:6,exportedAt:new Date().toISOString(),projects:state.projects,episodes:state.episodes,scenes:state.scenes,characters:state.characters,locations:state.locations,assets:state.assets,audioAssets:state.audioAssets,scripts:state.scripts,timelineTracks:state.timelineTracks};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cine-series-projeto.json';a.click();URL.revokeObjectURL(url);toast('Projeto exportado em JSON.')}
 $('exportTop').addEventListener('click',exportProject);
 $('startProject').addEventListener('click',()=>$('seriesTitle').focus());
-read();renderStats();renderEpisodes();refreshWriterEpisodePicker();refreshSubtitleEpisodePicker();renderScenes();renderCharacters();renderLocations();renderAssets();renderSceneComposerOptions();renderNvidiaScenePicker();renderAudioSceneOptions();renderAudioAssets();renderCineTimeline();
+read();renderStats();renderEpisodes();refreshWriterEpisodePicker();refreshSubtitleEpisodePicker();renderScenes();renderCharacters();renderLocations();renderAssets();renderSceneComposerOptions();renderNvidiaScenePicker();renderAudioSceneOptions();refreshAssemblyEpisodePicker();currentAssemblyScenes=assemblyScenes();renderCineAssembly();renderAudioAssets();renderCineTimeline();
 })();
 </script>
 </body>
