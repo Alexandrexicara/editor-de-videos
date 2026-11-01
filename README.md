@@ -244,3 +244,12 @@ O Cine Séries inclui um roteirista NVIDIA NIM que recebe a ideia do episódio, 
 - É possível configurar o tempo inicial, a velocidade estimada de leitura e o intervalo entre falas.
 - A duração e os tempos são estimativas baseadas no texto; revise e sincronize no editor de vídeo antes da publicação. Esta função não faz reconhecimento automático de fala nem sincronização labial.
 - O projeto exportado em JSON passa para a versão 6 e mantém as informações anteriores, incluindo a linha do tempo de áudio.
+
+
+## Montagem de episódio — plano de edição
+
+- O painel de montagem filtra as cenas por episódio e organiza sua ordem narrativa.
+- Cada cena permite definir duração em segundos, transição de saída e imagem principal escolhida na biblioteca.
+- O painel calcula duração total estimada e quantas cenas já possuem imagem principal.
+- A exportação `cine-series-plano-de-edicao.json` reúne a sequência, duração, transições, imagem selecionada, câmera, ação, diálogos, notas de continuidade, biblioteca de áudio associada e faixas da timeline.
+- Este JSON é um plano de edição/intercâmbio, não um arquivo de vídeo renderizado. A renderização FFmpeg, composição real das transições e sincronização com a duração real das falas ainda exigem a próxima etapa do pipeline.
