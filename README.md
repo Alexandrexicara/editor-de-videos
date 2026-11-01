@@ -41,6 +41,7 @@ Variáveis privadas do servidor (Render ou ambiente local):
 Endpoints:
 - `GET /api/cine/image-config`: informa se a NVIDIA está configurada.
 - `POST /api/cine/image`: gera imagem de uma cena; aceita prompt e até 8 imagens de referência.
+- `POST /api/cine/script`: cria roteiro estruturado com sinopse, cenas, diálogos, direção de câmera, som e notas de continuidade, considerando personagens e locações cadastrados.
 
 A geração real depende de uma chave NVIDIA válida, acesso ao modelo e limites/créditos disponíveis na conta. A chave deve ser configurada nas variáveis privadas do serviço; ela não é armazenada no navegador nem no repositório.
 
@@ -214,3 +215,7 @@ A interface envia o texto para `POST /api/cine/voice`; o backend chama a ElevenL
 - As imagens referenciadas são identificadas na cena e continuam na biblioteca geral de imagens do projeto; o JSON exportado inclui os dados da biblioteca.
 - Ao cadastrar/remover personagens, locações ou imagens, os seletores do compositor são atualizados.
 - Isto prepara referências consistentes para futuras chamadas de IA; ainda não força automaticamente a mesma aparência em imagens/vídeos gerados, pois o pipeline de geração visual ainda não foi conectado.
+
+
+### Roteirista IA NVIDIA
+O Cine Séries inclui um roteirista NVIDIA NIM que recebe a ideia do episódio, sinopse da série, elenco e locações. Ele retorna cenas estruturadas com diálogos, emoção/intenção, câmera, som e notas de continuidade. O usuário pode revisar o JSON gerado, baixar o roteiro e importar as cenas para o storyboard. As falas ficam associadas às cenas para a próxima etapa de geração de vozes por personagem. O endpoint utiliza a API compatível com OpenAI da NVIDIA (`/v1/chat/completions`). A execução real depende de `NVIDIA_API_KEY`, acesso ao modelo escolhido e limites disponíveis na conta.
