@@ -173,3 +173,12 @@ Configure no ambiente privado do servidor:
 - `ELEVENLABS_VOICE_ID=GIuLCSVfgJaUuh7hYOY8`: ID da voz pública selecionada. Pode ser sobrescrito por variável de ambiente.
 
 A interface envia o texto para `POST /api/cine/voice`; o backend chama a ElevenLabs e devolve o áudio. A rota exige sessão autenticada e limita cada texto a 5.000 caracteres. A configuração pública da voz pode ser consultada em `GET /api/cine/voice-config`, sem expor a chave privada.
+
+
+## Biblioteca de áudio do Cine Séries
+
+- Catálogo local com mais de 50 IDs de vozes públicas consultados na biblioteca ElevenLabs; nesta versão foram registrados 122 itens. A interface filtra por faixa etária/personagem, gênero e idioma, e identifica o idioma de cada voz.
+- Vozes infantis/personagens são opções de TTS; sons de bebê (como choro e balbucio), animais, aves, Foley e ambientes são gerados como efeitos sonoros separados.
+- `POST /api/cine/sound-effect` usa o endpoint oficial `/v1/sound-generation` com `eleven_text_to_sound_v2`, duração de 0,5 a 30 segundos e opção de loop.
+- Efeitos com duração especificada custam aproximadamente 40 créditos por segundo segundo a documentação da ElevenLabs; por exemplo, 5 segundos custam cerca de 200 créditos. A conta ElevenLabs é cobrada diretamente pelo provedor.
+- A biblioteca de vozes é servida por `GET /api/cine/voices`; geração de voz e efeitos exige sessão autenticada e `ELEVENLABS_API_KEY` no servidor.
