@@ -220,3 +220,11 @@ A interface envia o texto para `POST /api/cine/voice`; o backend chama a ElevenL
 
 ### Roteirista IA NVIDIA
 O Cine Séries inclui um roteirista NVIDIA NIM que recebe a ideia do episódio, sinopse da série, elenco e locações. Ele retorna cenas estruturadas com diálogos, emoção/intenção, câmera, som e notas de continuidade. O usuário pode revisar o JSON gerado, baixar o roteiro e importar as cenas para o storyboard. As falas ficam associadas às cenas para a próxima etapa de geração de vozes por personagem. O endpoint utiliza a API compatível com OpenAI da NVIDIA (`/v1/chat/completions`). A execução real depende de `NVIDIA_API_KEY`, acesso ao modelo escolhido e limites disponíveis na conta.
+
+
+### Voz própria por personagem e geração de diálogos
+- Cada personagem pode ter uma voz ElevenLabs específica, selecionada no catálogo público.
+- A voz escolhida é gravada na ficha do personagem e copiada para as referências de continuidade das cenas e para o contexto do roteirista.
+- Em uma cena com diálogos importados, use **Gerar todas as falas da cena**. O sistema gera cada fala separadamente, escolhe a voz do personagem correspondente e guarda cada MP3 na biblioteca local com personagem, emoção, voz e cena identificados.
+- A geração é sequencial para reduzir falhas por excesso de chamadas; se uma fala falhar, as faixas já concluídas são preservadas.
+- As emoções são mantidas como metadados do diálogo. A interpretação final também depende da capacidade da voz/modelo ElevenLabs selecionado; esta função ainda não monta automaticamente as faixas em uma linha do tempo nem sincroniza lábios.
