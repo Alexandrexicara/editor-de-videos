@@ -285,6 +285,10 @@
           <div class="field full" style="display:flex;gap:9px;flex-wrap:wrap">
             <button class="btn primary" type="button" id="buildCineAssembly">Montar sequência</button>
             <button class="btn" type="button" id="exportCineAssembly" disabled>↓ Exportar plano de edição JSON</button>
+          <div class="field full" style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">
+            <button class="btn primary" type="button" id="renderCineEpisode">🎬 Renderizar episódio MP4</button>
+          </div>
+          <div class="asset-help" id="cineRenderStatus" aria-live="polite" style="margin:8px 0">Selecione uma imagem principal para cada cena. Os áudios usados serão os que estiverem na linha do tempo.</div>
           </div>
         </div>
         <div class="stats" style="margin-top:12px">
@@ -680,6 +684,55 @@ $('exportCineAssembly').addEventListener('click',()=>{
  downloadSubtitleFile(JSON.stringify(project,null,2),'cine-series-plano-de-edicao.json','application/json;charset=utf-8');
  $('cineAssemblyStatus').textContent='Plano JSON exportado com cenas, imagens selecionadas, instruções de transição, diálogos e referências de áudio.';
 });
+
+$('renderCineEpisode').addEventListener('click',async()=>{
+ const button=$('renderCineEpisode'),status=$('cineRenderStatus');
+ const scenes=currentAssemblyScenes;
+ if(!scenes.length){toast('Monte a sequência do episódio primeiro.');return}
+ const selected=scenes.map(scene=>({scene,image:state.assets.find(asset=>String(asset.id)===String(scene.assemblyImageId))}));
+ const missing=selected.filter(item=>!item.image?.dataUrl);
+ if(missing.length){status.textContent='Falta imagem principal em: '+missing.map(item=>item.scene.title).join(', ')+'. Escolha uma imagem em cada cena.';toast('Todas as cenas precisam de uma imagem.');return}
+ button.disabled=true;button.textContent='Enviando materiais e renderizando...';status.textContent='Preparando imagens e faixas de áudio locais...';
+ try{
+  const form=new FormData(),imageNames=new Map(),audioNames=new Map(),audioFiles=[];
+  for(let i=0;i<selected.length;i++){
+   const asset=selected[i].image,name='image-'+i+'.jpg';
+   const blob=await (await fetch(asset.dataUrl)).blob();
+   form.append('media',blob,name);imageNames.set(String(asset.id),name);
+  }
+  const includedTracks=[];
+  for(let i=0;i<scenes.length;i++){
+   const scene=scenes[i],tracks=state.timelineTracks.filter(track=>track.sceneId===scene.id);
+   for(const track of tracks){
+    if(audioNames.has(track.audioId))continue;
+    const blob=await getAudioBlob(track.audioId);
+    if(!blob)throw new Error('O áudio "'+(track.name||track.audioId)+'" não foi encontrado neste navegador. Baixe ou gere novamente esse áudio.');
+    const asset=state.audioAssets.find(item=>item.id===track.audioId);
+    const ext=(asset?.fileName||'audio.mp3').split('.').pop().toLowerCase();
+    const safeExt=['mp3','wav','m4a','ogg'].includes(ext)?ext:'mp3';
+    const name='audio-'+audioNames.size+'.'+safeExt;
+    form.append('media',blob,name);audioNames.set(track.audioId,name);
+   }
+  }
+  const manifestScenes=scenes.map(scene=>({
+   id:scene.id,title:scene.title,duration:Math.min(600,Math.max(1,Number(scene.assemblyDuration)||5)),
+   transition:scene.assemblyTransition||'cut',imageFile:imageNames.get(String(scene.assemblyImageId)),
+   audio:state.timelineTracks.filter(track=>track.sceneId===scene.id).map(track=>({
+    file:audioNames.get(track.audioId),startAt:Math.max(0,Number(track.startAt)||0),volume:Math.max(0,Math.min(1,Number(track.volume??1)))
+   }))
+  }));
+  form.append('manifest',JSON.stringify({title:state.projects[0]?.title||'Cine Séries',episode:$('cineAssemblyEpisode').value||'all',scenes:manifestScenes}));
+  status.textContent='Enviando '+selected.length+' imagem(ns) e '+audioNames.size+' áudio(s). O FFmpeg está montando o MP4...';
+  const response=await fetch('/api/cine/render',{method:'POST',credentials:'same-origin',body:form});
+  let result={};try{result=await response.json()}catch(_){}
+  if(!response.ok)throw new Error(result.error||'Falha ao renderizar o episódio.');
+  const link=document.createElement('a');link.href=result.downloadUrl;link.textContent='Baixar episódio MP4';link.className='btn primary';link.style.display='inline-block';link.style.marginTop='8px';
+  status.textContent='MP4 concluído · '+result.scenes+' cenas · '+Math.round(result.durationSeconds)+' segundos · '+(result.sizeBytes/1024/1024).toFixed(1)+' MB. ';
+  status.append(link);toast('Episódio renderizado com sucesso.');
+ }catch(error){status.textContent=error.message||'Erro ao renderizar o episódio.';toast(status.textContent)}
+ finally{button.disabled=false;button.textContent='🎬 Renderizar episódio MP4'}
+});
+
 let generatedSubtitleEntries=[];
 function refreshSubtitleEpisodePicker(){
  const picker=$('cineSubtitleEpisode');if(!picker)return;const current=picker.value;
