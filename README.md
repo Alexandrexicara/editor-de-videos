@@ -28,6 +28,22 @@ editor-video/
 └── README.md              # Esta documentação
 ```
 
+## 🎬 Cine Séries — geração de imagens NVIDIA
+
+O estúdio de cenas usa NVIDIA NIM para gerar imagens cinematográficas. Sem imagens de referência, usa geração por texto; com referências cadastradas na biblioteca (personagens, figurinos e cenários), envia as imagens para edição com o modelo de imagem configurado.
+
+Variáveis privadas do servidor (Render ou ambiente local):
+
+- `NVIDIA_API_KEY`: chave da NVIDIA API Catalog. Nunca coloque a chave no frontend nem no Git.
+- `NVIDIA_IMAGE_MODEL` (opcional): modelo de imagem; padrão `black-forest-labs/flux.2-klein-4b`.
+- `ELEVENLABS_API_KEY`: chave já utilizada para narração e efeitos sonoros.
+
+Endpoints:
+- `GET /api/cine/image-config`: informa se a NVIDIA está configurada.
+- `POST /api/cine/image`: gera imagem de uma cena; aceita prompt e até 8 imagens de referência.
+
+A geração real depende de uma chave NVIDIA válida, acesso ao modelo e limites/créditos disponíveis na conta. A chave deve ser configurada nas variáveis privadas do serviço; ela não é armazenada no navegador nem no repositório.
+
 ## 🚀 Como Usar
 
 ### 1. Instalação
