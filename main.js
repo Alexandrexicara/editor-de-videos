@@ -1,3 +1,8 @@
+// Em produção (Render), este arquivo inicia somente a API Express.
+// No desktop, mantém o comportamento original com Electron.
+if (process.env.PORT || process.env.RENDER) {
+    require('./backend/server.js');
+} else {
 // main.js - Ponto de entrada do aplicativo Electron
 
 const { app, BrowserWindow, ipcMain } = require('electron');
@@ -108,3 +113,4 @@ ipcMain.handle('restart-server', () => {
 });
 
 console.log('🎯 App Electron iniciado com sucesso!');
+}
