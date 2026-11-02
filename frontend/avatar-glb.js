@@ -79,6 +79,7 @@ async function loadModel(file) {
     if (mixer) gltf.animations.forEach(clip => mixer.clipAction(clip).play());
     preview.replaceChildren(renderer.domElement);
     window.avatarStudioCanvas = renderer.domElement;
+    window.avatarStudioResizeCanvas = (width, height) => { renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); };
     window.avatarStudioStartAnimation = analyser => { activeAnalyser = analyser || null; };
     status('Modelo 3D carregado. ' + (bones.length ? 'Esqueleto detectado.' : 'Sem ossos de braço detectados.') + ' ' + (morphTargets.length ? 'Sincronização de boca disponível.' : 'O modelo não possui morph target de boca detectável.'), 'ok');
     clock.start();
@@ -90,8 +91,10 @@ document.getElementById('avatarModelFile').addEventListener('change', async even
   try { await loadModel(event.target.files[0]); }
   catch (error) { status('Não foi possível abrir o modelo: ' + error.message, 'error'); }
 });
+document.getElementById('createAvatar').addEventListener('click', () => { window.avatarStudioCanvas = null; window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; activeAnalyser = null; });
 document.getElementById('avatarFile').addEventListener('change', () => {
   window.avatarStudioCanvas = null;
+  window.avatarStudioResizeCanvas = null;
   window.avatarStudioStartAnimation = null;
   activeAnalyser = null;
 });
