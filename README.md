@@ -266,6 +266,7 @@ O Cine Séries inclui um roteirista NVIDIA NIM que recebe a ideia do episódio, 
 ## Avatar Studio — renderização local
 
 - A geração de voz digitada usa Kokoro-82M via `kokoro-js` no navegador. O modelo é baixado na primeira utilização e a síntese acontece no dispositivo; o texto não é enviado à ElevenLabs.
+- A criação de imagens de avatar por descrição usa a API NVIDIA configurada no Cine Séries. O upload de imagens/modelos e a captura/animação do vídeo acontecem no navegador; o servidor converte o WebM em MP4.
 - Imagens PNG/JPG/WebP recebem uma animação visual 2D/2.5D. Para personagem 3D, o estúdio aceita modelos GLB autocontidos; animação de boca e braços depende de morph targets e ossos com nomes reconhecíveis no arquivo.
 - A captura do vídeo acontece no navegador com `MediaRecorder`. O servidor recebe o vídeo renderizado, converte para MP4 com FFmpeg e só então confirma 1 crédito da carteira Cine Séries. Em caso de falha na conversão, o crédito reservado é devolvido.
 - O endpoint antigo de geração externa foi desativado. O backend Avatar Studio não chama Hedra nem ElevenLabs.
