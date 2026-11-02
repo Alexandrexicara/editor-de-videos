@@ -11,7 +11,8 @@ async function loadLocalTTS() {
   if (!ttsPromise) {
     status('Baixando o modelo de voz local na primeira utilização. Isso pode levar alguns minutos...');
     ttsPromise = (async () => {
-      const { KokoroTTS } = await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm');
+      try {
+        const { KokoroTTS } = await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm');
       if (navigator.gpu) {
         try {
           return await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
@@ -25,6 +26,10 @@ async function loadLocalTTS() {
         return await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
           dtype: 'q8', device: 'wasm'
         });
+      } catch (error) {
+        ttsPromise = null;
+        throw error;
+      }
       } catch (error) {
         ttsPromise = null;
         throw error;
