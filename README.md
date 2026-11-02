@@ -272,3 +272,5 @@ O Cine Séries inclui um roteirista NVIDIA NIM que recebe a ideia do episódio, 
 - A remoção de fundo atual é baseada em chroma key verde uniforme; não é segmentação inteligente universal. A transparência é mantida na imagem PNG de origem, mas a exportação MP4 compõe o avatar sobre o fundo da cena.
 - Dependências e modelos de terceiros mantêm suas próprias licenças. `kokoro-js` e os pesos Kokoro-82M usados pelo estúdio são distribuídos sob Apache-2.0; Three.js é MIT.
 - A validação de sintaxe não substitui o teste real em Chrome/Edge, a conferência de compatibilidade de cada GLB, nem o teste de FFmpeg, PostgreSQL, autenticação e carteira no ambiente hospedado.
+
+- Biblioteca de avatares no próprio navegador, com salvamento, carregamento e exclusão de imagens e modelos GLB via IndexedDB. Os arquivos salvos ficam no dispositivo/navegador do usuário e não sincronizam automaticamente entre dispositivos.
