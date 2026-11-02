@@ -3,10 +3,10 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
-const billing = require('./billing');
 const cineVoiceCatalog = require('./cineVoiceCatalog');
 const { generateTalkingAvatar } = require('./processVideo');
 
+module.exports = function createAvatarStudioRouter(billing) {
 const router = express.Router();
 const root = path.resolve(__dirname, '..');
 const avatarDir = path.join(root, 'avatars');
@@ -34,11 +34,24 @@ router.post('/generate', billing.requireAuth, upload.fields([
   { name: 'customAudio', maxCount: 1 }
 ]), async (req, res) => {
   let generatedAudioPath = null;
+  let creditReservation = null;
+  let creditCompleted = false;
+  let uploadedPaths = [];
   try {
     const avatarPath = req.files?.avatar?.[0]?.path;
     const customAudioPath = req.files?.customAudio?.[0]?.path;
+    uploadedPaths = [avatarPath, customAudioPath].filter(Boolean);
+    res.on('finish', () => uploadedPaths.forEach(file => fs.promises.unlink(file).catch(() => {})));
     if (!avatarPath) return res.status(400).json({ error: 'Envie a imagem do avatar.' });
 
+    const checkpoint = path.join(__dirname, '..', 'Wav2Lip', 'checkpoints', 'wav2lip.pth');
+    if (!process.env.SYNC_API_KEY && !fs.existsSync(checkpoint)) {
+      return res.status(503).json({ error: 'A animação ainda não está ativada. Configure SYNC_API_KEY no Render para sincronizar a boca do personagem.' });
+    }
+    if (!customAudioPath && !process.env.ELEVENLABS_API_KEY) {
+      return res.status(503).json({ error: 'A biblioteca de voz precisa da chave ELEVENLABS_API_KEY configurada no servidor.' });
+    }
+    creditReservation = await billing.reserveVideoCredit(req.user.id);
     let audioPath = customAudioPath;
     if (!audioPath) {
       const text = String(req.body?.text || '').trim();
@@ -48,7 +61,6 @@ router.post('/generate', billing.requireAuth, upload.fields([
       const voiceId = cineVoiceCatalog.some(voice => voice.id === requestedVoiceId && voice.language === 'pt')
         ? requestedVoiceId : 'GIuLCSVfgJaUuh7hYOY8';
       const apiKey = process.env.ELEVENLABS_API_KEY;
-      if (!apiKey) return res.status(503).json({ error: 'A biblioteca de voz precisa da chave ELEVENLABS_API_KEY configurada no servidor.' });
       const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(voiceId) + '?output_format=mp3_44100_128', {
         method: 'POST',
         headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
@@ -69,11 +81,6 @@ router.post('/generate', billing.requireAuth, upload.fields([
       audioPath = generatedAudioPath;
     }
 
-    const checkpoint = path.join(__dirname, '..', 'Wav2Lip', 'checkpoints', 'wav2lip.pth');
-    if (!process.env.SYNC_API_KEY && !fs.existsSync(checkpoint)) {
-      return res.status(503).json({ error: 'A animação ainda não está ativada. Configure SYNC_API_KEY no Render para sincronizar a boca do personagem.' });
-    }
-
     const outputPath = path.join(outputDir, 'avatar-studio-' + String(req.user.id).replace(/[^a-zA-Z0-9_-]/g, '') + '-' + Date.now() + '.mp4');
     const generatedPath = await generateTalkingAvatar(avatarPath, audioPath, outputPath);
     if (!generatedPath || path.extname(generatedPath).toLowerCase() !== '.mp4' || !fs.existsSync(generatedPath)) {
@@ -81,10 +88,9 @@ router.post('/generate', billing.requireAuth, upload.fields([
     }
     res.setHeader('Content-Type', 'video/mp4');
     res.setHeader('Content-Disposition', 'inline; filename="avatar-falante.mp4"');
+    await billing.completeVideoCredit(creditReservation, path.basename(generatedPath), 'Avatar Falante 3D');
+    creditCompleted = true;
     res.setHeader('Cache-Control', 'no-store');
-    res.on('finish', () => {
-      [avatarPath, customAudioPath].filter(Boolean).forEach(file => fs.promises.unlink(file).catch(() => {}));
-    });
     res.sendFile(generatedPath);
   } catch (error) {
     console.error('Avatar Studio generation error:', error);
@@ -92,8 +98,13 @@ router.post('/generate', billing.requireAuth, upload.fields([
       error: error.name === 'TimeoutError' ? 'A geração demorou demais. Tente novamente.' : 'Erro ao gerar o avatar falante: ' + String(error.message || 'falha interna').slice(0, 220)
     });
   } finally {
+    if (creditReservation && !creditCompleted) {
+      try { await billing.refundVideoCredit(creditReservation); }
+      catch (refundError) { console.error('Avatar Studio credit refund error:', refundError); }
+    }
     if (generatedAudioPath) setTimeout(() => fs.promises.unlink(generatedAudioPath).catch(() => {}), 60000);
   }
 });
 
-module.exports = router;
+return router;
+};
