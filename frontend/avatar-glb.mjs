@@ -15,7 +15,7 @@ const style = document.createElement('style');
 style.textContent = '#avatarPreview canvas{display:block;width:100%;height:auto;max-height:560px;object-fit:contain}';
 document.head.appendChild(style);
 
-let renderer = null, scene = null, camera = null, root = null, mixer = null;
+let renderer = null, scene = null, camera = null, root = null, mixer = null, currentModelFile = null, savedImageUrl = null;
 let clock = new THREE.Clock(), activeAnalyser = null, bones = [], morphTargets = [], expressionTargets = [];
 
 function fitModel(object) {
@@ -74,6 +74,7 @@ async function loadModel(file) {
     key.position.set(2, 4, 3);
     scene.add(key);
     root = gltf.scene;
+    currentModelFile = file;
     scene.add(root);
     fitModel(root);
     bones = [];
@@ -104,8 +105,12 @@ document.getElementById('avatarModelFile').addEventListener('change', async even
   try { await loadModel(event.target.files[0]); }
   catch (error) { status('Não foi possível abrir o modelo: ' + error.message, 'error'); }
 });
-document.getElementById('createAvatar').addEventListener('click', () => { window.avatarStudioCanvas = null; window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; activeAnalyser = null; });
+window.avatarStudioLoadModel = loadModel;
+window.avatarStudioClearModel = () => { currentModelFile = null; activeAnalyser = null; window.avatarStudioCanvas = null; window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; if (renderer) { renderer.dispose(); renderer = null; } scene = null; camera = null; root = null; mixer = null; bones = []; morphTargets = []; expressionTargets = []; };
+window.avatarStudioCurrentModel = () => currentModelFile;
+document.getElementById('createAvatar').addEventListener('click', () => { window.avatarStudioClearModel(); window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; activeAnalyser = null; });
 document.getElementById('avatarFile').addEventListener('change', () => {
+  window.avatarStudioClearModel();
   window.avatarStudioCanvas = null;
   window.avatarStudioResizeCanvas = null;
   window.avatarStudioStartAnimation = null;
