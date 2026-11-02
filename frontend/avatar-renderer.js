@@ -13,7 +13,7 @@ async function loadLocalTTS() {
     ttsPromise = (async () => {
       const { KokoroTTS } = await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm');
       return KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
-        dtype: 'q8',
+        dtype: navigator.gpu ? 'fp32' : 'q8',
         device: navigator.gpu ? 'webgpu' : 'wasm'
       });
     })();
@@ -170,7 +170,7 @@ if (oldButton) {
 const voiceSelect = $('voiceSelect');
 if (voiceSelect) {
   voiceSelect.innerHTML = '';
-  [['pf_dora','Dora — feminina'],['pm_alex','Alex — masculina'],['af_bella','Bella — feminina'],['am_michael','Michael — masculina']].forEach(([id,label]) => {
+  [['pf_dora','Dora — feminina (PT-BR)'],['pm_alex','Alex — masculina (PT-BR)'],['pm_santa','Santa — masculina (PT-BR)']].forEach(([id,label]) => {
     const option = document.createElement('option');
     option.value = id; option.textContent = label + ' (modelo local)';
     voiceSelect.appendChild(option);
