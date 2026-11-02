@@ -72,7 +72,7 @@ async function renderVideo() {
   const own = document.querySelector('input[name="voiceMode"]:checked').value === 'own';
   const voiceFile = $('audioFile').files[0];
   const previewImage = $('avatarPreview').querySelector('img');
-  if (!previewImage) throw new Error('Crie ou envie a imagem do avatar primeiro.');
+  if (!previewImage && !window.avatarStudioCanvas) throw new Error('Crie ou envie uma imagem ou modelo 3D primeiro.');
   if (own && !voiceFile) throw new Error('Envie sua gravação de voz.');
   if (!own && !text) throw new Error('Digite o texto que o avatar deverá falar.');
   if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) {
@@ -96,10 +96,10 @@ async function renderVideo() {
   await recordAndUpload(previewImage, audioBuffer, context);
 }
 async function recordAndUpload(imageElement, audioBuffer, context) {
-  const canvas = document.createElement('canvas');
   const ratio = $('aspectRatio').value;
   const dimensions = ratio === '16:9' ? [1280,720] : ratio === '1:1' ? [900,900] : [720,1280];
-  canvas.width = dimensions[0]; canvas.height = dimensions[1];
+  const canvas = window.avatarStudioCanvas || document.createElement('canvas');
+  if (!window.avatarStudioCanvas) { canvas.width = dimensions[0]; canvas.height = dimensions[1]; }
   const source = context.createBufferSource();
   source.buffer = audioBuffer;
   const analyser = context.createAnalyser();
@@ -114,7 +114,8 @@ async function recordAndUpload(imageElement, audioBuffer, context) {
   const recorder = new MediaRecorder(canvasStream, { mimeType: mime, videoBitsPerSecond: 5000000 });
   const chunks = [];
   const duration = audioBuffer.duration;
-  drawAvatar(canvas, imageElement, analyser, duration, false);
+  if (window.avatarStudioCanvas && window.avatarStudioStartAnimation) window.avatarStudioStartAnimation(analyser);
+  else drawAvatar(canvas, imageElement, analyser, duration, false);
   recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
   const finished = new Promise((resolve, reject) => {
     recorder.onerror = () => reject(new Error('Falha ao gravar a animação no navegador.'));
@@ -151,6 +152,7 @@ async function recordAndUpload(imageElement, audioBuffer, context) {
   status('Vídeo MP4 finalizado. Um crédito foi consumido.', 'ok');
   $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+window.avatarStudioRender = { renderVideo, recordAndUpload, status };
 const oldButton = $('generate');
 if (oldButton) {
   const freshButton = oldButton.cloneNode(true);
