@@ -52,6 +52,12 @@ async function refreshList() {
 function status(message, type = '') {
   if (window.avatarStudioRender?.status) window.avatarStudioRender.status(message, type);
 }
+function releaseSavedImageUrl() {
+  if (activeSavedImageUrl) URL.revokeObjectURL(activeSavedImageUrl);
+  activeSavedImageUrl = null;
+}
+document.getElementById('avatarFile').addEventListener('change', releaseSavedImageUrl);
+document.getElementById('createAvatar').addEventListener('click', releaseSavedImageUrl);
 document.getElementById('saveAvatarLocal').addEventListener('click', async () => {
   const button = document.getElementById('saveAvatarLocal');
   button.disabled = true;
@@ -89,11 +95,12 @@ document.getElementById('loadAvatarLocal').addEventListener('click', async () =>
     const record = (await allAvatars()).find(item => item.id === id);
     if (!record) throw new Error('Avatar não encontrado na biblioteca.');
     if (record.kind === 'model') {
+      releaseSavedImageUrl();
       if (!window.avatarStudioLoadModel) throw new Error('O carregador 3D ainda não está disponível. Atualize a página.');
       await window.avatarStudioLoadModel(new File([record.blob], record.name + '.glb', { type: 'model/gltf-binary' }));
     } else {
       window.avatarStudioClearModel?.();
-      if (activeSavedImageUrl) URL.revokeObjectURL(activeSavedImageUrl);
+      releaseSavedImageUrl();
       const url = URL.createObjectURL(record.blob);
       activeSavedImageUrl = url;
       if (window.avatarStudioSetImage) window.avatarStudioSetImage(record.blob, url);
