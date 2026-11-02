@@ -51,7 +51,7 @@ const upload = multer({
       cb(null, true);
     } else if (file.fieldname === 'customAudio' && file.mimetype.startsWith('audio/')) {
       cb(null, true);
-    } else if ((file.fieldname === 'avatar1' || file.fieldname === 'avatar2') && 
+    } else if ((file.fieldname === 'avatar' || file.fieldname === 'avatar1' || file.fieldname === 'avatar2') && 
                (file.mimetype.startsWith('image/') || 
                 file.mimetype.startsWith('video/') ||
                 file.mimetype === 'model/gltf-binary' ||
@@ -616,6 +616,12 @@ app.post('/api/cine/script', billing.requireAuth, async (req, res) => {
       error: error.name === 'TimeoutError' ? 'A geração do roteiro demorou demais. Tente novamente.' : 'Erro ao gerar o roteiro.'
     });
   }
+});
+
+// Health check simples para provedores de hospedagem. Não expõe segredos nem dados do banco.
+app.get('/health', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.status(200).json({ status: 'ok', service: 'cine-series-backend' });
 });
 
 // Rota para verificar status do servidor
