@@ -5,7 +5,7 @@ const preview = document.getElementById('avatarPreview');
 const status = (message, type = '') => window.avatarStudioRender?.status(message, type);
 const controls = document.createElement('div');
 controls.className = 'row';
-controls.innerHTML = '<div class="field"><label for="gesturePreset">Gestos do modelo 3D</label><select id="gesturePreset"><option value="natural">Natural</option><option value="presentation">Apresentação</option><option value="calm">Calmo</option><option value="energetic">Energético</option></select></div><div class="field"><label for="expressionPreset">Expressão facial</label><select id="expressionPreset"><option value="neutral">Neutra</option><option value="smile">Sorridente</option><option value="serious">Séria</option></select></div>';
+controls.innerHTML = '<div class="field"><label for="gesturePreset">Gestos do modelo 3D</label><select id="gesturePreset"><option value="natural">Natural</option><option value="presentation">Apresentação</option><option value="calm">Calmo</option><option value="energetic">Energético</option></select></div><div class="field"><label for="expressionPreset">Expressão facial</label><select id="expressionPreset"><option value="neutral">Neutra</option><option value="smile">Sorridente</option><option value="serious">Séria</option></select></div><div class="field"><label for="animationClip">Animação incluída no modelo</label><select id="animationClip" disabled><option value="">Sem animações embutidas</option></select></div>';
 preview.parentElement.insertBefore(controls, preview);
 const field = document.createElement('div');
 field.className = 'field';
@@ -16,7 +16,7 @@ style.textContent = '#avatarPreview canvas{display:block;width:100%;height:auto;
 document.head.appendChild(style);
 
 let renderer = null, scene = null, camera = null, root = null, mixer = null, currentModelFile = null;
-let clock = new THREE.Clock(), activeAnalyser = null, bones = [], morphTargets = [], expressionTargets = [];
+let clock = new THREE.Clock(), activeAnalyser = null, bones = [], morphTargets = [], expressionTargets = [], loadedAnimations = [];
 
 function updateCameraFrame(width, height) {
   if (!camera || !root) return;
@@ -100,8 +100,27 @@ async function loadModel(file) {
         }
       }
     });
-    mixer = gltf.animations?.length ? new THREE.AnimationMixer(root) : null;
-    if (mixer) gltf.animations.forEach(clip => mixer.clipAction(clip).play());
+    loadedAnimations = gltf.animations || [];
+    const animationSelect = document.getElementById('animationClip');
+    animationSelect.replaceChildren();
+    if (loadedAnimations.length) {
+      loadedAnimations.forEach((clip, index) => {
+        const option = document.createElement('option');
+        option.value = String(index);
+        option.textContent = clip.name || 'Animação ' + (index + 1);
+        animationSelect.appendChild(option);
+      });
+      animationSelect.disabled = false;
+      mixer = new THREE.AnimationMixer(root);
+      mixer.clipAction(loadedAnimations[0]).play();
+    } else {
+      const option = document.createElement('option');
+      option.value = '';
+      option.textContent = 'Sem animações embutidas';
+      animationSelect.appendChild(option);
+      animationSelect.disabled = true;
+      mixer = null;
+    }
     preview.replaceChildren(renderer.domElement);
     window.avatarStudioCanvas = renderer.domElement;
     window.avatarStudioResizeCanvas = (width, height) => { renderer.setSize(width, height, false); updateCameraFrame(width, height); };
@@ -116,8 +135,14 @@ document.getElementById('avatarModelFile').addEventListener('change', async even
   try { await loadModel(event.target.files[0]); }
   catch (error) { status('Não foi possível abrir o modelo: ' + error.message, 'error'); }
 });
+document.getElementById('animationClip').addEventListener('change', event => {
+  if (!mixer) return;
+  mixer.stopAllAction();
+  const clip = loadedAnimations[Number(event.target.value)];
+  if (clip) mixer.clipAction(clip).reset().play();
+});
 window.avatarStudioLoadModel = loadModel;
-window.avatarStudioClearModel = () => { currentModelFile = null; activeAnalyser = null; window.avatarStudioCanvas = null; window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; if (renderer) { renderer.dispose(); renderer = null; } scene = null; camera = null; root = null; mixer = null; bones = []; morphTargets = []; expressionTargets = []; };
+window.avatarStudioClearModel = () => { currentModelFile = null; activeAnalyser = null; window.avatarStudioCanvas = null; window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; if (renderer) { renderer.dispose(); renderer = null; } scene = null; camera = null; root = null; mixer = null; loadedAnimations = []; bones = []; morphTargets = []; expressionTargets = []; const select = document.getElementById('animationClip'); select.replaceChildren(); const option = document.createElement('option'); option.value = ''; option.textContent = 'Sem animações embutidas'; select.appendChild(option); select.disabled = true; };
 window.avatarStudioCurrentModel = () => currentModelFile;
 document.getElementById('createAvatar').addEventListener('click', () => { if (!document.getElementById('avatarPrompt').value.trim()) return; window.avatarStudioClearModel(); window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; activeAnalyser = null; });
 document.getElementById('avatarFile').addEventListener('change', () => {
