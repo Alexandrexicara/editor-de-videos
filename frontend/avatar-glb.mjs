@@ -15,9 +15,20 @@ const style = document.createElement('style');
 style.textContent = '#avatarPreview canvas{display:block;width:100%;height:auto;max-height:560px;object-fit:contain}';
 document.head.appendChild(style);
 
-let renderer = null, scene = null, camera = null, root = null, mixer = null, currentModelFile = null, savedImageUrl = null;
+let renderer = null, scene = null, camera = null, root = null, mixer = null, currentModelFile = null;
 let clock = new THREE.Clock(), activeAnalyser = null, bones = [], morphTargets = [], expressionTargets = [];
 
+function updateCameraFrame(width, height) {
+  if (!camera || !root) return;
+  camera.aspect = width / height;
+  const size = new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
+  const halfFov = THREE.MathUtils.degToRad(camera.fov / 2);
+  const distanceForHeight = (size.y / 2) / Math.tan(halfFov);
+  const distanceForWidth = (size.x / 2) / (Math.tan(halfFov) * camera.aspect);
+  camera.position.set(0, size.y * 0.04, Math.max(3.6, distanceForHeight, distanceForWidth) * 1.22 + size.z * 0.5);
+  camera.lookAt(0, 0, 0);
+  camera.updateProjectionMatrix();
+}
 function fitModel(object) {
   const bounds = new THREE.Box3().setFromObject(object);
   const size = bounds.getSize(new THREE.Vector3());
@@ -25,8 +36,7 @@ function fitModel(object) {
   const largest = Math.max(size.x, size.y, size.z) || 1;
   object.position.sub(center);
   object.scale.setScalar(2.1 / largest);
-  camera.position.set(0, 0.1, 3.6);
-  camera.lookAt(0, 0, 0);
+  updateCameraFrame(800, 600);
 }
 function animate() {
   requestAnimationFrame(animate);
@@ -46,7 +56,8 @@ function animate() {
   // Aplica o gesto também sobre modelos que já possuem animações embutidas.
   // O mixer atualiza o clipe primeiro; este ajuste acrescenta movimento sutil aos braços.
   bones.forEach((entry, index) => {
-    entry.bone.rotation.z = entry.base + Math.sin(t * speed + index * 1.4) * intensity;
+    const animatedRotation = mixer ? entry.bone.rotation.z : entry.base;
+    entry.bone.rotation.z = animatedRotation + Math.sin(t * speed + index * 1.4) * intensity;
   });
   const expression = document.getElementById('expressionPreset')?.value || 'neutral';
   expressionTargets.forEach(target => { const amount = expression === 'smile' && /smile|happy/i.test(target.name) ? 0.75 : expression === 'serious' && /frown|angry/i.test(target.name) ? 0.45 : 0; target.mesh.morphTargetInfluences[target.index] = amount; });
@@ -93,7 +104,7 @@ async function loadModel(file) {
     if (mixer) gltf.animations.forEach(clip => mixer.clipAction(clip).play());
     preview.replaceChildren(renderer.domElement);
     window.avatarStudioCanvas = renderer.domElement;
-    window.avatarStudioResizeCanvas = (width, height) => { renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); };
+    window.avatarStudioResizeCanvas = (width, height) => { renderer.setSize(width, height, false); updateCameraFrame(width, height); };
     window.avatarStudioStartAnimation = analyser => { activeAnalyser = analyser || null; };
     status('Modelo 3D carregado. ' + (bones.length ? 'Esqueleto detectado.' : 'Sem ossos de braço detectados.') + ' ' + (morphTargets.length ? 'Sincronização de boca disponível.' : 'O modelo não possui morph target de boca detectável.'), 'ok');
     clock.start();
