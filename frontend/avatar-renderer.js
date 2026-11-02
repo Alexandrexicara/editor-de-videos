@@ -100,6 +100,7 @@ async function recordAndUpload(imageElement, audioBuffer, context) {
   const dimensions = ratio === '16:9' ? [1280,720] : ratio === '1:1' ? [900,900] : [720,1280];
   const canvas = window.avatarStudioCanvas || document.createElement('canvas');
   if (!window.avatarStudioCanvas) { canvas.width = dimensions[0]; canvas.height = dimensions[1]; }
+  else if (window.avatarStudioResizeCanvas) window.avatarStudioResizeCanvas(dimensions[0], dimensions[1]);
   const source = context.createBufferSource();
   source.buffer = audioBuffer;
   const analyser = context.createAnalyser();
@@ -131,6 +132,7 @@ async function recordAndUpload(imageElement, audioBuffer, context) {
   const webm = await finished;
   canvasStream.getTracks().forEach(track => track.stop());
   source.disconnect(); analyser.disconnect(); await context.close();
+  if (window.avatarStudioStartAnimation) window.avatarStudioStartAnimation(null);
   if (!webm.size) throw new Error('A gravação ficou vazia. Tente novamente.');
   status('Enviando o vídeo para conversão MP4 e confirmação do crédito...');
   const form = new FormData();
