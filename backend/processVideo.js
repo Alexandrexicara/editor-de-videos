@@ -1127,10 +1127,5 @@ async function processVideo(videoPath, customAudioPath, customAvatarPaths = [], 
     return await processor.processVideo(videoPath, customAudioPath, customAvatarPaths, avatarConfigs);
 }
 
-async function generateTalkingAvatar(avatarPath, audioPath, outputPath) {
-    const processor = new VideoProcessor();
-    return await processor.generateAnimatedAvatar(avatarPath, audioPath, outputPath, 20);
-}
-
-module.exports = { processVideo, generateTalkingAvatar };
+module.exports = { processVideo };
 
