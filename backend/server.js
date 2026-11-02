@@ -13,6 +13,15 @@ const cineVoiceCatalog = require('./cineVoiceCatalog');
 const StorageManager = require('./storageManager');
 const { registerBilling } = require('./billing');
 
+// Criar as pastas usadas pelo Multer e pelo pipeline antes de aceitar uploads.
+[
+  config.diretorios.uploads,
+  config.diretorios.outputs,
+  config.diretorios.temporarios,
+  './avatars',
+  './audios'
+].forEach((directory) => fs.mkdirSync(path.resolve(directory), { recursive: true }));
+
 // Configurar multer para upload de arquivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -59,8 +68,15 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// O Cine Séries aceita até 8 imagens de referência de 5 MB (base64).
+// O limite maior fica restrito a esse endpoint; o restante da API continua em 1 MB.
+const standardJsonParser = express.json({ limit: process.env.JSON_BODY_LIMIT || '1mb' });
+const cineImageJsonParser = express.json({ limit: process.env.CINE_IMAGE_JSON_LIMIT || '56mb' });
+app.use((req, res, next) => {
+  if (req.path === '/api/cine/image') return cineImageJsonParser(req, res, next);
+  return standardJsonParser(req, res, next);
+});
+app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 const billing = registerBilling(app);
 
 // Rotas de upload (antes do static para evitar conflitos)
