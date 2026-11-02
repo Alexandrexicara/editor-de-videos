@@ -16,7 +16,20 @@ style.textContent = '#avatarPreview canvas{display:block;width:100%;height:auto;
 document.head.appendChild(style);
 
 let renderer = null, scene = null, camera = null, root = null, mixer = null, currentModelFile = null;
-let clock = new THREE.Clock(), activeAnalyser = null, bones = [], morphTargets = [], expressionTargets = [], loadedAnimations = [];
+let clock = new THREE.Clock(), activeAnalyser = null, bones = [], morphTargets = [], expressionTargets = [], loadedAnimations = [], animationFrame = null;
+function disposeModel(object) {
+  if (!object) return;
+  object.traverse(node => {
+    if (node.geometry) node.geometry.dispose();
+    if (node.material) {
+      const materials = Array.isArray(node.material) ? node.material : [node.material];
+      materials.forEach(material => {
+        for (const value of Object.values(material)) if (value && value.isTexture) value.dispose();
+        material.dispose();
+      });
+    }
+  });
+}
 
 function updateCameraFrame(width, height) {
   if (!camera || !root) return;
@@ -39,7 +52,8 @@ function fitModel(object) {
   updateCameraFrame(800, 600);
 }
 function animate() {
-  requestAnimationFrame(animate);
+  if (!renderer || !scene || !camera) { animationFrame = null; return; }
+  animationFrame = requestAnimationFrame(animate);
   const delta = Math.min(clock.getDelta(), 0.05);
   if (mixer) mixer.update(delta);
   const t = performance.now() / 1000;
@@ -77,6 +91,8 @@ async function loadModel(file) {
   try {
     const loader = new GLTFLoader();
     const gltf = await new Promise((resolve, reject) => loader.load(url, resolve, undefined, reject));
+    if (animationFrame !== null) { cancelAnimationFrame(animationFrame); animationFrame = null; }
+    if (root) disposeModel(root);
     if (renderer) renderer.dispose();
     scene = new THREE.Scene();
     scene.background = new THREE.Color('#151d30');
@@ -132,6 +148,7 @@ async function loadModel(file) {
     window.avatarStudioStartAnimation = analyser => { activeAnalyser = analyser || null; };
     status('Modelo 3D carregado. ' + (bones.length ? 'Esqueleto detectado.' : 'Sem ossos de braço detectados.') + ' ' + (morphTargets.length ? 'Sincronização de boca disponível.' : 'O modelo não possui morph target de boca detectável.'), 'ok');
     clock.start();
+    if (animationFrame === null) animate();
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -147,7 +164,7 @@ document.getElementById('animationClip').addEventListener('change', event => {
   if (clip) mixer.clipAction(clip).reset().play();
 });
 window.avatarStudioLoadModel = loadModel;
-window.avatarStudioClearModel = () => { currentModelFile = null; activeAnalyser = null; window.avatarStudioCanvas = null; window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; if (renderer) { renderer.dispose(); renderer = null; } scene = null; camera = null; root = null; mixer = null; loadedAnimations = []; bones = []; morphTargets = []; expressionTargets = []; const select = document.getElementById('animationClip'); select.replaceChildren(); const option = document.createElement('option'); option.value = ''; option.textContent = 'Sem animações embutidas'; select.appendChild(option); select.disabled = true; };
+window.avatarStudioClearModel = () => { currentModelFile = null; activeAnalyser = null; if (animationFrame !== null) { cancelAnimationFrame(animationFrame); animationFrame = null; } if (root) disposeModel(root); window.avatarStudioCanvas = null; window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; if (renderer) { renderer.dispose(); renderer = null; } scene = null; camera = null; root = null; mixer = null; loadedAnimations = []; bones = []; morphTargets = []; expressionTargets = []; const select = document.getElementById('animationClip'); select.replaceChildren(); const option = document.createElement('option'); option.value = ''; option.textContent = 'Sem animações embutidas'; select.appendChild(option); select.disabled = true; };
 window.avatarStudioCurrentModel = () => currentModelFile;
 document.getElementById('createAvatar').addEventListener('click', () => { if (!document.getElementById('avatarPrompt').value.trim()) return; window.avatarStudioClearModel(); window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; activeAnalyser = null; });
 document.getElementById('avatarFile').addEventListener('change', () => {
@@ -157,4 +174,3 @@ document.getElementById('avatarFile').addEventListener('change', () => {
   window.avatarStudioStartAnimation = null;
   activeAnalyser = null;
 });
-animate();
