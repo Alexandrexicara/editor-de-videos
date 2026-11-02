@@ -40,11 +40,25 @@ module.exports = function createAvatarStudioRouter(billing) {
         '-movflags', '+faststart', output];
       const child = spawn(ffmpegPath, args, { stdio: ['ignore', 'ignore', 'pipe'] });
       let detail = '';
+      let settled = false;
+      const timer = setTimeout(() => {
+        detail += '\\nTempo limite de 10 minutos excedido.';
+        child.kill('SIGKILL');
+      }, 10 * 60 * 1000);
       child.stderr.on('data', chunk => { detail = (detail + chunk.toString()).slice(-3000); });
-      child.once('error', reject);
-      child.once('close', code => code === 0
-        ? resolve()
-        : reject(new Error('FFmpeg não conseguiu finalizar o vídeo: ' + detail.slice(-700))));
+      child.once('error', error => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(error);
+      });
+      child.once('close', code => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (code === 0) resolve();
+        else reject(new Error('FFmpeg não conseguiu finalizar o vídeo: ' + detail.slice(-700)));
+      });
     });
   }
 
@@ -60,7 +74,7 @@ module.exports = function createAvatarStudioRouter(billing) {
       if (!ffmpegPath) return res.status(503).json({ error: 'FFmpeg não está instalado no servidor.' });
       reservation = await billing.reserveVideoCredit(req.user.id);
       output = path.join(outputDir, 'avatar-studio-' +
-        String(req.user.id).replace(/[^a-zA-Z0-9_-]/g, '') + '-' + Date.now() + '.mp4');
+        String(req.user.id).replace(/[^a-zA-Z0-9_-]/g, '') + '-' + crypto.randomUUID() + '.mp4');
       await convertToMp4(input, output);
       const stat = await fs.promises.stat(output);
       if (!stat.size) throw new Error('O arquivo MP4 foi gerado vazio.');
