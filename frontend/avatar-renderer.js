@@ -12,10 +12,18 @@ async function loadLocalTTS() {
     status('Baixando o modelo de voz local na primeira utilização. Isso pode levar alguns minutos...');
     ttsPromise = (async () => {
       const { KokoroTTS } = await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm');
+      if (navigator.gpu) {
+        try {
+          return await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
+            dtype: 'fp32', device: 'webgpu'
+          });
+        } catch (webgpuError) {
+          status('A aceleração WebGPU não está disponível neste dispositivo. Tentando o modo compatível...', '');
+        }
+      }
       try {
         return await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
-          dtype: navigator.gpu ? 'fp32' : 'q8',
-          device: navigator.gpu ? 'webgpu' : 'wasm'
+          dtype: 'q8', device: 'wasm'
         });
       } catch (error) {
         ttsPromise = null;
