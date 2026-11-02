@@ -8,6 +8,7 @@ preview.parentElement.insertBefore(panel, preview);
 
 const DB_NAME = 'avatar-studio-library';
 const STORE = 'avatars';
+let activeSavedImageUrl = null;
 function openDb() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, 1);
@@ -92,7 +93,9 @@ document.getElementById('loadAvatarLocal').addEventListener('click', async () =>
       await window.avatarStudioLoadModel(new File([record.blob], record.name + '.glb', { type: 'model/gltf-binary' }));
     } else {
       window.avatarStudioClearModel?.();
+      if (activeSavedImageUrl) URL.revokeObjectURL(activeSavedImageUrl);
       const url = URL.createObjectURL(record.blob);
+      activeSavedImageUrl = url;
       if (window.avatarStudioSetImage) window.avatarStudioSetImage(record.blob, url);
       else {
         const img = document.createElement('img');
