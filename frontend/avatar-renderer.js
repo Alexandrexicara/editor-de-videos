@@ -12,10 +12,15 @@ async function loadLocalTTS() {
     status('Baixando o modelo de voz local na primeira utilização. Isso pode levar alguns minutos...');
     ttsPromise = (async () => {
       const { KokoroTTS } = await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm');
-      return KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
-        dtype: navigator.gpu ? 'fp32' : 'q8',
-        device: navigator.gpu ? 'webgpu' : 'wasm'
-      });
+      try {
+        return await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', {
+          dtype: navigator.gpu ? 'fp32' : 'q8',
+          device: navigator.gpu ? 'webgpu' : 'wasm'
+        });
+      } catch (error) {
+        ttsPromise = null;
+        throw error;
+      }
     })();
   }
   return ttsPromise;
@@ -97,7 +102,13 @@ async function renderVideo() {
 }
 async function recordAndUpload(imageElement, audioBuffer, context) {
   const ratio = $('aspectRatio').value;
-  const dimensions = ratio === '16:9' ? [1280,720] : ratio === '1:1' ? [900,900] : [720,1280];
+  const quality = $('resolution').value;
+  const dimensionsByQuality = {
+    '540p': { '16:9': [960,540], '1:1': [720,720], '9:16': [540,960] },
+    '720p': { '16:9': [1280,720], '1:1': [900,900], '9:16': [720,1280] },
+    '1080p': { '16:9': [1920,1080], '1:1': [1080,1080], '9:16': [1080,1920] }
+  };
+  const dimensions = (dimensionsByQuality[quality] || dimensionsByQuality['720p'])[ratio] || [720,1280];
   const canvas = window.avatarStudioCanvas || document.createElement('canvas');
   if (!window.avatarStudioCanvas) { canvas.width = dimensions[0]; canvas.height = dimensions[1]; }
   else if (window.avatarStudioResizeCanvas) window.avatarStudioResizeCanvas(dimensions[0], dimensions[1]);
@@ -116,7 +127,10 @@ async function recordAndUpload(imageElement, audioBuffer, context) {
   const chunks = [];
   const duration = audioBuffer.duration;
   if (window.avatarStudioCanvas && window.avatarStudioStartAnimation) window.avatarStudioStartAnimation(analyser);
-  else drawAvatar(canvas, imageElement, analyser, duration, false);
+  else {
+    if (!imageElement) throw new Error('A prévia da imagem do avatar não está disponível.');
+    drawAvatar(canvas, imageElement, analyser, duration, false);
+  }
   recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
   const finished = new Promise((resolve, reject) => {
     recorder.onerror = () => reject(new Error('Falha ao gravar a animação no navegador.'));
