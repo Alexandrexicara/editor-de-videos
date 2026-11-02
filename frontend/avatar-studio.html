@@ -54,6 +54,7 @@ let avatarDataUrl='',resultUrl='',voices=[],sourceAvatarBlob=null;
 function showStatus(message,type=''){const el=$('status');el.textContent=message;el.className='status show '+type}
 function dataUrlToBlob(dataUrl){const [meta,data]=dataUrl.split(',');const mime=(meta.match(/data:(.*?);/)||[])[1]||'image/png';const bytes=atob(data);const array=new Uint8Array(bytes.length);for(let i=0;i<bytes.length;i++)array[i]=bytes.charCodeAt(i);return new Blob([array],{type:mime})}
 function showAvatar(src){avatarDataUrl=src;$('avatarPreview').innerHTML='';const img=document.createElement('img');img.src=src;$('avatarPreview').appendChild(img);$('removeBgNow').disabled=!src}
+window.avatarStudioSetImage=(blob,src)=>{sourceAvatarBlob=blob;showAvatar(src)};
 async function removeGreenBackground(blob){
   const bitmap=await createImageBitmap(blob);
   const canvas=document.createElement('canvas');canvas.width=bitmap.width;canvas.height=bitmap.height;
@@ -92,5 +93,6 @@ const btn=$('generate');btn.disabled=true;$('result').style.display='none';showS
 </script>
 <script type="module" src="avatar-renderer.js"></script>
 <script type="module" src="avatar-glb.mjs"></script>
+<script type="module" src="avatar-library.mjs"></script>
 </body>
 </html>
