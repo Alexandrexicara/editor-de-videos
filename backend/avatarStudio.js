@@ -3,6 +3,8 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { Readable } = require('node:stream');
+const { pipeline } = require('node:stream/promises');
 const fetchTTS = require('node-fetch');
 const cineVoiceCatalog = require('./cineVoiceCatalog');
 
@@ -171,9 +173,9 @@ module.exports = function createAvatarStudioRouter(billing) {
 
       const videoUrl = await waitForHedraVideo(acknowledgement.job_id);
       const videoResponse = await globalThis.fetch(videoUrl, { signal: AbortSignal.timeout(120000) });
-      if (!videoResponse.ok) throw new Error('Não foi possível baixar o vídeo final da Hedra.');
+      if (!videoResponse.ok || !videoResponse.body) throw new Error('Não foi possível baixar o vídeo final da Hedra.');
       const outputPath = path.join(outputDir, 'avatar-studio-' + String(req.user.id).replace(/[^a-zA-Z0-9_-]/g, '') + '-' + Date.now() + '.mp4');
-      fs.writeFileSync(outputPath, Buffer.from(await videoResponse.arrayBuffer()));
+      await pipeline(Readable.fromWeb(videoResponse.body), fs.createWriteStream(outputPath));
 
       await billing.completeVideoCredit(creditReservation, path.basename(outputPath), 'Avatar Falante 3D');
       creditCompleted = true;
