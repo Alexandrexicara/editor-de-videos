@@ -618,6 +618,8 @@ app.post('/api/cine/script', billing.requireAuth, async (req, res) => {
   }
 });
 
+app.use('/api/avatar-studio', require('./avatarStudio'));
+
 // Health check simples para provedores de hospedagem. Não expõe segredos nem dados do banco.
 app.get('/health', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
