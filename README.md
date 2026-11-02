@@ -262,3 +262,13 @@ O Cine Séries inclui um roteirista NVIDIA NIM que recebe a ideia do episódio, 
 - Todas as cenas precisam ter uma imagem principal. São incluídas as faixas de áudio presentes na linha do tempo; narrações apenas guardadas na biblioteca, mas ainda não adicionadas à timeline, não entram automaticamente na mixagem.
 - O MP4 fica disponível pelo endpoint autenticado de download e é associado ao histórico do usuário. O backend remove os arquivos temporários após a renderização.
 - Limites desta primeira versão: até 40 cenas, 30 minutos e 40 MB por arquivo enviado; a renderização gera 720p/30 fps. As legendas SRT/VTT ainda são exportadas separadamente e não são queimadas no vídeo. A execução real depende de FFmpeg funcional no ambiente de hospedagem e de créditos disponíveis na carteira.
+
+## Avatar Studio — renderização local
+
+- A geração de voz digitada usa Kokoro-82M via `kokoro-js` no navegador. O modelo é baixado na primeira utilização e a síntese acontece no dispositivo; o texto não é enviado à ElevenLabs.
+- Imagens PNG/JPG/WebP recebem uma animação visual 2D/2.5D. Para personagem 3D, o estúdio aceita modelos GLB autocontidos; animação de boca e braços depende de morph targets e ossos com nomes reconhecíveis no arquivo.
+- A captura do vídeo acontece no navegador com `MediaRecorder`. O servidor recebe o vídeo renderizado, converte para MP4 com FFmpeg e só então confirma 1 crédito da carteira Cine Séries. Em caso de falha na conversão, o crédito reservado é devolvido.
+- O endpoint antigo de geração externa foi desativado. O backend Avatar Studio não chama Hedra nem ElevenLabs.
+- A remoção de fundo atual é baseada em chroma key verde uniforme; não é segmentação inteligente universal. A transparência é mantida na imagem PNG de origem, mas a exportação MP4 compõe o avatar sobre o fundo da cena.
+- Dependências e modelos de terceiros mantêm suas próprias licenças. `kokoro-js` e os pesos Kokoro-82M usados pelo estúdio são distribuídos sob Apache-2.0; Three.js é MIT.
+- A validação de sintaxe não substitui o teste real em Chrome/Edge, a conferência de compatibilidade de cada GLB, nem o teste de FFmpeg, PostgreSQL, autenticação e carteira no ambiente hospedado.
