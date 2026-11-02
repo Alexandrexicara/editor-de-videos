@@ -15,7 +15,7 @@
     "build:linux": "electron-builder --linux",
     "test": "node --test",
     "mcp": "node mcp/server.js",
-    "check": "node --check backend/server.js && node --check backend/avatarStudio.js && node --check frontend/avatar-renderer.js && node --check backend/processVideo.js && node --check backend/billing.js && node --check backend/storageManager.js && node --check mcp/server.js && node scripts/check-frontend.js"
+    "check": "node --check backend/server.js && node --check backend/avatarStudio.js && node --check frontend/avatar-renderer.js && node --check frontend/avatar-glb.mjs && node --check backend/processVideo.js && node --check backend/billing.js && node --check backend/storageManager.js && node --check mcp/server.js && node scripts/check-frontend.js"
   },
   "keywords": [
     "video",
