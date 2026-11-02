@@ -43,7 +43,11 @@ function animate() {
   const gesture = document.getElementById('gesturePreset')?.value || 'natural';
   const intensity = gesture === 'energetic' ? 0.22 : gesture === 'presentation' ? 0.16 : gesture === 'calm' ? 0.035 : 0.09;
   const speed = gesture === 'energetic' ? 3.1 : gesture === 'calm' ? 0.8 : 1.7;
-  bones.forEach((entry, index) => { if (!mixer) entry.bone.rotation.z = entry.base + Math.sin(t * speed + index * 1.4) * intensity; });
+  // Aplica o gesto também sobre modelos que já possuem animações embutidas.
+  // O mixer atualiza o clipe primeiro; este ajuste acrescenta movimento sutil aos braços.
+  bones.forEach((entry, index) => {
+    entry.bone.rotation.z = entry.base + Math.sin(t * speed + index * 1.4) * intensity;
+  });
   const expression = document.getElementById('expressionPreset')?.value || 'neutral';
   expressionTargets.forEach(target => { const amount = expression === 'smile' && /smile|happy/i.test(target.name) ? 0.75 : expression === 'serious' && /frown|angry/i.test(target.name) ? 0.45 : 0; target.mesh.morphTargetInfluences[target.index] = amount; });
   if (renderer && scene && camera) renderer.render(scene, camera);
