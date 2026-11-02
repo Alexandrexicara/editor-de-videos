@@ -112,61 +112,76 @@ async function recordAndUpload(imageElement, audioBuffer, context) {
   const canvas = window.avatarStudioCanvas || document.createElement('canvas');
   if (!window.avatarStudioCanvas) { canvas.width = dimensions[0]; canvas.height = dimensions[1]; }
   else if (window.avatarStudioResizeCanvas) window.avatarStudioResizeCanvas(dimensions[0], dimensions[1]);
+
   const source = context.createBufferSource();
   source.buffer = audioBuffer;
   const analyser = context.createAnalyser();
   analyser.fftSize = 256;
   const destination = context.createMediaStreamDestination();
-  source.connect(analyser);
-  analyser.connect(destination);
-  const canvasStream = canvas.captureStream(30);
-  destination.stream.getAudioTracks().forEach(track => canvasStream.addTrack(track));
-  const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-    ? 'video/webm;codecs=vp9,opus' : 'video/webm';
-  const recorder = new MediaRecorder(canvasStream, { mimeType: mime, videoBitsPerSecond: 5000000 });
-  const chunks = [];
-  const duration = audioBuffer.duration;
-  if (window.avatarStudioCanvas && window.avatarStudioStartAnimation) window.avatarStudioStartAnimation(analyser);
-  else {
-    if (!imageElement) throw new Error('A prévia da imagem do avatar não está disponível.');
-    drawAvatar(canvas, imageElement, analyser, duration, false);
+  let canvasStream = null;
+  let recorder = null;
+  let recordingStarted = false;
+  try {
+    source.connect(analyser);
+    analyser.connect(destination);
+    canvasStream = canvas.captureStream(30);
+    destination.stream.getAudioTracks().forEach(track => canvasStream.addTrack(track));
+    const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+      ? 'video/webm;codecs=vp9,opus' : 'video/webm';
+    recorder = new MediaRecorder(canvasStream, { mimeType: mime, videoBitsPerSecond: 5000000 });
+    const chunks = [];
+    const finished = new Promise((resolve, reject) => {
+      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      recorder.onerror = () => reject(new Error('Falha ao gravar a animação no navegador.'));
+      recorder.onstop = () => resolve(new Blob(chunks, { type: mime }));
+    });
+
+    if (window.avatarStudioCanvas && window.avatarStudioStartAnimation) window.avatarStudioStartAnimation(analyser);
+    else {
+      if (!imageElement) throw new Error('A prévia da imagem do avatar não está disponível.');
+      drawAvatar(canvas, imageElement, analyser, audioBuffer.duration, false);
+    }
+    await context.resume();
+    recorder.start(1000);
+    recordingStarted = true;
+    source.start();
+    status('Renderizando no seu dispositivo. Mantenha esta aba aberta até terminar...');
+    await new Promise(resolve => { source.onended = resolve; });
+    await new Promise(resolve => setTimeout(resolve, 350));
+    if (recorder.state !== 'inactive') recorder.stop();
+    const webm = await finished;
+    if (!webm.size) throw new Error('A gravação ficou vazia. Tente novamente.');
+
+    status('Enviando o vídeo para conversão MP4 e confirmação do crédito...');
+    const form = new FormData();
+    form.append('renderedVideo', webm, 'avatar-render.webm');
+    const response = await fetch('/api/avatar-studio/render', {
+      method: 'POST', body: form, credentials: 'same-origin'
+    });
+    if (!response.ok) {
+      let message = 'Não foi possível finalizar o MP4.';
+      try { message = (await response.json()).error || message; } catch (_) {}
+      throw new Error(message);
+    }
+    const mp4 = await response.blob();
+    if (activeAudioUrl) URL.revokeObjectURL(activeAudioUrl);
+    activeAudioUrl = URL.createObjectURL(mp4);
+    $('resultVideo').src = activeAudioUrl;
+    $('download').href = activeAudioUrl;
+    $('result').style.display = 'block';
+    status('Vídeo MP4 finalizado. Um crédito foi consumido.', 'ok');
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } finally {
+    if (recordingStarted && recorder && recorder.state !== 'inactive') {
+      try { recorder.stop(); } catch (_) {}
+    }
+    if (canvasStream) canvasStream.getTracks().forEach(track => track.stop());
+    try { source.stop(); } catch (_) {}
+    try { source.disconnect(); } catch (_) {}
+    try { analyser.disconnect(); } catch (_) {}
+    if (window.avatarStudioStartAnimation) window.avatarStudioStartAnimation(null);
+    if (context.state !== 'closed') await context.close();
   }
-  recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
-  const finished = new Promise((resolve, reject) => {
-    recorder.onerror = () => reject(new Error('Falha ao gravar a animação no navegador.'));
-    recorder.onstop = () => resolve(new Blob(chunks, { type: mime }));
-  });
-  await context.resume();
-  recorder.start(1000);
-  source.start();
-  status('Renderizando no seu dispositivo. Mantenha esta aba aberta até terminar...');
-  await new Promise(resolve => source.onended = resolve);
-  await new Promise(resolve => setTimeout(resolve, 350));
-  recorder.stop();
-  const webm = await finished;
-  canvasStream.getTracks().forEach(track => track.stop());
-  source.disconnect(); analyser.disconnect(); await context.close();
-  if (window.avatarStudioStartAnimation) window.avatarStudioStartAnimation(null);
-  if (!webm.size) throw new Error('A gravação ficou vazia. Tente novamente.');
-  status('Enviando o vídeo para conversão MP4 e confirmação do crédito...');
-  const form = new FormData();
-  form.append('renderedVideo', webm, 'avatar-render.webm');
-  const response = await fetch('/api/avatar-studio/render', {
-    method: 'POST', body: form, credentials: 'same-origin'
-  });
-  if (!response.ok) {
-    let message = 'Não foi possível finalizar o MP4.';
-    try { message = (await response.json()).error || message; } catch (_) {}
-    throw new Error(message);
-  }
-  const mp4 = await response.blob();
-  if (activeAudioUrl) URL.revokeObjectURL(activeAudioUrl);
-  activeAudioUrl = URL.createObjectURL(mp4);
-  $('resultVideo').src = activeAudioUrl;
-  $('download').href = activeAudioUrl;
-  $('result').style.display = 'block';
-  status('Vídeo MP4 finalizado. Um crédito foi consumido.', 'ok');
-  $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 window.avatarStudioRender = { renderVideo, recordAndUpload, status };
 const oldButton = $('generate');
