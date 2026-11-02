@@ -1,0 +1,20 @@
+'use strict';
+
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+
+const htmlPath = path.join(__dirname, '..', 'frontend', 'cine-series.html');
+const html = fs.readFileSync(htmlPath, 'utf8');
+const scriptTags = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+const inlineScripts = scriptTags.filter((match) => !/\bsrc\s*=/i.test(match[1]));
+
+if (inlineScripts.length === 0) {
+  throw new Error('Nenhum script JavaScript inline foi encontrado em frontend/cine-series.html.');
+}
+
+inlineScripts.forEach((match, index) => {
+  new vm.Script(match[2], { filename: `cine-series-inline-${index + 1}.js` });
+});
+
+console.log(`Sintaxe validada: ${inlineScripts.length} script(s) inline em frontend/cine-series.html.`);
