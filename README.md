@@ -87,6 +87,11 @@ Abra seu navegador em: `http://localhost:3000`
 
 ## 🎯 Funcionalidades
 
+### Verificações antes de publicar
+
+Execute `npm run check` para validar a sintaxe do backend e `npm test` para executar os testes automatizados. A aprovação desses comandos não substitui os testes reais de SumUp, PostgreSQL, NVIDIA NIM, ElevenLabs e renderização FFmpeg no ambiente de hospedagem.
+
+
 ### Frontend (frontend/)
 - Interface moderna com Three.js para avatar 3D
 - Preview de vídeos em tempo real
@@ -104,7 +109,7 @@ Abra seu navegador em: `http://localhost:3000`
 
 ## ⚙️ Requisitos
 
-- Node.js >= 14.0.0
+- Node.js >= 18.15.0 (requisito do backend e do gerenciador de armazenamento)
 - FFmpeg instalado no sistema
 - Navegador moderno com suporte a WebGL
 
