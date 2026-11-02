@@ -1,0 +1,52 @@
+[build]
+  publish = "frontend"
+  command = "echo 'Frontend estático pronto para publicação'"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://editor-de-videos.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/upload"
+  to = "https://editor-de-videos.onrender.com/upload"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/upload-avatar"
+  to = "https://editor-de-videos.onrender.com/upload-avatar"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/download/*"
+  to = "https://editor-de-videos.onrender.com/download/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/outputs/*"
+  to = "https://editor-de-videos.onrender.com/outputs/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/health"
+  to = "https://editor-de-videos.onrender.com/health"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/status"
+  to = "https://editor-de-videos.onrender.com/status"
+  status = 200
+  force = true
+
+# Arquivos existentes em frontend/ são servidos pelo CDN do Netlify.
+# Rotas antigas ou não estáticas continuam chegando ao backend.
+[[redirects]]
+  from = "/*"
+  to = "https://editor-de-videos.onrender.com/:splat"
+  status = 200

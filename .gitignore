@@ -11,3 +11,7 @@ python-portable/
 *.png
 *.jpg
 *.jpeg
+
+# Dados locais de usuários (não versionar uploads privados)
+avatars/
+audios/

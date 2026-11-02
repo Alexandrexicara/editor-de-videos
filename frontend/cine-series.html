@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b14">
+<title>Cine Séries — Estúdio cinematográfico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#080b14;--panel:#111725;--panel2:#171f30;--line:#293449;--text:#f4f6fb;--muted:#98a4b8;--gold:#e8bd72;--violet:#9c83ff;--cyan:#70d7df;--good:#8ed5a7}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -10%,#26304c 0,transparent 42%),var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}button,input,select,textarea{font:inherit}button{cursor:pointer}.shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}.side{padding:26px 18px;border-right:1px solid var(--line);background:rgba(8,11,20,.82);display:flex;flex-direction:column;gap:28px}.brand{display:flex;align-items:center;gap:12px;padding:0 8px}.brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#a56e37);display:grid;place-items:center;color:#17120b;font-size:20px}.brand strong{font:700 18px 'Space Grotesk';letter-spacing:.2px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.nav-label{color:#647087;text-transform:uppercase;letter-spacing:1.4px;font-size:10px;font-weight:700;padding:0 10px}.nav{display:grid;gap:6px}.nav a,.nav button{border:0;text-decoration:none;color:#b5bfd0;background:transparent;text-align:left;padding:11px 12px;border-radius:10px;display:flex;gap:11px;align-items:center;font-size:13px}.nav .active{background:#20283a;color:#fff;box-shadow:inset 2px 0 var(--gold)}.nav a:hover,.nav button:hover{background:#192235}.side-bottom{margin-top:auto;border:1px solid var(--line);background:#101725;border-radius:14px;padding:14px}.side-bottom b{font-size:12px}.side-bottom p{font-size:11px;line-height:1.6;color:var(--muted);margin:7px 0 0}.main{min-width:0;padding:28px clamp(18px,4vw,54px) 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:30px}.eyebrow{color:var(--gold);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700}.top h1{font:700 clamp(26px,3vw,38px) 'Space Grotesk';margin:6px 0 0}.top-actions{display:flex;gap:9px;align-items:center}.btn{border:1px solid var(--line);background:#151e2d;color:var(--text);padding:10px 14px;border-radius:10px;font-weight:600;font-size:12px}.btn.primary{background:linear-gradient(135deg,#e8bd72,#bd8b4d);border:0;color:#17120b}.btn:hover{filter:brightness(1.12)}.hero{border:1px solid #4b4650;border-radius:18px;overflow:hidden;position:relative;min-height:245px;background:linear-gradient(90deg,rgba(9,12,20,.98) 0%,rgba(9,12,20,.84) 48%,rgba(9,12,20,.18) 100%),linear-gradient(135deg,#38425b,#111827 55%,#7b5a47);padding:34px;display:flex;align-items:center}.hero:after{content:'CINEMA';position:absolute;right:4%;bottom:-38px;font:700 clamp(80px,15vw,180px) 'Space Grotesk';letter-spacing:-10px;color:rgba(255,255,255,.055);pointer-events:none}.hero-copy{max-width:570px;position:relative;z-index:1}.hero h2{font:700 clamp(26px,3.5vw,42px) 'Space Grotesk';line-height:1.08;margin:10px 0 12px}.hero p{color:#c0c8d5;line-height:1.65;font-size:13px;max-width:490px}.hero .btn{margin-top:10px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:30px 0 15px}.section-head h3{font:600 19px 'Space Grotesk';margin:0}.section-head p{margin:5px 0 0;color:var(--muted);font-size:11px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:17px}.stat{padding:15px;border:1px solid var(--line);border-radius:13px;background:rgba(17,23,37,.82)}.stat span{color:var(--muted);font-size:11px}.stat strong{display:block;font:600 22px 'Space Grotesk';margin-top:6px}.workspace{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(250px,.8fr);gap:14px;margin-top:15px}.panel{border:1px solid var(--line);background:rgba(17,23,37,.9);border-radius:15px;padding:18px;min-width:0}.panel h4{font:600 14px 'Space Grotesk';margin:0 0 5px}.sub{color:var(--muted);font-size:11px;margin:0 0 15px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#b8c2d2}.field input,.field select,.field textarea{width:100%;border:1px solid #344157;background:#0b111d;color:var(--text);border-radius:9px;padding:10px 11px;outline:none;font-size:12px}.field textarea{min-height:84px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}.list{display:grid;gap:9px}.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:11px;background:#0e1522}.item strong{font-size:12px}.item small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.tag{border:1px solid #4b4b54;border-radius:30px;padding:4px 8px;color:var(--gold);font-size:9px;white-space:nowrap}.scene-list{display:grid;gap:9px}.scene{display:grid;grid-template-columns:52px 1fr auto;gap:11px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:11px;background:#0e1522}.scene-num{height:43px;border-radius:8px;background:linear-gradient(145deg,#37445d,#171f30);display:grid;place-items:center;color:var(--gold);font:600 14px 'Space Grotesk'}.scene strong{font-size:11px}.scene small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.scene button{background:transparent;border:0;color:#aab5c8;font-size:17px}.api{display:flex;align-items:center;gap:9px;border:1px dashed #46516a;border-radius:11px;padding:12px;margin-top:12px}.dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px #e8bd72}.api b{font-size:11px}.api small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.footnote{color:#76849b;font-size:10px;line-height:1.6;margin-top:18px}.empty{color:var(--muted);font-size:11px;text-align:center;padding:22px 8px;border:1px dashed #344157;border-radius:10px}.toast{position:fixed;bottom:20px;right:20px;background:#202b3e;border:1px solid #45536c;padding:12px 16px;border-radius:10px;font-size:12px;display:none;z-index:9}.toast.show{display:block}
+@media(max-width:900px){.shell{grid-template-columns:76px minmax(0,1fr)}.side{padding:20px 10px;align-items:center}.brand{padding:0}.brand>div:last-child,.nav-label,.nav a span,.nav button span,.side-bottom{display:none}.nav{width:100%}.nav a,.nav button{justify-content:center;font-size:18px}.workspace{grid-template-columns:1fr}}@media(max-width:600px){.main{padding:20px 13px 40px}.top{align-items:flex-start}.top-actions .btn:first-child{display:none}.hero{padding:23px;min-height:230px}.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:1/-1}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.section-head{align-items:flex-start;flex-direction:column}.top h1{font-size:26px}}
+
+.asset-upload{border:1px dashed #596780;border-radius:13px;padding:17px;background:#0c1421;display:grid;gap:12px}.asset-upload input[type=file]{width:100%;color:var(--muted);font-size:11px}.asset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:11px}.asset-card{overflow:hidden;border:1px solid var(--line);border-radius:11px;background:#0e1522}.asset-card img{width:100%;height:115px;object-fit:cover;display:block;background:#080b14}.asset-meta{padding:9px}.asset-meta strong{font-size:11px;display:block;overflow-wrap:anywhere}.asset-meta small{color:var(--muted);font-size:10px;display:block;margin:4px 0 8px}.asset-meta button{font-size:10px;padding:6px 9px}.asset-help{font-size:10px;color:var(--muted);line-height:1.6}.asset-preview{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.asset-preview img{width:76px;height:76px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}@media(max-width:600px){.asset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="side">
+  <div class="brand"><div class="brand-mark">✦</div><div><strong>CINE SÉRIES</strong><small>Creative Studio</small></div></div>
+  <div class="nav-label">Estúdio</div>
+  <nav class="nav">
+    <a class="active" href="#inicio"><span>▦</span><span>Visão geral</span></a>
+    <a href="#projeto"><span>▣</span><span>Minha série</span></a>
+    <a href="#episodios"><span>▶</span><span>Episódios</span></a>
+    <a href="#roteirista"><span>✦</span><span>Roteirista IA</span></a>
+    <a href="#roteiro"><span>✎</span><span>Roteiro e cenas</span></a>
+    <a href="#personagens"><span>♙</span><span>Personagens</span></a>
+    <a href="#locacoes"><span>⌖</span><span>Locações</span></a>\n    <a href="#midias"><span>▧</span><span>Minhas imagens</span></a>
+    <a href="#integracoes"><span>⌘</span><span>Integrações</span></a>
+  </nav>
+  <div class="side-bottom"><b>Seu estúdio, suas histórias.</b><p>Organize ideias, personagens e cenas antes de conectar os motores de geração.</p></div>
+</aside>
+<main class="main" id="inicio">
+  <header class="top"><div><div class="eyebrow">Rolezando Creative Suite / Módulo 02</div><h1>Seu próximo universo começa aqui.</h1></div><div class="top-actions"><a class="btn" href="index.html">← Rolezando Editor</a><button class="btn primary" id="exportTop">Exportar projeto ↓</button></div></header>
+  <section class="hero">
+    <div class="hero-copy"><div class="eyebrow">Roteiro • Direção • Produção</div><h2>Transforme uma ideia em uma série cinematográfica.</h2><p>Planeje temporadas, escreva episódios, construa personagens e organize cada cena em um fluxo de produção. O espaço está preparado para receber integrações de IA, voz, imagem e vídeo.</p><button class="btn primary" id="startProject">＋ Criar minha série</button></div>
+  </section>
+  <div class="stats">
+    <div class="stat"><span>Projetos neste navegador</span><strong id="statProjects">0</strong></div>
+    <div class="stat"><span>Episódios planejados</span><strong id="statEpisodes">0</strong></div>
+    <div class="stat"><span>Cenas no roteiro</span><strong id="statScenes">0</strong></div>
+    <div class="stat"><span>Personagens</span><strong id="statCharacters">0</strong></div>
+  </div>
+  <div class="section-head" id="projeto"><div><h3>Projeto da série</h3><p>Defina a identidade da produção antes de começar o roteiro.</p></div><span class="tag">RASCUNHO LOCAL</span></div>
+  <div class="workspace">
+    <section class="panel">
+      <h4>Identidade da produção</h4><p class="sub">Os campos abaixo formam a ficha principal do seu projeto.</p>
+      <form id="projectForm" class="form-grid">
+        <div class="field full"><label for="seriesTitle">Nome da série</label><input id="seriesTitle" placeholder="Ex.: A Última Fronteira" required></div>
+        <div class="field"><label for="genre">Gênero</label><select id="genre"><option>Drama</option><option>Suspense</option><option>Ficção científica</option><option>Ação e aventura</option><option>Comédia</option><option>Fantasia</option><option>Documentário</option><option>Romance</option></select></div>
+        <div class="field"><label for="format">Formato</label><select id="format"><option>Série cinematográfica</option><option>Minissérie</option><option>Web série</option><option>Animação</option><option>Documental</option></select></div>
+        <div class="field"><label for="seasonCount">Temporadas planejadas</label><input id="seasonCount" type="number" min="1" max="20" value="1"></div>
+        <div class="field"><label for="episodeLength">Duração por episódio</label><select id="episodeLength"><option>1–3 minutos</option><option>3–8 minutos</option><option>8–15 minutos</option><option>15–30 minutos</option><option>30–60 minutos</option></select></div>
+        <div class="field full"><label for="synopsis">Sinopse / ideia central</label><textarea id="synopsis" placeholder="Conte o universo, o conflito principal e o que torna sua série única..."></textarea></div>
+        <div class="field full"><button class="btn primary" type="submit">Salvar ficha da série</button></div>
+      </form>
+    </section>
+    <section class="panel" id="episodios">
+      <h4>Temporada e episódios</h4><p class="sub">Monte a sequência narrativa da sua produção.</p>
+      <form id="episodeForm" class="form-grid">
+        <div class="field full"><label for="episodeTitle">Título do episódio</label><input id="episodeTitle" placeholder="Ex.: O Primeiro Sinal" required></div>
+        <div class="field"><label for="episodeNumber">Número</label><input id="episodeNumber" type="number" min="1" value="1"></div>
+        <div class="field"><label for="episodeStatus">Etapa</label><select id="episodeStatus"><option>Ideia</option><option>Roteiro</option><option>Pré-produção</option><option>Pronto para produzir</option></select></div>
+        <div class="field full"><button class="btn" type="submit">＋ Adicionar episódio</button></div>
+      </form>
+      <div class="list" id="episodeList"><div class="empty">Seus episódios aparecerão aqui.</div></div>
+    </section>
+  </div>
+
+  <div class="section-head" id="roteirista"><div><h3>Roteirista inteligente — NVIDIA</h3><p>Transforme sua ideia em um episódio com cenas, diálogos, direção de câmera e continuidade.</p></div><span class="tag">IA NVIDIA NIM</span></div>
+  <section class="panel" id="nvidiaWriter">
+    <h4>Criação de roteiro e diálogos</h4>
+    <p class="sub">A IA considera a sinopse da série, o episódio, as fichas dos personagens e as locações cadastradas. Você pode revisar o roteiro antes de inserir as cenas no storyboard.</p>
+    <div class="form-grid">
+      <div class="field full"><label for="writerIdea">O que deve acontecer neste episódio?</label><textarea id="writerIdea" rows="5" placeholder="Descreva a história, os acontecimentos, conflitos, reviravoltas e o final desejado..."></textarea></div>
+      <div class="field"><label for="writerEpisode">Episódio</label><select id="writerEpisode"><option value="">Novo episódio / sem vínculo</option></select></div>
+      <div class="field"><label for="writerSceneCount">Quantidade de cenas</label><select id="writerSceneCount"><option value="3">3 cenas</option><option value="5">5 cenas</option><option value="6" selected>6 cenas</option><option value="8">8 cenas</option><option value="10">10 cenas</option><option value="15">15 cenas</option></select></div>
+      <div class="field full"><label for="writerStyle">Estilo e direção narrativa</label><input id="writerStyle" value="Roteiro cinematográfico realista, diálogos naturais em português brasileiro, ritmo envolvente"></div>
+      <div class="field full" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn primary" type="button" id="generateNvidiaScript">✦ Criar roteiro com NVIDIA</button><span class="asset-help" id="writerStatus" aria-live="polite">Usa a mesma conexão NVIDIA configurada no servidor.</span></div>
+      <div class="field full" id="writerOutputWrap" style="display:none"><label for="writerOutput">Roteiro gerado (pode revisar o JSON antes de importar)</label><textarea id="writerOutput" rows="18" spellcheck="false" style="font-family:monospace;font-size:11px"></textarea><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="button" id="importWriterScenes">＋ Adicionar cenas ao storyboard</button><button class="btn" type="button" id="downloadWriterScript">⬇ Baixar roteiro JSON</button></div></div>
+    </div>
+  </section>
+  <div class="section-head" id="roteiro"><div><h3>Roteiro e construção de cenas</h3><p>Organize a sequência visual e narrativa de cada episódio.</p></div><button class="btn" id="addScene">＋ Nova cena</button></div>
+  <section class="panel">
+    <h4>Sequência de cenas</h4><p class="sub">Registre ambiente, ação, enquadramento e direção de cada tomada.</p>
+    <form id="sceneComposerForm" class="form-grid" style="margin:14px 0 18px">
+      <div class="field"><label for="sceneComposerTitle">Título da cena</label><input id="sceneComposerTitle" required maxlength="120" placeholder="Ex.: A chegada à cidade"></div>
+      <div class="field"><label for="sceneComposerEpisode">Episódio</label><select id="sceneComposerEpisode"><option value="">Sem episódio definido</option></select></div>
+      <div class="field"><label for="sceneComposerLocation">Locação cadastrada</label><select id="sceneComposerLocation"><option value="">Escolher depois / livre</option></select></div>
+      <div class="field"><label for="sceneComposerCamera">Câmera / enquadramento</label><input id="sceneComposerCamera" placeholder="Plano aberto, close, travelling..."></div>
+      <div class="field full"><label for="sceneComposerCharacters">Personagens nesta cena (selecione vários)</label><select id="sceneComposerCharacters" multiple size="4" style="min-height:100px"></select><small class="asset-help">As fichas visuais e de voz serão registradas como referência desta cena.</small></div>
+      <div class="field full"><label for="sceneComposerAssets">Imagens de referência (selecione várias)</label><select id="sceneComposerAssets" multiple size="4" style="min-height:100px"></select><small class="asset-help">Fotos de personagens, figurinos, objetos e cenários cadastrados na biblioteca.</small></div>
+      <div class="field full"><label for="sceneComposerDescription">Ação e descrição visual</label><textarea id="sceneComposerDescription" required placeholder="O que acontece? Descreva ação, iluminação, cores, clima e composição..."></textarea></div>
+      <div class="field full"><label for="sceneComposerContinuity">Regras de continuidade desta cena</label><textarea id="sceneComposerContinuity" placeholder="Ex.: manter o casaco azul, cabelo preso e cicatriz no rosto; luz dourada de fim de tarde..."></textarea></div>
+      <div class="field full"><button class="btn primary" type="submit">＋ Adicionar cena com referências</button></div>
+    </form>
+    <div class="scene-list" id="sceneList"><div class="empty">Adicione uma cena para começar seu storyboard.</div></div>
+    <div class="footnote">Dica: descreva primeiro o que acontece, depois o cenário, a iluminação, o movimento de câmera e a emoção desejada.</div>
+    <div class="panel" style="margin-top:16px" id="nvidiaSceneStudio">
+      <h4>🎨 Gerar imagem cinematográfica com NVIDIA</h4>
+      <p class="sub">Crie a imagem de uma cena usando as fichas de personagens, a locação, as regras de continuidade e as fotos de referência que você já cadastrou.</p>
+      <div class="field"><label for="nvidiaSceneSelect">Cena para gerar</label><select id="nvidiaSceneSelect"><option value="">Selecione uma cena cadastrada</option></select></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px">
+        <button class="btn primary" type="button" id="generateNvidiaScene">✦ Gerar imagem da cena</button>
+        <span class="asset-help" id="nvidiaImageStatus" aria-live="polite">Verificando conexão NVIDIA...</span>
+      </div>
+      <div id="nvidiaImageResult" style="display:none;margin-top:14px">
+        <img id="nvidiaScenePreview" alt="Imagem gerada para a cena" style="width:100%;max-height:520px;object-fit:contain;border-radius:12px;background:#111">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          <a id="nvidiaSceneDownload" class="btn" download="cine-series-cena.png">⬇ Baixar imagem</a>
+        </div>
+      </div>
+    </div>
+
+  </section>
+  <div class="section-head" id="personagens"><div><h3>Bíblia de personagens</h3><p>Cadastre protagonistas, coadjuvantes e antagonistas com identidade visual e personalidade consistentes.</p></div></div>
+  <div class="workspace">
+    <section class="panel">
+      <h4>Novo personagem</h4><p class="sub">Crie uma ficha que servirá de referência para roteiro, imagem e continuidade.</p>
+      <form id="characterForm" class="form-grid">
+        <div class="field"><label for="characterName">Nome</label><input id="characterName" required placeholder="Nome do personagem"></div>
+        <div class="field"><label for="characterRole">Papel na história</label><select id="characterRole"><option>Protagonista</option><option>Antagonista</option><option>Coadjuvante</option><option>Participação especial</option></select></div>
+        <div class="field full"><label for="characterPersonality">Personalidade e história</label><textarea id="characterPersonality" placeholder="Motivações, passado, objetivos, conflitos e jeito de falar..."></textarea></div>
+        <div class="field"><label for="characterLook">Aparência / figurino</label><input id="characterLook" placeholder="Características visuais constantes"></div>
+        <div class="field"><label for="characterVoice">Voz / interpretação</label><input id="characterVoice" placeholder="Timbre, sotaque e emoção"></div>
+        <div class="field full"><label for="characterVoiceId">Voz ElevenLabs deste personagem</label><select id="characterVoiceId"><option value="GIuLCSVfgJaUuh7hYOY8">Lucas — Narrador cinematográfico (PT-BR)</option></select><small class="asset-help">A voz escolhida fica salva na ficha e será usada automaticamente nas falas deste personagem.</small></div>
+        <div class="field full"><button class="btn primary" type="submit">＋ Salvar personagem</button></div>
+      </form>
+    </section>
+    <section class="panel"><h4>Elenco cadastrado</h4><p class="sub">Referências de continuidade dos personagens.</p><div class="list" id="characterList"><div class="empty">Seu elenco aparecerá aqui.</div></div></section>
+  </div>
+  <div class="section-head" id="locacoes"><div><h3>Locações e direção de arte</h3><p>Organize cenários recorrentes, atmosfera, cores e elementos visuais.</p></div></div>
+  <div class="workspace">
+    <section class="panel">
+      <h4>Nova locação</h4><p class="sub">Registre cenários para manter a identidade visual entre episódios.</p>
+      <form id="locationForm" class="form-grid">
+        <div class="field"><label for="locationName">Nome do cenário</label><input id="locationName" required placeholder="Ex.: Casa da protagonista"></div>
+        <div class="field"><label for="locationType">Tipo</label><select id="locationType"><option>Interior</option><option>Exterior</option><option>Estúdio / cenário virtual</option><option>Fantasia / ficção</option></select></div>
+        <div class="field full"><label for="locationDescription">Descrição visual</label><textarea id="locationDescription" placeholder="Arquitetura, época, iluminação, paleta de cores e objetos marcantes..."></textarea></div>
+        <div class="field full"><button class="btn" type="submit">＋ Salvar locação</button></div>
+      </form>
+    </section>
+    <section class="panel"><h4>Biblioteca de cenários</h4><p class="sub">Locações disponíveis para suas cenas.</p><div class="list" id="locationList"><div class="empty">Suas locações aparecerão aqui.</div></div></section>
+  </div>
+
+  <div class="section-head" id="midias"><div><h3>Galeria de imagens e referências</h3><p>Use suas próprias fotos ou combine referências pessoais com a criação por IA.</p></div><span class="tag">UPLOAD DE IMAGENS</span></div>
+  <section class="panel">
+    <h4>Adicione suas próprias imagens</h4>
+    <p class="sub">Envie uma selfie para ser o ator, fotos de pessoas autorizadas, cenários reais, paisagens, objetos, roupas ou qualquer referência visual.</p>
+    <div class="form-grid">
+      <div class="field"><label for="assetType">O que esta imagem representa?</label><select id="assetType"><option value="Personagem / ator">Personagem / ator (incluindo minha foto)</option><option value="Cenário / ambiente">Cenário / ambiente</option><option value="Paisagem / exterior">Paisagem / exterior</option><option value="Objeto / figurino">Objeto / figurino</option><option value="Referência visual">Referência visual livre</option></select></div>
+      <div class="field"><label for="assetName">Nome ou identificação (opcional)</label><input id="assetName" placeholder="Ex.: Eu como protagonista"></div>
+      <div class="field full"><div class="asset-upload">
+        <label for="assetFiles">Escolha uma ou várias imagens</label>
+        <input id="assetFiles" type="file" accept="image/*" multiple>
+        <div class="asset-help">Formatos de imagem aceitos pelo navegador. Para facilitar o armazenamento, as imagens serão otimizadas neste dispositivo. Limite de 2 MB por arquivo antes da otimização. Seus arquivos ficam neste navegador nesta primeira versão; o envio para armazenamento em nuvem será conectado posteriormente.</div>
+      </div></div>
+      <div class="field full"><button class="btn primary" type="button" id="uploadAssets">＋ Adicionar imagens à biblioteca</button></div>
+    </div>
+    <div class="asset-help" style="margin-top:12px">Você pode usar somente suas fotos, somente imagens criadas por IA ou misturar as duas fontes. Para fotos de outras pessoas, confirme que tem autorização para usar a imagem delas.</div>
+    <div class="section-head" style="margin-top:22px"><div><h3>Minhas referências</h3><p>Imagens disponíveis para orientar a criação das cenas e personagens.</p></div></div>
+    <div class="asset-grid" id="assetList"><div class="empty">Nenhuma imagem adicionada ainda.</div></div>
+  </section>
+  <div class="section-head" id="integracoes"><div><h3>Central de integrações</h3><p>Conectores preparados para a próxima etapa de desenvolvimento.</p></div></div>
+  <div class="workspace">
+    <section class="panel"><h4>Motor criativo</h4><p class="sub">Conexões que poderão ser ativadas quando você fornecer as credenciais.</p>
+      <div class="list">
+        <div class="item"><div><strong>Roteiro e diálogos</strong><small>Roteirista NVIDIA NIM: cenas, falas e continuidade</small></div><span class="tag">INTEGRADO</span></div>
+        <div class="item"><div><strong>Geração de imagens</strong><small>NVIDIA NIM com referências de personagens e cenários</small></div><span class="tag">INTEGRADO</span></div>
+        <div class="item"><div><strong>Geração de vídeo</strong><small>Clipes cinematográficos por cena</small></div><span class="tag">A CONFIGURAR</span></div>
+        <div class="item"><div><strong>Voz e efeitos sonoros</strong><small>ElevenLabs: narração, vozes e efeitos</small></div><span class="tag">INTEGRADO</span></div>
+      </div>
+    </section>
+    <section class="panel"><h4>Pipeline de produção</h4><p class="sub">Etapas previstas para o fluxo completo.</p>
+      <div class="list">
+        <div class="item"><div><strong>01 · Desenvolvimento</strong><small>Universo, personagens e roteiro</small></div><span class="tag">PLANEJAMENTO</span></div>
+        <div class="item"><div><strong>02 · Pré-produção</strong><small>Storyboard, estilo e cenas</small></div><span class="tag">PLANEJAMENTO</span></div>
+        <div class="item"><div><strong>03 · Produção</strong><small>Imagem, vídeo, voz e trilha</small></div><span class="tag">API FUTURA</span></div>
+        <div class="item"><div><strong>04 · Pós-produção</strong><small>Edição, legendas e exportação</small></div><span class="tag">API FUTURA</span></div>
+      </div>
+
+
+      <div class="panel" style="margin-top:14px">
+        <h4>Elenco de vozes — biblioteca ElevenLabs</h4>
+        <p class="sub">Mais de 50 vozes públicas para personagens, com filtros por idade, gênero e idioma. A biblioteca inclui vozes em português e outros idiomas; confira o idioma antes de gerar.</p>
+        <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px">
+          <div class="field"><label for="cineVoiceAge">Faixa de idade</label><select id="cineVoiceAge"><option value="">Todas</option><option value="infantil">Infantil / criança</option><option value="jovem">Jovem</option><option value="adulto">Adulto</option><option value="idoso">Idoso</option></select></div>
+          <div class="field"><label for="cineVoiceGender">Gênero da voz</label><select id="cineVoiceGender"><option value="">Todos</option><option value="female">Feminina</option><option value="male">Masculina</option><option value="neutral">Neutra</option></select></div>
+          <div class="field"><label for="cineVoiceLanguage">Idioma</label><select id="cineVoiceLanguage"><option value="">Todos os idiomas</option></select></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label for="cineVoiceSearch">Pesquisar voz</label><input id="cineVoiceSearch" type="search" placeholder="Nome, personagem ou estilo..."></div>
+        <div class="field" style="margin-top:10px">
+          <label for="cineVoiceSelect">Escolha a voz do personagem</label>
+          <select id="cineVoiceSelect"><option value="GIuLCSVfgJaUuh7hYOY8">Lucas — Narrador cinematográfico (PT-BR)</option></select>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label for="cineVoiceText">Texto da fala / narração</label>
+          <textarea id="cineVoiceText" maxlength="5000" placeholder="Digite a fala deste personagem..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+          <button class="btn primary" type="button" id="generateCineVoice">▶ Gerar voz</button>
+          <span id="cineVoiceStatus" class="asset-help" aria-live="polite">A geração usa sua chave privada da ElevenLabs no servidor.</span>
+        </div>
+        <audio id="cineVoiceAudio" controls style="display:none;width:100%;margin-top:14px"></audio>
+        <a id="cineVoiceDownload" class="btn" download="cine-series-narracao.mp3" style="display:none;margin-top:8px">⬇ Baixar narração</a>
+      </div>
+      <div class="panel" style="margin-top:14px">
+        <h4>Animais, pássaros e efeitos sonoros</h4>
+        <p class="sub">Crie sons para cenas: latidos, miados, rugidos, uivos, relinchos, cantos de aves, choro de bebê, passos, chuva, vento, trovões, explosões, água, máquinas e ambientes.</p>
+        <div class="field">
+          <label for="cineSfxPreset">Sugestões de som</label>
+          <select id="cineSfxPreset">
+            <option value="">Escolha um exemplo ou escreva o seu</option>
+            <option value="Realistic dog barking three times, close and clear, outdoor ambience">Cachorro latindo</option>
+            <option value="A domestic cat meowing softly several times">Gato miando</option>
+            <option value="A wolf howling in a distant forest at night">Lobo uivando</option>
+            <option value="A powerful lion roaring in the wild">Leão rugindo</option>
+            <option value="A horse neighing and galloping on dirt">Cavalo relinchando e galopando</option>
+            <option value="A tropical forest full of birds singing and chirping">Pássaros cantando na floresta</option>
+            <option value="A parrot squawking and mimicking short calls">Papagaio vocalizando</option>
+            <option value="An owl hooting at night in a quiet forest">Coruja à noite</option>
+            <option value="A baby crying softly in a nursery, realistic natural infant vocalization">Choro de bebê</option>
+            <option value="Heavy rain and distant thunder during a storm">Chuva e trovões</option>
+            <option value="Strong cinematic wind blowing through trees">Vento cinematográfico</option>
+            <option value="Footsteps walking slowly on gravel">Passos no cascalho</option>
+            <option value="A heavy wooden door creaking open slowly">Porta rangendo</option>
+            <option value="A cinematic explosion with debris falling, no voices">Explosão cinematográfica</option>
+            <option value="Ocean waves washing onto a beach">Ondas do mar</option>
+            <option value="A futuristic robot powering up with electronic servo sounds">Robô futurista</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label for="cineSfxPrompt">Descreva o efeito sonoro</label>
+          <textarea id="cineSfxPrompt" maxlength="1000" placeholder="Ex.: Um bando de araras gritando e voando sobre a floresta tropical..."></textarea>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label for="cineSfxDuration">Duração (segundos)</label>
+          <input id="cineSfxDuration" type="number" min="0.5" max="30" step="0.5" value="5">
+        </div>
+        <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="cineSfxLoop" type="checkbox"> Criar som em loop contínuo</label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+          <button class="btn primary" type="button" id="generateCineSfx">♫ Gerar efeito sonoro</button>
+          <span id="cineSfxStatus" class="asset-help" aria-live="polite">A duração especificada consome cerca de 40 créditos por segundo (5 s ≈ 200 créditos).</span>
+        </div>
+        <audio id="cineSfxAudio" controls style="display:none;width:100%;margin-top:14px"></audio>
+        <a id="cineSfxDownload" class="btn" download="cine-series-efeito-sonoro.mp3" style="display:none;margin-top:8px">⬇ Baixar efeito sonoro</a>
+      </div>
+\n      <div class="panel" style="margin-top:14px" id="audioLibraryPanel">
+        <h4>Biblioteca de áudio e trilha por cena</h4>
+        <p class="sub">Guarde as narrações e os efeitos gerados, associe cada arquivo a uma cena e reutilize-os depois. Os arquivos ficam neste navegador.</p>
+        <div class="field">
+          <label for="cineAudioScene">Cena para gerar ou associar áudio</label>
+          <select id="cineAudioScene"><option value="">Sem cena associada</option></select>
+        </div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">
+          <button class="btn primary" type="button" id="generateSceneDialogues">♫ Gerar todas as falas da cena</button>
+          <span class="asset-help" id="sceneDialogueStatus" aria-live="polite">Cada personagem usará sua própria voz cadastrada.</span>
+        </div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn" type="button" id="saveVoiceToLibrary" disabled>＋ Guardar última narração</button>
+          <button class="btn" type="button" id="saveSfxToLibrary" disabled>＋ Guardar último efeito</button>
+        </div>
+        <div class="asset-help" id="cineAudioLibraryStatus" aria-live="polite" style="margin-top:9px">Gere uma narração ou efeito e guarde-o aqui para reutilizar.</div>
+        <div class="list" id="cineAudioAssetList" style="margin-top:12px"><div class="empty">Sua biblioteca de áudio aparecerá aqui.</div></div>
+        <div class="panel" id="cineTimelinePanel" style="margin-top:16px">
+          <h4>🎬 Linha do tempo de áudio</h4>
+          <p class="sub">Organize as faixas da cena, ajuste o início e o volume de cada uma e reproduza a mixagem. As alterações ficam salvas no projeto neste navegador.</p>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;margin:10px 0">
+            <button class="btn" type="button" id="addSceneAudioToTimeline">＋ Adicionar áudios da cena</button>
+            <button class="btn primary" type="button" id="playCineTimeline">▶ Reproduzir mixagem</button>
+            <button class="btn" type="button" id="stopCineTimeline" disabled>■ Parar</button>
+          </div>
+          <div class="asset-help" id="cineTimelineStatus" aria-live="polite">Adicione faixas da biblioteca para montar a cena.</div>
+          <div class="list" id="cineTimelineTracks" style="margin-top:12px"><div class="empty">Nenhuma faixa na linha do tempo.</div></div>
+        </div>
+        <div class="panel" id="cineAssemblyPanel" style="margin-top:16px">
+        <h4>Montagem do episódio — plano de edição</h4>
+        <p class="sub">Organize a ordem das cenas, duração de cada plano, imagem principal e transição. O plano conecta os materiais já cadastrados e pode ser exportado para orientar a edição/renderização.</p>
+        <div class="form-grid">
+          <div class="field"><label for="cineAssemblyEpisode">Episódio para montar</label><select id="cineAssemblyEpisode"><option value="">Todos os episódios</option></select></div>
+          <div class="field"><label for="cineAssemblyDefaultDuration">Duração inicial por cena (segundos)</label><input id="cineAssemblyDefaultDuration" type="number" min="1" max="600" step="1" value="5"></div>
+          <div class="field full" style="display:flex;gap:9px;flex-wrap:wrap">
+            <button class="btn primary" type="button" id="buildCineAssembly">Montar sequência</button>
+            <button class="btn" type="button" id="exportCineAssembly" disabled>↓ Exportar plano de edição JSON</button>
+          <div class="field full" style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">
+            <button class="btn primary" type="button" id="renderCineEpisode">🎬 Renderizar episódio MP4</button>
+          </div>
+          <div class="asset-help" id="cineRenderStatus" aria-live="polite" style="margin:8px 0">Selecione uma imagem principal para cada cena. Os áudios usados serão os que estiverem na linha do tempo.</div>
+          </div>
+        </div>
+        <div class="stats" style="margin-top:12px">
+          <div class="stat"><span>Cenas na montagem</span><strong id="cineAssemblySceneCount">0</strong></div>
+          <div class="stat"><span>Duração estimada</span><strong id="cineAssemblyDuration">00:00</strong></div>
+          <div class="stat"><span>Materiais visuais</span><strong id="cineAssemblyVisualCount">0</strong></div>
+        </div>
+        <div class="asset-help" id="cineAssemblyStatus" aria-live="polite" style="margin:10px 0">Escolha um episódio e monte a sequência de cenas.</div>
+        <div class="list" id="cineAssemblyList"><div class="empty">A sequência de montagem aparecerá aqui.</div></div>
+      </div>
+      <div class="panel" id="cineSubtitlePanel" style="margin-top:16px">
+          <h4>Legendas do episódio — SRT / VTT</h4>
+          <p class="sub">Gere arquivos de legenda a partir dos diálogos cadastrados nas cenas. Os tempos são estimados pela quantidade de palavras e precisam ser revisados antes da edição final.</p>
+          <div class="form-grid">
+            <div class="field"><label for="cineSubtitleEpisode">Episódio</label><select id="cineSubtitleEpisode"><option value="">Todos os episódios</option></select></div>
+            <div class="field"><label for="cineSubtitleStart">Começar em (segundos)</label><input id="cineSubtitleStart" type="number" min="0" step="0.5" value="0"></div>
+            <div class="field"><label for="cineSubtitleWpm">Velocidade estimada (palavras/minuto)</label><input id="cineSubtitleWpm" type="number" min="60" max="300" step="5" value="150"></div>
+            <div class="field"><label for="cineSubtitleGap">Intervalo entre falas (segundos)</label><input id="cineSubtitleGap" type="number" min="0" max="3" step="0.1" value="0.35"></div>
+            <div class="field full" style="display:flex;gap:9px;flex-wrap:wrap">
+              <button class="btn primary" type="button" id="previewCineSubtitles">Pré-visualizar legendas</button>
+              <button class="btn" type="button" id="downloadCineSrt" disabled>↓ Baixar SRT</button>
+              <button class="btn" type="button" id="downloadCineVtt" disabled>↓ Baixar VTT</button>
+            </div>
+          </div>
+          <div class="asset-help" id="cineSubtitleStatus" aria-live="polite" style="margin:10px 0">Selecione um episódio e gere a prévia. Os arquivos podem ser importados em editores de vídeo.</div>
+          <div class="list" id="cineSubtitlePreview"><div class="empty">A prévia das legendas aparecerá aqui.</div></div>
+        </div>
+      </div>
+      <div class="api"><span class="dot"></span><div><b>Integrações ainda não conectadas</b><small>Nenhuma chave de API é necessária para organizar seus projetos nesta etapa.</small></div></div>
+    </section>
+  </div>
+  <p class="footnote">Cine Séries é um módulo separado do editor de avatares. Nesta primeira etapa, os rascunhos ficam salvos neste navegador e podem ser exportados em JSON. A geração de roteiro, imagens, narração e efeitos já possui integração no backend. Geração de vídeo, sincronização em nuvem e cobrança de créditos de IA ainda serão desenvolvidas.</p>
+</main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+const KEY='rolezando_cine_series_v1';
+const state={projects:[],episodes:[],scenes:[],characters:[],locations:[],assets:[],audioAssets:[],scripts:[],timelineTracks:[]};
+const $=id=>document.getElementById(id);
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600)}
+function read(){try{const data=JSON.parse(localStorage.getItem(KEY)||'{}');state.projects=Array.isArray(data.projects)?data.projects:[];state.episodes=Array.isArray(data.episodes)?data.episodes:[];state.scenes=Array.isArray(data.scenes)?data.scenes:[];state.characters=Array.isArray(data.characters)?data.characters:[];state.locations=Array.isArray(data.locations)?data.locations:[];state.assets=Array.isArray(data.assets)?data.assets:[];state.audioAssets=Array.isArray(data.audioAssets)?data.audioAssets:[];state.scripts=Array.isArray(data.scripts)?data.scripts:[];state.timelineTracks=Array.isArray(data.timelineTracks)?data.timelineTracks:[];state.characters.forEach((item,i)=>{if(!item.id)item.id='character-'+i+'-'+(item.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')});state.locations.forEach((item,i)=>{if(!item.id)item.id='location-'+i+'-'+(item.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')});state.scenes.forEach((item,i)=>{if(!item.id)item.id='scene-'+i+'-'+Date.now()})}catch(e){toast('Não foi possível ler o rascunho salvo neste navegador.')}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));renderStats();return true}catch(e){toast('Não foi possível salvar. O armazenamento do navegador pode estar cheio.');return false}}
+function renderStats(){$('statProjects').textContent=state.projects.length;$('statEpisodes').textContent=state.episodes.length;$('statScenes').textContent=state.scenes.length;$('statCharacters').textContent=state.characters.length}
+function renderEpisodes(){const box=$('episodeList');box.innerHTML='';if(!state.episodes.length){box.innerHTML='<div class="empty">Seus episódios aparecerão aqui.</div>';return}state.episodes.forEach((ep,i)=>{const el=document.createElement('div');el.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent='EP '+ep.number+' · '+ep.title;const small=document.createElement('small');small.textContent=ep.status;info.append(title,small);const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.episodes.splice(i,1);save();renderEpisodes()});el.append(info,del);box.append(el)})}
+function renderSceneComposerOptions(){
+ const episode=$('sceneComposerEpisode'),location=$('sceneComposerLocation'),characters=$('sceneComposerCharacters'),assets=$('sceneComposerAssets');
+ if(!episode)return;
+ const episodeValue=episode.value,locationValue=location.value;
+ episode.innerHTML='<option value="">Sem episódio definido</option>';
+ state.episodes.forEach(ep=>{const o=document.createElement('option');o.value=String(ep.number);o.textContent='EP '+ep.number+' · '+ep.title;episode.append(o)});
+ if([...episode.options].some(o=>o.value===episodeValue))episode.value=episodeValue;
+ location.innerHTML='<option value="">Escolher depois / livre</option>';
+ state.locations.forEach(item=>{const o=document.createElement('option');o.value=item.id;o.textContent=item.name;location.append(o)});
+ if([...location.options].some(o=>o.value===locationValue))location.value=locationValue;
+ characters.innerHTML='';state.characters.forEach(item=>{const o=document.createElement('option');o.value=item.id;o.textContent=item.name+' · '+(item.role||'Personagem');characters.append(o)});
+ assets.innerHTML='';state.assets.forEach(item=>{const o=document.createElement('option');o.value=String(item.id);o.textContent=(item.name||item.fileName)+' · '+item.type;assets.append(o)});
+}
+function renderScenes(){const box=$('sceneList');box.innerHTML='';if(!state.scenes.length){box.innerHTML='<div class="empty">Adicione uma cena para começar seu storyboard.</div>';return}state.scenes.forEach((scene,i)=>{const el=document.createElement('div');el.className='scene';const num=document.createElement('div');num.className='scene-num';num.textContent=String(i+1).padStart(2,'0');const info=document.createElement('div');const title=document.createElement('strong');title.textContent=scene.title;const small=document.createElement('small');const cast=(scene.characterSnapshots||[]).map(c=>c.name).join(', ');const refs=(scene.referenceAssets||[]).length;const dialogueCount=(scene.dialogue||[]).length;small.textContent=[scene.episodeNumber?'EP '+scene.episodeNumber:'',scene.location,cast?'Elenco: '+cast:'',scene.camera,refs?refs+' referência(s) visual(is)':'',dialogueCount?dialogueCount+' falas': '',scene.description,scene.continuityNotes?'Continuidade: '+scene.continuityNotes:''].filter(Boolean).join(' · ');info.append(title,small);const del=document.createElement('button');del.type='button';del.setAttribute('aria-label','Remover cena');del.textContent='×';del.addEventListener('click',()=>{state.scenes.splice(i,1);save();renderScenes();renderNvidiaScenePicker();renderAudioSceneOptions()});el.append(num,info,del);box.append(el)})}
+
+function refreshNvidiaScenePicker(){
+ const picker=$('nvidiaSceneSelect');if(!picker)return;
+ const selected=picker.value;picker.innerHTML='<option value="">Selecione uma cena cadastrada</option>';
+ state.scenes.forEach(scene=>{const option=document.createElement('option');option.value=scene.id;option.textContent=scene.title+(scene.episodeNumber?' · EP '+scene.episodeNumber:'');picker.append(option)});
+ if([...picker.options].some(option=>option.value===selected))picker.value=selected;
+}
+function nvidiaScenePrompt(scene){
+ const cast=(scene.characterSnapshots||[]).map(c=>[
+  'PERSONAGEM: '+c.name,
+  c.role?'PAPEL: '+c.role:'',
+  c.look?'APARÊNCIA E FIGURINO FIXOS: '+c.look:'',
+  c.personality?'PERSONALIDADE: '+c.personality:'',
+  c.voice?'VOZ/INTERPRETAÇÃO: '+c.voice:''
+ ].filter(Boolean).join('\n')).join('\n\n');
+ const place=scene.locationSnapshot?[
+  'LOCAÇÃO: '+scene.locationSnapshot.name,
+  scene.locationSnapshot.type||'',
+  scene.locationSnapshot.description||''
+ ].filter(Boolean).join(' · '):scene.location||'Locação definida pela descrição da cena.';
+ const series=state.projects[0]||{};
+ return [
+  'Crie um único quadro cinematográfico de alta qualidade para uma série audiovisual.',
+  series.title?'SÉRIE: '+series.title:'',
+  series.genre?'GÊNERO: '+series.genre:'',
+  'CENA: '+scene.title,
+  'AÇÃO E COMPOSIÇÃO: '+(scene.description||''),
+  'AMBIENTE: '+place,
+  scene.camera?'CÂMERA E ENQUADRAMENTO: '+scene.camera:'',
+  cast?'FICHAS VISUAIS DO ELENCO — preserve rigorosamente a identidade de cada personagem:\n'+cast:'',
+  scene.continuityNotes?'REGRAS OBRIGATÓRIAS DE CONTINUIDADE: '+scene.continuityNotes:'',
+  'CONTINUIDADE: personagens devem manter rosto, idade aparente, cabelo, roupas, acessórios e características visuais das imagens de referência. Não invente mudanças de aparência.',
+  'DIREÇÃO DE ARTE: iluminação coerente, cores consistentes, anatomia natural, composição profissional, detalhes realistas, sem texto, sem legendas, sem marcas d’água.'
+ ].filter(Boolean).join('\n\n');
+}
+async function compressNvidiaImage(dataUrl){
+ return new Promise((resolve,reject)=>{const image=new Image();image.onerror=()=>reject(new Error('Não foi possível preparar a imagem gerada.'));image.onload=()=>{const max=1600,scale=Math.min(1,max/Math.max(image.width,image.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.82))};image.src=dataUrl});
+}
+$('generateNvidiaScene').addEventListener('click',async()=>{
+ const scene=state.scenes.find(item=>item.id===$('nvidiaSceneSelect').value);
+ const status=$('nvidiaImageStatus'),button=$('generateNvidiaScene');
+ if(!scene){toast('Cadastre e selecione uma cena primeiro.');return}
+ const referenceImages=(scene.referenceAssets||[]).map(ref=>state.assets.find(asset=>String(asset.id)===String(ref.id))?.dataUrl).filter(Boolean).slice(0,8);
+ button.disabled=true;button.textContent='Gerando imagem...';status.textContent='Enviando cena e referências para a NVIDIA...';
+ try{
+  const response=await fetch('/api/cine/image',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({prompt:nvidiaScenePrompt(scene),referenceImages})});
+  if(!response.ok){let message='Não foi possível gerar a imagem.';try{message=(await response.json()).error||message}catch(_){}throw new Error(message)}
+  const result=await response.json();
+  const compressed=await compressNvidiaImage(result.image);
+  const asset={id:'nvidia-image-'+Date.now(),name:'Cena: '+scene.title,type:'Imagem gerada pela NVIDIA',fileName:'cine-series-'+scene.id+'.jpg',dataUrl:compressed,sceneId:scene.id,createdAt:new Date().toISOString(),provider:'NVIDIA NIM',model:result.model};
+  state.assets.push(asset);
+  save();renderAssets();renderSceneComposerOptions();
+  $('nvidiaScenePreview').src=compressed;$('nvidiaSceneDownload').href=compressed;$('nvidiaSceneDownload').download=asset.fileName;$('nvidiaImageResult').style.display='block';
+  status.textContent='Imagem gerada e salva na biblioteca de imagens do projeto ('+result.model+').';
+ }catch(error){status.textContent=error.message;toast(error.message)}
+ finally{button.disabled=false;button.textContent='✦ Gerar imagem da cena'}
+});
+fetch('/api/cine/image-config',{credentials:'same-origin'}).then(r=>r.json()).then(config=>{
+ $('nvidiaImageStatus').textContent=config.configured?'NVIDIA conectada · '+config.model:'Aguardando NVIDIA_API_KEY nas variáveis privadas do servidor.';
+}).catch(()=>$('nvidiaImageStatus').textContent='Não foi possível verificar a configuração NVIDIA.');
+
+function saveProject(){const project={id:Date.now(),title:$('seriesTitle').value.trim(),genre:$('genre').value,format:$('format').value,seasons:Number($('seasonCount').value)||1,episodeLength:$('episodeLength').value,synopsis:$('synopsis').value.trim(),updatedAt:new Date().toISOString()};if(!project.title){toast('Informe o nome da série.');return}const idx=state.projects.findIndex(p=>p.title.toLowerCase()===project.title.toLowerCase());if(idx>=0)state.projects[idx]=project;else state.projects.push(project);save();toast('Ficha da série salva neste navegador.')}
+function renderCharacters(){const box=$('characterList');box.innerHTML='';if(!state.characters.length){box.innerHTML='<div class="empty">Seu elenco aparecerá aqui.</div>';return}state.characters.forEach((c,i)=>{const el=document.createElement('div');el.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent=c.name;const small=document.createElement('small');const voice=cineVoices.find(v=>v.id===c.voiceId);small.textContent=[c.role,c.look,c.voice,voice?'Voz: '+voice.name:'Voz padrão'].filter(Boolean).join(' · ');info.append(title,small);const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.characters.splice(i,1);save();renderCharacters();renderSceneComposerOptions()});el.append(info,del);box.append(el)})}
+function renderLocations(){const box=$('locationList');box.innerHTML='';if(!state.locations.length){box.innerHTML='<div class="empty">Suas locações aparecerão aqui.</div>';return}state.locations.forEach((l,i)=>{const el=document.createElement('div');el.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent=l.name;const small=document.createElement('small');small.textContent=[l.type,l.description].filter(Boolean).join(' · ');info.append(title,small);const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.locations.splice(i,1);save();renderLocations();renderAssets();renderSceneComposerOptions()});el.append(info,del);box.append(el)})}
+$('characterForm').addEventListener('submit',e=>{e.preventDefault();state.characters.push({id:'character-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:$('characterName').value.trim(),role:$('characterRole').value,personality:$('characterPersonality').value.trim(),look:$('characterLook').value.trim(),voice:$('characterVoice').value.trim(),voiceId:$('characterVoiceId').value||'GIuLCSVfgJaUuh7hYOY8'});save();renderCharacters();renderSceneComposerOptions();e.target.reset();toast('Personagem salvo na bíblia da série.')});
+$('locationForm').addEventListener('submit',e=>{e.preventDefault();state.locations.push({id:'location-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:$('locationName').value.trim(),type:$('locationType').value,description:$('locationDescription').value.trim()});save();renderLocations();renderSceneComposerOptions();e.target.reset();toast('Locação adicionada à biblioteca.')});
+$('projectForm').addEventListener('submit',e=>{e.preventDefault();saveProject()});
+$('episodeForm').addEventListener('submit',e=>{e.preventDefault();const title=$('episodeTitle').value.trim();if(!title)return;state.episodes.push({number:Number($('episodeNumber').value)||state.episodes.length+1,title,status:$('episodeStatus').value});save();renderEpisodes();renderSceneComposerOptions();refreshWriterEpisodePicker();$('episodeTitle').value='';$('episodeNumber').value=state.episodes.length+1;toast('Episódio adicionado.')});
+$('addScene').addEventListener('click',()=>{$('sceneComposerTitle').focus();$('sceneComposerForm').scrollIntoView({behavior:'smooth',block:'center'})});
+$('sceneComposerForm').addEventListener('submit',e=>{e.preventDefault();const selected=(id)=>Array.from($(id).selectedOptions).map(o=>o.value);const characterIds=selected('sceneComposerCharacters');const assetIds=selected('sceneComposerAssets');const locationId=$('sceneComposerLocation').value;const location=state.locations.find(item=>item.id===locationId);const characterSnapshots=state.characters.filter(item=>characterIds.includes(item.id)).map(item=>({id:item.id,name:item.name,role:item.role,look:item.look,voice:item.voice,voiceId:item.voiceId||'GIuLCSVfgJaUuh7hYOY8',personality:item.personality}));const referenceAssets=state.assets.filter(item=>assetIds.includes(String(item.id))).map(item=>({id:item.id,name:item.name||item.fileName,type:item.type,fileName:item.fileName}));state.scenes.push({id:'scene-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),title:$('sceneComposerTitle').value.trim(),episodeNumber:$('sceneComposerEpisode').value||'',location:location?location.name:'',locationId:locationId||'',locationSnapshot:location?{name:location.name,type:location.type,description:location.description}:null,camera:$('sceneComposerCamera').value.trim(),description:$('sceneComposerDescription').value.trim(),characterIds,characterSnapshots,referenceAssets,continuityNotes:$('sceneComposerContinuity').value.trim(),createdAt:new Date().toISOString()});save();renderScenes();renderNvidiaScenePicker();renderAudioSceneOptions();e.target.reset();toast('Cena salva com referências de continuidade.')});
+
+
+function refreshWriterEpisodePicker(){
+ const picker=$('writerEpisode');if(!picker)return;const value=picker.value;
+ picker.innerHTML='<option value="">Novo episódio / sem vínculo</option>';
+ state.episodes.forEach(ep=>{const option=document.createElement('option');option.value=String(ep.number);option.textContent='EP '+ep.number+' · '+ep.title;picker.append(option)});
+ if([...picker.options].some(option=>option.value===value))picker.value=value;
+}
+let currentGeneratedScreenplay=null;
+$('generateNvidiaScript').addEventListener('click',async()=>{
+ const idea=$('writerIdea').value.trim()||state.projects[0]?.synopsis||'';
+ if(!idea){toast('Descreva a história do episódio antes de gerar.');$('writerIdea').focus();return}
+ const button=$('generateNvidiaScript'),status=$('writerStatus');
+ button.disabled=true;button.textContent='Escrevendo roteiro...';status.textContent='A NVIDIA está desenvolvendo cenas, diálogos e continuidade...';
+ try{
+  const episodeNumber=$('writerEpisode').value;
+  const episode=state.episodes.find(item=>String(item.number)===episodeNumber)||{};
+  const response=await fetch('/api/cine/script',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({
+   idea,episode,series:state.projects[0]||{},characters:state.characters.map(({name,role,look,voice,voiceId,personality})=>({name,role,look,voice,voiceId,personality})),
+   locations:state.locations.map(({name,type,description})=>({name,type,description})),
+   style:$('writerStyle').value,sceneCount:Number($('writerSceneCount').value)||6
+  })});
+  const result=await response.json();if(!response.ok)throw new Error(result.error||'Não foi possível gerar o roteiro.');
+  currentGeneratedScreenplay=result.screenplay;
+  $('writerOutput').value=JSON.stringify(result.screenplay,null,2);$('writerOutputWrap').style.display='grid';
+  state.scripts.push({id:'script-'+Date.now(),episodeNumber,title:result.screenplay.title||episode.title||'Roteiro gerado',screenplay:result.screenplay,model:result.model,createdAt:new Date().toISOString()});
+  save();status.textContent='Roteiro criado com '+result.screenplay.scenes.length+' cenas usando '+result.model+'. Revise antes de importar.';
+ }catch(error){status.textContent=error.message;toast(error.message)}
+ finally{button.disabled=false;button.textContent='✦ Criar roteiro com NVIDIA'}
+});
+$('importWriterScenes').addEventListener('click',()=>{
+ try{
+  const screenplay=JSON.parse($('writerOutput').value);
+  if(!Array.isArray(screenplay.scenes)||!screenplay.scenes.length)throw new Error('O roteiro não contém cenas.');
+  const episodeNumber=$('writerEpisode').value||'';
+  const added=screenplay.scenes.slice(0,20).map((item,index)=>{
+   const names=Array.isArray(item.characters)?item.characters:[];
+   const matched=state.characters.filter(character=>names.some(name=>String(name).toLowerCase()===String(character.name).toLowerCase()));
+   const location=state.locations.find(place=>place.name.toLowerCase()===String(item.location||'').toLowerCase());
+   const dialogue=Array.isArray(item.dialogue)?item.dialogue:[];
+   const dialogueText=dialogue.map(line=>line.character+': "'+line.text+'" ('+line.emotion+')').join('\n');
+   return {id:'scene-ai-'+Date.now()+'-'+index+'-'+Math.random().toString(36).slice(2,6),title:item.title||'Cena '+(index+1),episodeNumber,location:location?.name||item.location||'',locationId:location?.id||'',locationSnapshot:location?{name:location.name,type:location.type,description:location.description}:null,camera:item.camera||'',description:[item.action,item.timeOfDay?'Horário: '+item.timeOfDay:'',item.sound?'Som: '+item.sound:'',dialogueText?'DIÁLOGOS:\n'+dialogueText:''].filter(Boolean).join('\n\n'),characterIds:matched.map(c=>c.id),characterSnapshots:matched.map(c=>({id:c.id,name:c.name,role:c.role,look:c.look,voice:c.voice,voiceId:c.voiceId||'GIuLCSVfgJaUuh7hYOY8',personality:c.personality})),referenceAssets:[],continuityNotes:item.continuityNotes||'',dialogue,sourceScript:screenplay.title||'',createdAt:new Date().toISOString()};
+  });
+  state.scenes.push(...added);save();renderScenes();renderNvidiaScenePicker();renderAudioSceneOptions();toast(added.length+' cenas adicionadas ao storyboard com diálogos.');
+ }catch(error){toast('Não foi possível importar: '+error.message)}
+});
+$('downloadWriterScript').addEventListener('click',()=>{
+ try{const data=JSON.parse($('writerOutput').value);const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='roteiro-cine-series.json';a.click();URL.revokeObjectURL(url)}catch(error){toast('O JSON do roteiro está inválido.')}
+});
+function renderAssets(){const box=$('assetList');if(!box)return;box.innerHTML='';if(!state.assets.length){box.innerHTML='<div class="empty">Nenhuma imagem adicionada ainda.</div>';return}state.assets.forEach((asset,i)=>{const card=document.createElement('article');card.className='asset-card';const img=document.createElement('img');img.src=asset.dataUrl;img.alt=asset.name||asset.type;const meta=document.createElement('div');meta.className='asset-meta';const title=document.createElement('strong');title.textContent=asset.name||'Imagem '+(i+1);const small=document.createElement('small');small.textContent=asset.type+' · '+asset.fileName;const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',()=>{state.assets.splice(i,1);save();renderAssets();toast('Imagem removida da biblioteca.')});meta.append(title,small,del);card.append(img,meta);box.append(card)})}
+function optimizeImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(new Error('Falha ao ler '+file.name));reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error('Arquivo de imagem inválido: '+file.name));img.onload=()=>{const max=1600,scale=Math.min(1,max/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.82))};img.src=reader.result};reader.readAsDataURL(file)})}
+$('uploadAssets').addEventListener('click',async()=>{const picker=$('assetFiles');const files=Array.from(picker.files||[]);if(!files.length){toast('Escolha pelo menos uma imagem.');return}const button=$('uploadAssets');button.disabled=true;button.textContent='Otimizando imagens...';let added=0;try{for(const file of files){if(!file.type.startsWith('image/'))continue;if(file.size>2*1024*1024){toast(file.name+' ultrapassa 2 MB.');continue}const dataUrl=await optimizeImage(file);state.assets.push({id:Date.now()+Math.random(),type:$('assetType').value,name:$('assetName').value.trim()||file.name.replace(/\\.[^.]+$/,''),fileName:file.name,mimeType:'image/jpeg',dataUrl,createdAt:new Date().toISOString()});if(save()){added++}else{state.assets.pop();toast('Armazenamento local cheio. Remova algumas imagens e tente novamente.');break}}renderAssets();renderSceneComposerOptions();picker.value='';$('assetName').value='';if(added)toast(added+' imagem(ns) adicionada(s) à biblioteca.')}catch(e){toast(e.message||'Não foi possível processar a imagem.')}finally{button.disabled=false;button.textContent='＋ Adicionar imagens à biblioteca'}});
+
+
+
+let cineVoices=[];
+let lastGeneratedVoiceBlob=null,lastGeneratedSfxBlob=null;
+const AUDIO_DB='rolezando_cine_audio_v1';
+function openAudioDb(){return new Promise((resolve,reject)=>{if(!('indexedDB' in window)){reject(new Error('Este navegador não oferece armazenamento local de áudio.'));return}const req=indexedDB.open(AUDIO_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('audio'))req.result.createObjectStore('audio',{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Falha ao abrir a biblioteca de áudio.'))})}
+async function putAudioBlob(id,blob){const db=await openAudioDb();return new Promise((resolve,reject)=>{const tx=db.transaction('audio','readwrite');tx.objectStore('audio').put({id,blob});tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||new Error('Falha ao guardar áudio.'))}})}
+async function getAudioBlob(id){const db=await openAudioDb();return new Promise((resolve,reject)=>{const req=db.transaction('audio','readonly').objectStore('audio').get(id);req.onsuccess=()=>{db.close();resolve(req.result?.blob||null)};req.onerror=()=>{db.close();reject(req.error||new Error('Falha ao abrir áudio.'))}})}
+async function deleteAudioBlob(id){const db=await openAudioDb();return new Promise((resolve,reject)=>{const tx=db.transaction('audio','readwrite');tx.objectStore('audio').delete(id);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||new Error('Falha ao remover áudio.'))}})}
+function renderAudioSceneOptions(){const select=$('cineAudioScene');if(!select)return;const current=select.value;select.innerHTML='<option value="">Sem cena associada</option>';state.scenes.forEach(scene=>{const option=document.createElement('option');option.value=scene.id||scene.title;option.textContent=scene.title;select.append(option)});if([...select.options].some(o=>o.value===current))select.value=current}
+async function renderAudioAssets(){const box=$('cineAudioAssetList');if(!box)return;box.innerHTML='';if(!state.audioAssets.length){box.innerHTML='<div class="empty">Sua biblioteca de áudio aparecerá aqui.</div>';return}state.audioAssets.forEach((asset,index)=>{const row=document.createElement('div');row.className='item';const info=document.createElement('div');const title=document.createElement('strong');title.textContent=asset.name;const small=document.createElement('small');small.textContent=(asset.characterName?'Fala de '+asset.characterName:asset.kind==='voice'?'Narração':'Efeito sonoro')+' · '+(asset.voiceName||'')+(asset.emotion?' · '+asset.emotion:'')+' · '+(asset.sceneTitle||'Sem cena associada')+' · '+new Date(asset.createdAt).toLocaleString('pt-BR');info.append(title,small);const actions=document.createElement('div');actions.style.cssText='display:flex;gap:6px;flex-wrap:wrap';const play=document.createElement('button');play.className='btn';play.type='button';play.textContent='▶ Ouvir';play.addEventListener('click',async()=>{try{const blob=await getAudioBlob(asset.id);if(!blob)throw new Error('Arquivo de áudio não encontrado neste navegador.');const url=URL.createObjectURL(blob);const player=new Audio(url);player.addEventListener('ended',()=>URL.revokeObjectURL(url),{once:true});await player.play()}catch(error){toast(error.message)}});const download=document.createElement('button');download.className='btn';download.type='button';download.textContent='↓ Baixar';download.addEventListener('click',async()=>{try{const blob=await getAudioBlob(asset.id);if(!blob)throw new Error('Arquivo de áudio não encontrado.');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=asset.fileName||'cine-series-audio.mp3';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)}catch(error){toast(error.message)}});const del=document.createElement('button');del.className='btn';del.type='button';del.textContent='Remover';del.addEventListener('click',async()=>{try{await deleteAudioBlob(asset.id);state.audioAssets.splice(index,1);state.timelineTracks=state.timelineTracks.filter(track=>track.audioId!==asset.id);save();renderAudioAssets();renderCineTimeline();toast('Áudio removido da biblioteca e da linha do tempo.')}catch(error){toast(error.message)}});const addTrack=document.createElement('button');addTrack.className='btn';addTrack.type='button';addTrack.textContent='＋ Timeline';addTrack.addEventListener('click',async()=>{const added=await addAudioAssetToTimeline(asset);if(added){renderCineTimeline();toast('Faixa adicionada à linha do tempo.')}else toast('Faixa já adicionada.')});actions.append(play,download,addTrack,del);row.append(info,actions);box.append(row)})}
+
+function timelineTracksForScene(){const sceneId=$('cineAudioScene').value;return state.timelineTracks.filter(track=>!sceneId||track.sceneId===sceneId)}
+function renderCineTimeline(){
+ const box=$('cineTimelineTracks');if(!box)return;box.innerHTML='';const tracks=timelineTracksForScene();
+ if(!tracks.length){box.innerHTML='<div class="empty">Nenhuma faixa na linha do tempo desta cena.</div>';return}
+ tracks.forEach(track=>{
+  const row=document.createElement('div');row.className='item';row.style.cssText='display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap';
+  const info=document.createElement('div'),title=document.createElement('strong'),meta=document.createElement('small');title.textContent=track.name||'Faixa';meta.textContent=(track.characterName||track.kind||'Áudio')+' · início '+Number(track.startAt||0).toFixed(1)+'s';info.append(title,meta);
+  const controls=document.createElement('div');controls.style.cssText='display:flex;gap:6px;flex-wrap:wrap;align-items:center';
+  const start=document.createElement('input');start.type='number';start.min='0';start.step='0.1';start.value=String(track.startAt||0);start.style.width='76px';start.title='Início em segundos';start.addEventListener('change',()=>{track.startAt=Math.max(0,Number(start.value)||0);save();renderCineTimeline()});
+  const volume=document.createElement('input');volume.type='range';volume.min='0';volume.max='1';volume.step='0.05';volume.value=String(track.volume??1);volume.title='Volume';volume.style.width='85px';volume.addEventListener('input',()=>{track.volume=Number(volume.value);save()});
+  const up=document.createElement('button'),down=document.createElement('button'),remove=document.createElement('button');[[up,'↑',-1],[down,'↓',1]].forEach(([button,label,direction])=>{button.type='button';button.className='btn';button.textContent=label;button.addEventListener('click',()=>moveTimelineTrack(track.id,direction))});remove.type='button';remove.className='btn';remove.textContent='Remover';remove.addEventListener('click',()=>{state.timelineTracks=state.timelineTracks.filter(item=>item.id!==track.id);save();renderCineTimeline()});
+  controls.append(document.createTextNode('Início (s)'),start,document.createTextNode('Volume'),volume,up,down,remove);row.append(info,controls);box.append(row);
+ });
+}
+function moveTimelineTrack(id,direction){const visible=timelineTracksForScene(),index=visible.findIndex(t=>t.id===id),target=visible[index+direction];if(index<0||!target)return;const a=state.timelineTracks.findIndex(t=>t.id===id),b=state.timelineTracks.findIndex(t=>t.id===target.id);[state.timelineTracks[a],state.timelineTracks[b]]=[state.timelineTracks[b],state.timelineTracks[a]];save();renderCineTimeline()}
+async function addAudioAssetToTimeline(asset){if(state.timelineTracks.some(t=>t.audioId===asset.id))return false;const track={id:'track-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),audioId:asset.id,sceneId:asset.sceneId||'',sceneTitle:asset.sceneTitle||'',name:asset.name,kind:asset.kind,characterName:asset.characterName||'',startAt:0,volume:1};state.timelineTracks.push(track);if(!save()){state.timelineTracks.pop();return false}return true}
+$('addSceneAudioToTimeline').addEventListener('click',async()=>{const sceneId=$('cineAudioScene').value;if(!sceneId){toast('Selecione uma cena.');return}const assets=state.audioAssets.filter(a=>a.sceneId===sceneId);let added=0;for(const asset of assets)if(await addAudioAssetToTimeline(asset))added++;renderCineTimeline();$('cineTimelineStatus').textContent=added+' faixa(s) adicionada(s).';toast(added+' faixa(s) adicionada(s).')});
+let cineTimelineContext=null,cineTimelineSources=[];
+function stopCineTimeline(){cineTimelineSources.forEach(source=>{try{source.stop()}catch(_){}});cineTimelineSources=[];if(cineTimelineContext){cineTimelineContext.close().catch(()=>{});cineTimelineContext=null}$('stopCineTimeline').disabled=true}
+$('stopCineTimeline').addEventListener('click',stopCineTimeline);
+$('playCineTimeline').addEventListener('click',async()=>{const tracks=timelineTracksForScene();if(!tracks.length){toast('Adicione faixas primeiro.');return}const button=$('playCineTimeline'),status=$('cineTimelineStatus');button.disabled=true;status.textContent='Preparando mixagem...';try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Reprodução de mixagem não suportada neste navegador.');stopCineTimeline();const context=new AC();cineTimelineContext=context;await context.resume();const decoded=await Promise.all(tracks.map(async track=>{const blob=await getAudioBlob(track.audioId);if(!blob)throw new Error('Arquivo ausente: '+track.name);return {track,buffer:await context.decodeAudioData(await blob.arrayBuffer())}}));const startAt=context.currentTime+.12;let endAt=0;decoded.forEach(({track,buffer})=>{const source=context.createBufferSource(),gain=context.createGain(),offset=Math.max(0,Number(track.startAt)||0);source.buffer=buffer;gain.gain.value=Math.max(0,Math.min(1,Number(track.volume??1)));source.connect(gain);gain.connect(context.destination);source.start(startAt+offset);cineTimelineSources.push(source);endAt=Math.max(endAt,offset+buffer.duration)});$('stopCineTimeline').disabled=false;status.textContent='Mixagem em reprodução · '+decoded.length+' faixa(s).';setTimeout(()=>{if(cineTimelineContext===context){stopCineTimeline();status.textContent='Mixagem concluída.'}},Math.max(0,(startAt-context.currentTime+endAt)*1000)+200)}catch(error){stopCineTimeline();status.textContent=error.message;toast(error.message)}finally{button.disabled=false}});
+$('cineAudioScene').addEventListener('change',renderCineTimeline);
+
+async function saveGeneratedAudio(kind){const blob=kind==='voice'?lastGeneratedVoiceBlob:lastGeneratedSfxBlob;if(!blob){toast('Gere o áudio antes de guardá-lo.');return}const button=$(kind==='voice'?'saveVoiceToLibrary':'saveSfxToLibrary');button.disabled=true;try{const id='audio-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);const sceneId=$('cineAudioScene').value;const scene=state.scenes.find(item=>(item.id||item.title)===sceneId);const asset={id,kind,name:(kind==='voice'?'Narração':'Efeito')+' '+(state.audioAssets.length+1),fileName:(kind==='voice'?'narracao-':'efeito-')+Date.now()+'.mp3',sceneId:sceneId||'',sceneTitle:scene?.title||'',mimeType:blob.type||'audio/mpeg',size:blob.size,createdAt:new Date().toISOString()};await putAudioBlob(id,blob);state.audioAssets.push(asset);if(!save()){state.audioAssets.pop();await deleteAudioBlob(id);return}renderAudioAssets();$('cineAudioLibraryStatus').textContent='Áudio guardado neste navegador'+(asset.sceneTitle?' e associado à cena “'+asset.sceneTitle+'”.':'.');toast('Áudio adicionado à biblioteca.')}catch(error){toast(error.message||'Não foi possível guardar o áudio.')}finally{button.disabled=false}}
+$('saveVoiceToLibrary').addEventListener('click',()=>saveGeneratedAudio('voice'));
+$('saveSfxToLibrary').addEventListener('click',()=>saveGeneratedAudio('sfx'));
+function renderCineVoiceOptions(){
+  const select=$('cineVoiceSelect');if(!select)return;
+  const age=$('cineVoiceAge').value,gender=$('cineVoiceGender').value,language=$('cineVoiceLanguage').value,search=$('cineVoiceSearch').value.trim().toLowerCase();
+  const filtered=cineVoices.filter(v=>(!age||v.category===age)&&(!gender||v.gender===gender)&&(!language||v.language===language)&&(!search||(v.name+' '+(v.tags||[]).join(' ')).toLowerCase().includes(search)));
+  const groups={};
+  filtered.forEach(v=>{const label=v.category==='infantil'?'Infantil / personagens':v.category==='idoso'?'Adultos idosos':v.category==='jovem'?'Jovens':'Adultos';(groups[label] ||= []).push(v)});
+  const current=select.value;select.innerHTML='';
+  Object.entries(groups).forEach(([label,voices])=>{const optgroup=document.createElement('optgroup');optgroup.label=label;voices.forEach(v=>{const option=document.createElement('option');option.value=v.id;option.textContent=v.name+' · '+(v.language||'idioma não informado')+' · '+(v.gender==='female'?'feminina':v.gender==='male'?'masculina':'neutra');optgroup.append(option)});select.append(optgroup)});
+  if(filtered.some(v=>v.id===current))select.value=current;
+  else if(filtered.some(v=>v.id==='GIuLCSVfgJaUuh7hYOY8'))select.value='GIuLCSVfgJaUuh7hYOY8';
+  $('cineVoiceStatus').textContent=filtered.length+' voz(es) encontradas entre '+cineVoices.length+' disponíveis.';
+}
+async function loadCineVoices(){
+  try{
+    const response=await fetch('/api/cine/voices');if(!response.ok)throw new Error('Catálogo indisponível');
+    const data=await response.json();cineVoices=data.voices||[];
+    const characterVoiceSelect=$('characterVoiceId');if(characterVoiceSelect){characterVoiceSelect.innerHTML='';cineVoices.forEach(v=>{const option=document.createElement('option');option.value=v.id;option.textContent=v.name+' · '+(v.language||'idioma não informado');characterVoiceSelect.append(option)});if(cineVoices.some(v=>v.id==='GIuLCSVfgJaUuh7hYOY8'))characterVoiceSelect.value='GIuLCSVfgJaUuh7hYOY8'}
+    const languages=[...new Set(cineVoices.map(v=>v.language).filter(Boolean))].sort();
+    languages.forEach(code=>{const option=document.createElement('option');option.value=code;option.textContent=code.toUpperCase();$('cineVoiceLanguage').append(option)});
+    ['cineVoiceAge','cineVoiceGender','cineVoiceLanguage','cineVoiceSearch'].forEach(id=>$(id).addEventListener(id==='cineVoiceSearch'?'input':'change',renderCineVoiceOptions));
+    renderCineVoiceOptions();
+  }catch(error){$('cineVoiceStatus').textContent='Não foi possível carregar a biblioteca de vozes.'}
+}
+loadCineVoices();
+$('cineSfxPreset').addEventListener('change',e=>{if(e.target.value)$('cineSfxPrompt').value=e.target.value});
+$('generateCineSfx').addEventListener('click',async()=>{
+  const prompt=$('cineSfxPrompt').value.trim(),status=$('cineSfxStatus'),audio=$('cineSfxAudio'),button=$('generateCineSfx');
+  if(!prompt){toast('Descreva o efeito sonoro.');return}
+  button.disabled=true;button.textContent='Gerando efeito...';status.textContent='Criando áudio na ElevenLabs...';audio.pause();audio.removeAttribute('src');audio.style.display='none';
+  try{
+    const response=await fetch('/api/cine/sound-effect',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({prompt,durationSeconds:Number($('cineSfxDuration').value)||5,loop:$('cineSfxLoop').checked})});
+    if(!response.ok){let message='Não foi possível gerar o efeito.';try{message=(await response.json()).error||message}catch(_){}throw new Error(message)}
+    lastGeneratedSfxBlob=await response.blob();$('saveSfxToLibrary').disabled=false;const url=URL.createObjectURL(lastGeneratedSfxBlob);audio.src=url;audio.style.display='block';$('cineSfxDownload').href=url;$('cineSfxDownload').style.display='inline-block';audio.load();audio.play().catch(()=>{});status.textContent='Efeito sonoro gerado. Você pode reproduzir e baixar pelo player.';
+  }catch(error){status.textContent=error.message;toast(error.message)}
+  finally{button.disabled=false;button.textContent='♫ Gerar efeito sonoro'}
+});
+const voiceButton=$('generateCineVoice');
+if(voiceButton){
+  voiceButton.addEventListener('click',async()=>{
+    const text=$('cineVoiceText').value.trim();
+    const status=$('cineVoiceStatus');
+    const audio=$('cineVoiceAudio');
+    if(!text){toast('Digite o texto da narração.');return}
+    voiceButton.disabled=true;
+    voiceButton.textContent='Gerando áudio...';
+    status.textContent='Conectando à ElevenLabs...';
+    audio.pause();audio.removeAttribute('src');audio.style.display='none';
+    try{
+      const response=await fetch('/api/cine/voice',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({text,voiceId:$('cineVoiceSelect').value})});
+      if(!response.ok){let message='Não foi possível gerar a narração.';try{const data=await response.json();message=data.error||message}catch(_){}throw new Error(message)}
+      const blob=await response.blob();
+      lastGeneratedVoiceBlob=blob;$('saveVoiceToLibrary').disabled=false;
+      const url=URL.createObjectURL(blob);
+      audio.src=url;audio.style.display='block';audio.load();
+      status.textContent='Áudio gerado com a voz selecionada: '+$('cineVoiceSelect').selectedOptions[0].textContent+'.';
+      audio.play().catch(()=>{});
+    }catch(error){status.textContent=error.message;toast(error.message)}
+    finally{voiceButton.disabled=false;voiceButton.textContent='▶ Gerar narração'}
+  });
+}
+
+async function generateSceneDialogueTracks(){
+ const sceneId=$('cineAudioScene').value,scene=state.scenes.find(item=>(item.id||item.title)===sceneId);
+ const status=$('sceneDialogueStatus'),button=$('generateSceneDialogues');
+ if(!scene){toast('Selecione uma cena primeiro.');return}
+ const lines=Array.isArray(scene.dialogue)?scene.dialogue.filter(line=>String(line.text||'').trim()).slice(0,30):[];
+ if(!lines.length){toast('Esta cena ainda não possui falas. Gere um roteiro e importe os diálogos primeiro.');return}
+ button.disabled=true;let completed=0,failed=0;
+ try{
+  for(let i=0;i<lines.length;i++){
+   const line=lines[i],characterName=String(line.character||'Narrador').trim();
+   const character=(scene.characterSnapshots||[]).find(c=>c.name.toLowerCase()===characterName.toLowerCase())||state.characters.find(c=>c.name.toLowerCase()===characterName.toLowerCase());
+   const voiceId=character?.voiceId||'GIuLCSVfgJaUuh7hYOY8';
+   status.textContent='Gerando fala '+(i+1)+' de '+lines.length+' · '+characterName+'...';
+   try{
+    const response=await fetch('/api/cine/voice',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({text:String(line.text).trim(),voiceId})});
+    if(!response.ok){let message='Falha ao gerar a fala de '+characterName;try{const data=await response.json();message=data.error||message}catch(_){}throw new Error(message)}
+    const blob=await response.blob(),id='audio-dialogue-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+    await putAudioBlob(id,blob);
+    const voice=cineVoices.find(v=>v.id===voiceId);
+    const asset={id,kind:'voice',name:scene.title+' — '+characterName,fileName:(scene.title+'-'+characterName+'-'+(i+1)+'.mp3').replace(/[^a-z0-9._-]+/gi,'-'),sceneId:scene.id,sceneTitle:scene.title,characterName,emotion:String(line.emotion||''),voiceId,voiceName:voice?.name||'Voz padrão',text:String(line.text).trim(),mimeType:'audio/mpeg',size:blob.size,createdAt:new Date().toISOString()};
+    state.audioAssets.push(asset);
+    if(!save()){state.audioAssets.pop();await deleteAudioBlob(id);throw new Error('Armazenamento local cheio; libere espaço antes de continuar.')}
+    completed++;
+   }catch(error){failed++;status.textContent=error.message;break}
+  }
+  await renderAudioAssets();
+  status.textContent=completed+' de '+lines.length+' falas geradas e guardadas.'+(failed?' Uma fala falhou; as anteriores foram preservadas.':'');
+  toast(completed+' faixa(s) de voz adicionada(s) à biblioteca.');
+ }catch(error){status.textContent=error.message;toast(error.message)}
+ finally{button.disabled=false}
+}
+$('generateSceneDialogues').addEventListener('click',generateSceneDialogueTracks);
+
+let currentAssemblyScenes=[];
+function refreshAssemblyEpisodePicker(){
+ const picker=$('cineAssemblyEpisode');if(!picker)return;const current=picker.value;
+ picker.innerHTML='<option value="">Todos os episódios</option>';
+ state.episodes.forEach(ep=>{const option=document.createElement('option');option.value=String(ep.number);option.textContent='EP '+ep.number+' · '+ep.title;picker.append(option)});
+ if([...picker.options].some(option=>option.value===current))picker.value=current;
+}
+function assemblyScenes(){
+ const episode=$('cineAssemblyEpisode').value;
+ return state.scenes.filter(scene=>!episode||String(scene.episodeNumber||'')===episode);
+}
+function formatAssemblyDuration(total){
+ const seconds=Math.max(0,Math.round(total||0)),minutes=Math.floor(seconds/60);
+ return String(minutes).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+}
+function renderCineAssembly(){
+ const box=$('cineAssemblyList');if(!box)return;box.innerHTML='';
+ const scenes=currentAssemblyScenes;
+ const total=scenes.reduce((sum,scene)=>sum+Math.max(1,Number(scene.assemblyDuration)||5),0);
+ const visualCount=scenes.filter(scene=>state.assets.some(asset=>String(asset.id)===String(scene.assemblyImageId))).length;
+ $('cineAssemblySceneCount').textContent=scenes.length;
+ $('cineAssemblyDuration').textContent=formatAssemblyDuration(total);
+ $('cineAssemblyVisualCount').textContent=visualCount+'/'+scenes.length;
+ $('exportCineAssembly').disabled=!scenes.length;
+ if(!scenes.length){box.innerHTML='<div class="empty">Nenhuma cena encontrada para este episódio.</div>';return}
+ scenes.forEach((scene,index)=>{
+  const row=document.createElement('article');row.className='item';row.style.alignItems='flex-start';
+  const info=document.createElement('div');info.style.flex='1';info.style.minWidth='0';
+  const title=document.createElement('strong');title.textContent=String(index+1).padStart(2,'0')+' · '+scene.title;
+  const details=document.createElement('small');details.textContent=[scene.camera,scene.location,scene.description].filter(Boolean).join(' · ').slice(0,260);
+  const image=state.assets.find(asset=>String(asset.id)===String(scene.assemblyImageId));
+  if(image?.dataUrl){const img=document.createElement('img');img.src=image.dataUrl;img.alt=image.name||'Imagem da cena';img.style.cssText='display:block;width:100%;max-width:230px;max-height:125px;object-fit:cover;border-radius:8px;margin-top:8px';info.append(title,details,img)}else info.append(title,details);
+  const controls=document.createElement('div');controls.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(105px,1fr));gap:7px;min-width:min(100%,230px)';
+  const durationLabel=document.createElement('label');durationLabel.className='asset-help';durationLabel.textContent='Duração (s)';
+  const duration=document.createElement('input');duration.type='number';duration.min='1';duration.max='600';duration.step='1';duration.value=String(scene.assemblyDuration||5);duration.style.cssText='width:100%;min-width:0;background:#0b111d;color:#fff;border:1px solid #344157;border-radius:8px;padding:8px';
+  duration.addEventListener('change',()=>{scene.assemblyDuration=Math.min(600,Math.max(1,Number(duration.value)||5));save();renderCineAssembly()});
+  const transitionLabel=document.createElement('label');transitionLabel.className='asset-help';transitionLabel.textContent='Transição';
+  const transition=document.createElement('select');transition.style.cssText='width:100%;min-width:0;background:#0b111d;color:#fff;border:1px solid #344157;border-radius:8px;padding:8px';
+  [['cut','Corte seco'],['fade','Dissolver'],['fadeblack','Fade para preto'],['wipeleft','Wipe esquerda'],['slideright','Deslizar direita']].forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;transition.append(option)});
+  transition.value=scene.assemblyTransition||'cut';transition.addEventListener('change',()=>{scene.assemblyTransition=transition.value;save()});
+  const imageLabel=document.createElement('label');imageLabel.className='asset-help';imageLabel.textContent='Imagem principal';
+  const imageSelect=document.createElement('select');imageSelect.style.cssText='grid-column:1/-1;width:100%;min-width:0;background:#0b111d;color:#fff;border:1px solid #344157;border-radius:8px;padding:8px';
+  const none=document.createElement('option');none.value='';none.textContent='Sem imagem definida';imageSelect.append(none);
+  state.assets.forEach(asset=>{const option=document.createElement('option');option.value=String(asset.id);option.textContent=(asset.name||asset.fileName||'Imagem')+' · '+asset.type;imageSelect.append(option)});
+  imageSelect.value=String(scene.assemblyImageId||'');imageSelect.addEventListener('change',()=>{scene.assemblyImageId=imageSelect.value;save();renderCineAssembly()});
+  const move=document.createElement('div');move.style.cssText='grid-column:1/-1;display:flex;gap:6px';
+  const up=document.createElement('button'),down=document.createElement('button');up.type=down.type='button';up.className=down.className='btn';up.textContent='↑ Subir';down.textContent='↓ Descer';
+  up.disabled=index===0;down.disabled=index===scenes.length-1;
+  up.addEventListener('click',()=>moveAssemblyScene(index,-1));down.addEventListener('click',()=>moveAssemblyScene(index,1));
+  move.append(up,down);
+  controls.append(durationLabel,duration,transitionLabel,transition,imageLabel,imageSelect,move);
+  row.append(info,controls);box.append(row);
+ });
+ $('cineAssemblyStatus').textContent='Plano com '+scenes.length+' cena(s). Duração aproximada: '+formatAssemblyDuration(total)+'. A transição selecionada é uma instrução de edição, ainda não renderizada.';
+}
+function moveAssemblyScene(index,direction){
+ const target=index+direction;if(target<0||target>=currentAssemblyScenes.length)return;
+ const a=state.scenes.indexOf(currentAssemblyScenes[index]),b=state.scenes.indexOf(currentAssemblyScenes[target]);
+ if(a<0||b<0)return;[state.scenes[a],state.scenes[b]]=[state.scenes[b],state.scenes[a]];
+ currentAssemblyScenes=assemblyScenes();save();renderScenes();renderCineAssembly();
+}
+$('buildCineAssembly').addEventListener('click',()=>{
+ const defaultDuration=Math.min(600,Math.max(1,Number($('cineAssemblyDefaultDuration').value)||5));
+ currentAssemblyScenes=assemblyScenes();
+ currentAssemblyScenes.forEach(scene=>{if(!Number.isFinite(Number(scene.assemblyDuration))||Number(scene.assemblyDuration)<=0)scene.assemblyDuration=defaultDuration;if(!scene.assemblyTransition)scene.assemblyTransition='cut'});
+ save();renderCineAssembly();
+});
+$('cineAssemblyEpisode').addEventListener('change',()=>{currentAssemblyScenes=assemblyScenes();renderCineAssembly()});
+$('exportCineAssembly').addEventListener('click',()=>{
+ if(!currentAssemblyScenes.length)return;
+ const scenes=currentAssemblyScenes.map((scene,index)=>{
+  const image=state.assets.find(asset=>String(asset.id)===String(scene.assemblyImageId));
+  const audio=state.audioAssets.filter(asset=>asset.sceneId===scene.id).map(asset=>({id:asset.id,name:asset.name,kind:asset.kind,characterName:asset.characterName||'',voiceName:asset.voiceName||'',fileName:asset.fileName}));
+  const tracks=state.timelineTracks.filter(track=>track.sceneId===scene.id).map(track=>({audioId:track.audioId,name:track.name,startAt:Number(track.startAt)||0,volume:Number(track.volume??1),kind:track.kind}));
+  return {order:index+1,sceneId:scene.id,title:scene.title,episodeNumber:scene.episodeNumber||'',durationSeconds:Math.max(1,Number(scene.assemblyDuration)||5),transition:scene.assemblyTransition||'cut',image:image?{id:image.id,name:image.name,fileName:image.fileName,type:image.type}:null,camera:scene.camera||'',location:scene.location||'',action:scene.description||'',dialogue:scene.dialogue||[],continuityNotes:scene.continuityNotes||'',audioAssets:audio,audioTimeline:tracks};
+ });
+ const project={format:'cine-series-edit-plan',version:1,createdAt:new Date().toISOString(),series:state.projects[0]||null,episode:$('cineAssemblyEpisode').value||'all',estimatedDurationSeconds:scenes.reduce((sum,scene)=>sum+scene.durationSeconds,0),scenes};
+ downloadSubtitleFile(JSON.stringify(project,null,2),'cine-series-plano-de-edicao.json','application/json;charset=utf-8');
+ $('cineAssemblyStatus').textContent='Plano JSON exportado com cenas, imagens selecionadas, instruções de transição, diálogos e referências de áudio.';
+});
+
+$('renderCineEpisode').addEventListener('click',async()=>{
+ const button=$('renderCineEpisode'),status=$('cineRenderStatus');
+ const scenes=currentAssemblyScenes;
+ if(!scenes.length){toast('Monte a sequência do episódio primeiro.');return}
+ const selected=scenes.map(scene=>({scene,image:state.assets.find(asset=>String(asset.id)===String(scene.assemblyImageId))}));
+ const missing=selected.filter(item=>!item.image?.dataUrl);
+ if(missing.length){status.textContent='Falta imagem principal em: '+missing.map(item=>item.scene.title).join(', ')+'. Escolha uma imagem em cada cena.';toast('Todas as cenas precisam de uma imagem.');return}
+ button.disabled=true;button.textContent='Enviando materiais e renderizando...';status.textContent='Preparando imagens e faixas de áudio locais...';
+ try{
+  const form=new FormData(),imageNames=new Map(),audioNames=new Map(),audioFiles=[];
+  for(let i=0;i<selected.length;i++){
+   const asset=selected[i].image,name='image-'+i+'.jpg';
+   const blob=await (await fetch(asset.dataUrl)).blob();
+   form.append('media',blob,name);imageNames.set(String(asset.id),name);
+  }
+  const includedTracks=[];
+  for(let i=0;i<scenes.length;i++){
+   const scene=scenes[i],tracks=state.timelineTracks.filter(track=>track.sceneId===scene.id);
+   for(const track of tracks){
+    if(audioNames.has(track.audioId))continue;
+    const blob=await getAudioBlob(track.audioId);
+    if(!blob)throw new Error('O áudio "'+(track.name||track.audioId)+'" não foi encontrado neste navegador. Baixe ou gere novamente esse áudio.');
+    const asset=state.audioAssets.find(item=>item.id===track.audioId);
+    const ext=(asset?.fileName||'audio.mp3').split('.').pop().toLowerCase();
+    const safeExt=['mp3','wav','m4a','ogg'].includes(ext)?ext:'mp3';
+    const name='audio-'+audioNames.size+'.'+safeExt;
+    form.append('media',blob,name);audioNames.set(track.audioId,name);
+   }
+  }
+  const manifestScenes=scenes.map(scene=>({
+   id:scene.id,title:scene.title,duration:Math.min(600,Math.max(1,Number(scene.assemblyDuration)||5)),
+   transition:scene.assemblyTransition||'cut',imageFile:imageNames.get(String(scene.assemblyImageId)),
+   audio:state.timelineTracks.filter(track=>track.sceneId===scene.id).map(track=>({
+    file:audioNames.get(track.audioId),startAt:Math.max(0,Number(track.startAt)||0),volume:Math.max(0,Math.min(1,Number(track.volume??1)))
+   }))
+  }));
+  form.append('manifest',JSON.stringify({title:state.projects[0]?.title||'Cine Séries',episode:$('cineAssemblyEpisode').value||'all',scenes:manifestScenes}));
+  status.textContent='Enviando '+selected.length+' imagem(ns) e '+audioNames.size+' áudio(s). O FFmpeg está montando o MP4...';
+  const response=await fetch('/api/cine/render',{method:'POST',credentials:'same-origin',body:form});
+  let result={};try{result=await response.json()}catch(_){}
+  if(!response.ok)throw new Error(result.error||'Falha ao renderizar o episódio.');
+  const link=document.createElement('a');link.href=result.downloadUrl;link.textContent='Baixar episódio MP4';link.className='btn primary';link.style.display='inline-block';link.style.marginTop='8px';
+  status.textContent='MP4 concluído · '+result.scenes+' cenas · '+Math.round(result.durationSeconds)+' segundos · '+(result.sizeBytes/1024/1024).toFixed(1)+' MB. ';
+  status.append(link);toast('Episódio renderizado com sucesso.');
+ }catch(error){status.textContent=error.message||'Erro ao renderizar o episódio.';toast(status.textContent)}
+ finally{button.disabled=false;button.textContent='🎬 Renderizar episódio MP4'}
+});
+
+let generatedSubtitleEntries=[];
+function refreshSubtitleEpisodePicker(){
+ const picker=$('cineSubtitleEpisode');if(!picker)return;const current=picker.value;
+ picker.innerHTML='<option value="">Todos os episódios</option>';
+ state.episodes.forEach(ep=>{const option=document.createElement('option');option.value=String(ep.number);option.textContent='EP '+ep.number+' · '+ep.title;picker.append(option)});
+ if([...picker.options].some(option=>option.value===current))picker.value=current;
+}
+function subtitleTime(seconds,separator=','){
+ const safe=Math.max(0,Number(seconds)||0),hours=Math.floor(safe/3600),minutes=Math.floor((safe%3600)/60),whole=Math.floor(safe%60),millis=Math.round((safe-Math.floor(safe))*1000);
+ const h=String(hours).padStart(2,'0'),m=String(minutes).padStart(2,'0'),s=String(whole).padStart(2,'0'),ms=String(millis).padStart(3,'0');
+ return h+':'+m+':'+s+separator+ms;
+}
+function buildSubtitleEntries(){
+ const episodeFilter=$('cineSubtitleEpisode').value,wpm=Math.min(300,Math.max(60,Number($('cineSubtitleWpm').value)||150));
+ const gap=Math.min(3,Math.max(0,Number($('cineSubtitleGap').value)||0)),offset=Math.max(0,Number($('cineSubtitleStart').value)||0);
+ const scenes=state.scenes.filter(scene=>!episodeFilter||String(scene.episodeNumber||'')===episodeFilter);
+ let cursor=offset,entries=[];
+ scenes.forEach(scene=>(Array.isArray(scene.dialogue)?scene.dialogue:[]).forEach(line=>{
+  const text=String(line.text||'').trim();if(!text)return;
+  const words=text.split(/\s+/).filter(Boolean).length,duration=Math.max(1.1,words/(wpm/60)+0.25);
+  const speaker=String(line.character||'').trim(),caption=(speaker?speaker+': ':'')+text;
+  entries.push({start:cursor,end:cursor+duration,text:caption,sceneTitle:scene.title,episodeNumber:scene.episodeNumber||''});
+  cursor+=duration+gap;
+ }));
+ return entries;
+}
+function downloadSubtitleFile(content,name,type){
+ const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+function subtitleFormats(entries){
+ const srt=entries.map((entry,index)=>(index+1)+'\n'+subtitleTime(entry.start)+' --> '+subtitleTime(entry.end)+'\n'+entry.text).join('\n\n')+'\n';
+ const vtt='WEBVTT\n\n'+entries.map(entry=>subtitleTime(entry.start,'.')+' --> '+subtitleTime(entry.end,'.')+'\n'+entry.text).join('\n\n')+'\n';
+ return {srt,vtt};
+}
+$('previewCineSubtitles').addEventListener('click',()=>{
+ generatedSubtitleEntries=buildSubtitleEntries();
+ const box=$('cineSubtitlePreview');box.innerHTML='';
+ if(!generatedSubtitleEntries.length){box.innerHTML='<div class="empty">Nenhum diálogo encontrado nas cenas deste episódio. Importe um roteiro com falas primeiro.</div>';$('downloadCineSrt').disabled=true;$('downloadCineVtt').disabled=true;$('cineSubtitleStatus').textContent='Não há falas para legendar.';return}
+ generatedSubtitleEntries.slice(0,100).forEach((entry,index)=>{
+  const row=document.createElement('div');row.className='item';
+  const info=document.createElement('div'),title=document.createElement('strong'),meta=document.createElement('small');
+  title.textContent=(index+1)+'. '+entry.text;meta.textContent=subtitleTime(entry.start)+' → '+subtitleTime(entry.end)+' · '+entry.sceneTitle+(entry.episodeNumber?' · EP '+entry.episodeNumber:'');
+  info.append(title,meta);row.append(info);box.append(row);
+ });
+ $('downloadCineSrt').disabled=false;$('downloadCineVtt').disabled=false;
+ $('cineSubtitleStatus').textContent=generatedSubtitleEntries.length+' legenda(s) estimada(s). Confira a sincronização no editor de vídeo; os tempos ainda não vêm de reconhecimento automático de áudio.';
+});
+$('downloadCineSrt').addEventListener('click',()=>{if(!generatedSubtitleEntries.length)return;const formats=subtitleFormats(generatedSubtitleEntries);downloadSubtitleFile(formats.srt,'cine-series-legendas.srt','application/x-subrip;charset=utf-8')});
+$('downloadCineVtt').addEventListener('click',()=>{if(!generatedSubtitleEntries.length)return;const formats=subtitleFormats(generatedSubtitleEntries);downloadSubtitleFile(formats.vtt,'cine-series-legendas.vtt','text/vtt;charset=utf-8')});
+function exportProject(){const data={product:'Cine Séries',version:6,exportedAt:new Date().toISOString(),projects:state.projects,episodes:state.episodes,scenes:state.scenes,characters:state.characters,locations:state.locations,assets:state.assets,audioAssets:state.audioAssets,scripts:state.scripts,timelineTracks:state.timelineTracks};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cine-series-projeto.json';a.click();URL.revokeObjectURL(url);toast('Projeto exportado em JSON.')}
+$('exportTop').addEventListener('click',exportProject);
+$('startProject').addEventListener('click',()=>$('seriesTitle').focus());
+read();renderStats();renderEpisodes();refreshWriterEpisodePicker();refreshSubtitleEpisodePicker();renderScenes();renderCharacters();renderLocations();renderAssets();renderSceneComposerOptions();renderNvidiaScenePicker();renderAudioSceneOptions();refreshAssemblyEpisodePicker();currentAssemblyScenes=assemblyScenes();renderCineAssembly();renderAudioAssets();renderCineTimeline();
+})();
+</script>
+</body>
+</html>
