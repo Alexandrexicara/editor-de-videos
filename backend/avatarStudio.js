@@ -49,7 +49,7 @@ module.exports = function createAvatarStudioRouter(billing) {
   }
 
   // A geração é feita no navegador do cliente. O servidor apenas finaliza o arquivo
-  // e aplica a cobrança interna; nenhuma chamada à Hedra ou ElevenLabs é realizada.
+  // e aplica a cobrança interna; não utiliza provedores externos de geração.
   router.post('/render', billing.requireAuth, upload.single('renderedVideo'), async (req, res) => {
     const input = req.file?.path;
     let reservation = null;
