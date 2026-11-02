@@ -108,7 +108,7 @@ document.getElementById('avatarModelFile').addEventListener('change', async even
 window.avatarStudioLoadModel = loadModel;
 window.avatarStudioClearModel = () => { currentModelFile = null; activeAnalyser = null; window.avatarStudioCanvas = null; window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; if (renderer) { renderer.dispose(); renderer = null; } scene = null; camera = null; root = null; mixer = null; bones = []; morphTargets = []; expressionTargets = []; };
 window.avatarStudioCurrentModel = () => currentModelFile;
-document.getElementById('createAvatar').addEventListener('click', () => { window.avatarStudioClearModel(); window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; activeAnalyser = null; });
+document.getElementById('createAvatar').addEventListener('click', () => { if (!document.getElementById('avatarPrompt').value.trim()) return; window.avatarStudioClearModel(); window.avatarStudioResizeCanvas = null; window.avatarStudioStartAnimation = null; activeAnalyser = null; });
 document.getElementById('avatarFile').addEventListener('change', () => {
   window.avatarStudioClearModel();
   window.avatarStudioCanvas = null;
