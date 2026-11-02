@@ -82,6 +82,9 @@ router.post('/generate', billing.requireAuth, upload.fields([
     res.setHeader('Content-Type', 'video/mp4');
     res.setHeader('Content-Disposition', 'inline; filename="avatar-falante.mp4"');
     res.setHeader('Cache-Control', 'no-store');
+    res.on('finish', () => {
+      [avatarPath, customAudioPath].filter(Boolean).forEach(file => fs.promises.unlink(file).catch(() => {}));
+    });
     res.sendFile(generatedPath);
   } catch (error) {
     console.error('Avatar Studio generation error:', error);
