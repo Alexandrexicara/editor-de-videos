@@ -56,8 +56,13 @@ function animate() {
   // Aplica o gesto também sobre modelos que já possuem animações embutidas.
   // O mixer atualiza o clipe primeiro; este ajuste acrescenta movimento sutil aos braços.
   bones.forEach((entry, index) => {
-    const animatedRotation = mixer ? entry.bone.rotation.z : entry.base;
-    entry.bone.rotation.z = animatedRotation + Math.sin(t * speed + index * 1.4) * intensity;
+    // Remove o deslocamento do quadro anterior antes de aplicar o novo,
+    // evitando acumular rotação e fazer os braços girarem sem limite.
+    entry.bone.rotation.z -= entry.lastOffset || 0;
+    const animatedRotation = entry.bone.rotation.z;
+    const offset = Math.sin(t * speed + index * 1.4) * intensity;
+    entry.bone.rotation.z = animatedRotation + offset;
+    entry.lastOffset = offset;
   });
   const expression = document.getElementById('expressionPreset')?.value || 'neutral';
   expressionTargets.forEach(target => { const amount = expression === 'smile' && /smile|happy/i.test(target.name) ? 0.75 : expression === 'serious' && /frown|angry/i.test(target.name) ? 0.45 : 0; target.mesh.morphTargetInfluences[target.index] = amount; });
