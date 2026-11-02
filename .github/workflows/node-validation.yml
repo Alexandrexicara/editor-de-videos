@@ -18,3 +18,5 @@ jobs:
         run: npm run check
       - name: Load billing module
         run: node -e "require('./backend/billing')"
+      - name: Run regression tests
+        run: npm test
