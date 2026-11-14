@@ -194,7 +194,7 @@ function registerBilling(app) {
   };
   const requireMulticamToken = (req, res, next) => {
     try {
-      const token = String(req.headers.authorization || '').replace(/^Bearer\\s+/i, '');
+      const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
       const user = verifyMulticamToken(token);
       if (!user) return res.status(401).json({ success: false, message: 'Sessão MultiCam expirada. Abra o estúdio novamente pelo Cine Séries.' });
       req.multicamUser = user;
