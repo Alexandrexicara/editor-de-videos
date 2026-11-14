@@ -136,6 +136,21 @@ async function sumup(url, options) {
   }
   return data;
 }
+let merchantCodeCache;
+async function getMerchantCode() {
+  if (process.env.SUMUP_MERCHANT_CODE) return process.env.SUMUP_MERCHANT_CODE;
+  if (!merchantCodeCache) {
+    merchantCodeCache = sumup('https://api.sumup.com/v0.1/me').then((profile) => {
+      const code = profile.merchant_code || profile.merchantCode || profile.merchant?.merchant_code;
+      if (!code) throw new Error('A SumUp não retornou o código do estabelecimento no perfil da conta.');
+      return String(code);
+    }).catch((error) => {
+      merchantCodeCache = null;
+      throw error;
+    });
+  }
+  return merchantCodeCache;
+}
 async function creditPaidCheckout(checkout) {
   if (!checkout || checkout.status !== 'PAID' || !checkout.checkout_reference) return false;
   const client = await pool.connect();
@@ -146,7 +161,7 @@ async function creditPaidCheckout(checkout) {
     if (!payment) throw new Error('Cobrança não encontrada no Rolezando.');
     if (payment.currency !== checkout.currency ||
         payment.amount_minor !== Math.round(Number(checkout.amount) * 100) ||
-        checkout.merchant_code !== env('SUMUP_MERCHANT_CODE')) {
+        checkout.merchant_code !== await getMerchantCode()) {
       throw new Error('Valor, moeda ou estabelecimento divergente na confirmação SumUp.');
     }
     if (payment.status !== 'paid') {
@@ -334,7 +349,7 @@ function registerBilling(app) {
         method: 'POST',
         body: JSON.stringify({
           checkout_reference: reference, amount: item.minor / 100, currency,
-          merchant_code: env('SUMUP_MERCHANT_CODE'),
+          merchant_code: await getMerchantCode(),
           description: 'Rolezando Avatar - ' + item.credits + ' créditos',
           return_url: base + '/api/payments/sumup/notify',
           redirect_url: base + '/conta.html?reference=' + encodeURIComponent(reference),
