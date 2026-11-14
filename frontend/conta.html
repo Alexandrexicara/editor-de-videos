@@ -24,7 +24,7 @@ a{color:#ff8bb9}@media(max-width:600px){body{padding:14px}.panel{padding:16px}.n
   </header>
   <section class="panel balance">
     <div><div class="muted">Saldo disponível</div><div class="number" id="balance">—</div><div class="muted">1 crédito = 1 produção de videoclipe concluída</div></div>
-    <div><div class="muted">Preço por vídeo</div><h2 id="unitPrice">R$ 0,10</h2><div class="muted">O crédito só é consumido quando a produção termina; falhas recebem estorno automático.</div></div>
+    <div><div class="muted">Preço por produção</div><h2 id="unitPrice">R$ 10,00</h2><div class="muted">O crédito só é consumido quando a produção termina; falhas recebem estorno automático.</div></div>
   </section>
   <section class="panel">
     <h2>Comprar créditos</h2>
@@ -66,7 +66,7 @@ async function loadWallet(){
 function renderPackages(){
  const items=catalog.packages[currency]||[];
  $('unitPrice').textContent=money(catalog.pricePerVideo[currency] ?? .10,currency);
- $('packages').innerHTML=items.map(p=>'<article class="pack"><small>'+p.credits+' vídeos</small><strong>'+money(p.amount,currency)+'</strong><small>'+money(p.amount/p.credits,currency)+' por produção</small><button class="btn" data-package="'+p.id+'">Comprar pacote</button></article>').join('');
+ $('packages').innerHTML=items.map(p=>'<article class="pack"><small>'+p.credits+' produções</small><strong>'+money(p.amount,currency)+'</strong><small>'+money(p.amount/p.credits,currency)+' por produção</small><button class="btn" data-package="'+p.id+'">Comprar pacote</button></article>').join('');
  document.querySelectorAll('[data-package]').forEach(button=>button.addEventListener('click',()=>buy(button.dataset.package,button)));
 }
 async function buy(packageId,button){
