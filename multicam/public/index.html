@@ -628,7 +628,7 @@
         const MULTICAM_BILLING_API = 'https://editor-de-videos.onrender.com';
         window.addEventListener('message', (event) => {
             const allowedOrigin = event.origin === 'https://cine-vidios.netlify.app' ||
-                /^https:\/\/deploy-preview-\\d+--cine-vidios\\.netlify\\.app$/.test(event.origin);
+                /^https:\/\/deploy-preview-\d+--cine-vidios\.netlify\.app$/.test(event.origin);
             if (!allowedOrigin || event.data?.type !== 'CINE_MULTICAM_AUTH' || typeof event.data.token !== 'string') return;
             sessionStorage.setItem('cine_multicam_token', event.data.token);
             window.opener?.postMessage({ type: 'CINE_MULTICAM_AUTH_ACK' }, event.origin);
