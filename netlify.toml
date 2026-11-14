@@ -44,6 +44,8 @@
   status = 200
   force = true
 
+# Arquivos existentes em frontend/ são servidos pelo CDN do Netlify.
+# Rotas antigas ou não estáticas continuam chegando ao backend.
 [[redirects]]
   from = "/*"
   to = "https://editor-de-videos.onrender.com/:splat"
