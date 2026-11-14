@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  Canvas, FabricImage, Rect, Circle, Textbox, FabricObject,
+  Canvas, FabricImage, Rect, Circle, Textbox, type FabricObject,
 } from 'fabric';
 import {
   ImagePlus, Type, Square, Circle as CircleIcon, Download, Save, Undo2, Redo2,
