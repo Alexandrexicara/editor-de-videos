@@ -665,11 +665,13 @@
         async function refundMulticamProduction(reservationId) {
             const token = sessionStorage.getItem('cine_multicam_token');
             try {
-                await fetch(MULTICAM_BILLING_API + '/api/multicam/refund', {
+                const response = await fetch(MULTICAM_BILLING_API + '/api/multicam/refund', {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ reservationId })
                 });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.refunded) throw new Error(result.message || 'O estorno ainda não foi confirmado.');
                 sessionStorage.removeItem('cine_multicam_reservation');
                 addLog('↩️ A produção falhou. O crédito foi devolvido à carteira.', 'warning');
             } catch (error) {
@@ -691,7 +693,6 @@
                 else await refundMulticamProduction(reservationId);
                 loadFiles();
             } catch (error) {
-                if (reservationId) await refundMulticamProduction(reservationId);
                 document.getElementById('processing-status').className = 'status-message error';
                 document.getElementById('processing-status').textContent = '❌ ' + error.message;
                 alert(error.message);
