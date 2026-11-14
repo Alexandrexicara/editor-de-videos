@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 MultiCam Mobile Server</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            overflow: hidden;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2rem;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .status {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .status.active {
+            background: rgba(67,233,123,0.3);
+            border: 2px solid #43e97b;
+        }
+        .btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: #2d3436;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            min-width: 250px;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn.danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .video-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            background: #000;
+        }
+        .info {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        .ip-address {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #43e97b;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .recording { animation: pulse 2s infinite; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 MultiCam Mobile</h1>
+        <div class="status" id="status">⏳ Aguardando início...</div>
+        
+        <div class="video-container">
+            <video id="video" autoplay playsinline muted></video>
+        </div>
+        
+        <button class="btn" id="btn-start" onclick="startCamera()">
+            📹 INICIAR CÂMERA
+        </button>
+        
+        <button class="btn danger" id="btn-stop" onclick="stopCamera()" style="display:none;">
+            ⏹️ PARAR CÂMERA
+        </button>
+        
+        <div class="info">Este recurso precisa de HTTPS confiável no navegador do celular para liberar a câmera. Em HTTP por IP local, alguns navegadores bloqueiam o acesso. Como alternativa, use uma câmera IP/RTSP configurada no estúdio.</div>
+        <div class="info" id="info" style="display:none;">
+            <strong>🌐 Acesse no PC:</strong>
+            <div class="ip-address" id="ip-address">Carregando...</div>
+            <strong>📡 Stream URL:</strong>
+            <div class="ip-address" id="stream-url" style="color:#38f9d7;">http://SEU_IP:3001/stream</div>
+        </div>
+    </div>
+
+    <script>
+        let stream;
+        let socket;
+        let frameTimer;
+        let canvas;
+        let canvasContext;
+        const PORT = 3001;
+        const CAMERA_TOKEN = '__CAMERA_TOKEN__';
+
+        async function startCamera() {
+            try {
+                // Pedir permissão para usar a câmera
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'environment'
+                    },
+                    audio: false
+                });
+
+                // Mostrar vídeo no elemento
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+
+                // Atualizar UI
+                document.getElementById('btn-start').style.display = 'none';
+                document.getElementById('btn-stop').style.display = 'inline-block';
+                document.getElementById('status').className = 'status active';
+                document.getElementById('status').textContent = '🔴 CÂMERA ATIVA';
+                document.getElementById('info').style.display = 'block';
+
+                // Mostrar endereço IP
+                showIPAddress();
+
+                // Iniciar MediaRecorder para streaming
+                await startStreaming();
+
+                console.log('✅ Câmera iniciada com sucesso!');
+            } catch (error) {
+                if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+                if (frameTimer) { clearInterval(frameTimer); frameTimer = null; }
+                if (socket) { socket.close(); socket = null; }
+                document.getElementById('btn-start').style.display = 'inline-block';
+                document.getElementById('btn-stop').style.display = 'none';
+                document.getElementById('status').className = 'status';
+                document.getElementById('status').textContent = '⚠️ Câmera não iniciada';
+                document.getElementById('info').style.display = 'none';
+                alert('❌ Erro ao acessar câmera:\n' + error.message);
+                console.error('Erro:', error);
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+
+            if (frameTimer) {
+                clearInterval(frameTimer);
+                frameTimer = null;
+            }
+            if (socket && socket.readyState <= WebSocket.OPEN) {
+                socket.close();
+                socket = null;
+            }
+
+            document.getElementById('btn-start').style.display = 'inline-block';
+            document.getElementById('btn-stop').style.display = 'none';
+            document.getElementById('status').className = 'status';
+            document.getElementById('status').textContent = '⏹️ Câmera parada';
+            document.getElementById('info').style.display = 'none';
+
+            console.log('⏹️ Câmera parada');
+        }
+
+        async function startStreaming() {
+            if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('O navegador bloqueou a câmera porque esta página não está em HTTPS confiável. Use uma URL HTTPS ou configure o celular como câmera IP/RTSP.');
+            }
+
+            socket = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/?token=' + encodeURIComponent(CAMERA_TOKEN));
+            await new Promise((resolve, reject) => {
+                socket.addEventListener('open', resolve, { once: true });
+                socket.addEventListener('error', () => reject(new Error('Não foi possível conectar ao servidor de vídeo.')), { once: true });
+            });
+
+            canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 360;
+            canvasContext = canvas.getContext('2d', { alpha: false });
+
+            frameTimer = setInterval(() => {
+                if (!socket || socket.readyState !== WebSocket.OPEN || !stream) return;
+                const video = document.getElementById('video');
+                if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+                canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob((blob) => {
+                    if (blob && socket && socket.readyState === WebSocket.OPEN) socket.send(blob);
+                }, 'image/jpeg', 0.72);
+            }, 200);
+        }
+
+        async function showIPAddress() {
+            try {
+                // Usar WebRTC para descobrir IP local
+                const pc = new RTCPeerConnection({ iceServers: [] });
+                
+                pc.createDataChannel('');
+                await pc.setLocalDescription(await pc.createOffer());
+                
+                pc.onicecandidate = (e) => {
+                    if (!e.candidate) return;
+                    
+                    const candidate = e.candidate.candidate;
+                    const ipMatch = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(candidate);
+                    
+                    if (ipMatch) {
+                        const ip = ipMatch[1];
+                        document.getElementById('ip-address').textContent = `http://${ip}:${PORT}`;
+                        document.getElementById('stream-url').textContent = `http://${ip}:${PORT}/stream?token=${CAMERA_TOKEN}`;
+                    }
+                };
+            } catch (error) {
+                console.error('Erro ao detectar IP:', error);
+                document.getElementById('ip-address').textContent = 'Verifique nas configurações do Wi-Fi';
+            }
+        }
+
+        // Prevenir que a tela desligue
+        setInterval(() => {
+            if (stream) {
+                navigator.wakeLock?.request('screen').catch(() => {});
+            }
+        }, 10000);
+
+        window.addEventListener('beforeunload', () => {
+            stopCamera();
+        });
+
+        console.log('🎬 MultiCam Mobile Server pronto!');
+    </script>
+</body>
+</html>

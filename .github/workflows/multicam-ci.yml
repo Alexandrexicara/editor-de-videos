@@ -1,0 +1,31 @@
+name: MultiCam integration checks
+
+on:
+  push:
+    branches: ['feature/**']
+    paths:
+      - 'multicam/**'
+      - '.github/workflows/multicam-ci.yml'
+  pull_request:
+    branches: ['feature/sumup-wallet']
+    paths:
+      - 'multicam/**'
+      - '.github/workflows/multicam-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: multicam
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm test
+      - name: Verificar sintaxe JavaScript
+        working-directory: .
+        run: |
+          find multicam -path 'multicam/node_modules' -prune -o -name '*.js' -type f -print0 | xargs -0 -r -n1 node --check

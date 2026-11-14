@@ -15,3 +15,9 @@ python-portable/
 # Dados locais de usuários (não versionar uploads privados)
 avatars/
 audios/
+
+multicam/node_modules/
+multicam/cameras/
+multicam/clips/
+multicam/output/
+multicam/downloads/
