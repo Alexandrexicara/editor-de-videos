@@ -1,0 +1,24 @@
+name: Studio Criativo AI CI
+on:
+  push:
+    branches: [feature/studio-criativo-integrado]
+  pull_request:
+    branches: [main]
+jobs:
+  build-studio:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: studio-criativo/package.json
+      - name: Install Studio dependencies
+        working-directory: studio-criativo
+        run: npm install
+      - name: TypeScript and production build
+        working-directory: studio-criativo
+        run: npm run build
+      - name: Check backend JavaScript
+        run: node --check backend/server.js && node --check backend/studioCriativo.js
