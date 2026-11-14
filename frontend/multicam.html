@@ -29,10 +29,16 @@ main{width:min(1100px,calc(100% - 32px));margin:auto;padding:28px 0 64px}.top{di
 </main><script>
 let multicamStudioWindow = null;
 let multicamAuthToken = null;
+let multicamStudioReady = false;
+function sendMulticamToken() {
+  if (multicamStudioReady && multicamAuthToken && multicamStudioWindow && !multicamStudioWindow.closed) {
+    multicamStudioWindow.postMessage({ type: 'CINE_MULTICAM_AUTH', token: multicamAuthToken }, 'http://localhost:3000');
+  }
+}
 window.addEventListener('message', (event) => {
-  if (event.data?.type !== 'CINE_MULTICAM_READY' || !multicamStudioWindow || multicamStudioWindow.closed) return;
-  if (!multicamAuthToken) return;
-  multicamStudioWindow.postMessage({ type: 'CINE_MULTICAM_AUTH', token: multicamAuthToken }, 'http://localhost:3000');
+  if (event.source !== multicamStudioWindow || event.origin !== 'http://localhost:3000' || event.data?.type !== 'CINE_MULTICAM_READY') return;
+  multicamStudioReady = true;
+  sendMulticamToken();
 });
 document.getElementById('openStudio').addEventListener('click', async () => {
   multicamStudioWindow = window.open('http://localhost:3000/', 'cine-multicam-studio');
@@ -52,6 +58,7 @@ document.getElementById('openStudio').addEventListener('click', async () => {
       throw new Error(result.message || 'Não foi possível autenticar o MultiCam.');
     }
     multicamAuthToken = result.token;
+    sendMulticamToken();
   } catch (error) {
     if (multicamStudioWindow && !multicamStudioWindow.closed) multicamStudioWindow.close();
     alert(error.message);
