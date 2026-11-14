@@ -9,7 +9,18 @@ const path = require('path');
 const fs = require('fs');
 const { processVideo } = require('./processVideo');
 const config = require('./config');
+const cineVoiceCatalog = require('./cineVoiceCatalog');
 const StorageManager = require('./storageManager');
+const { registerBilling } = require('./billing');
+
+// Criar as pastas usadas pelo Multer e pelo pipeline antes de aceitar uploads.
+[
+  config.diretorios.uploads,
+  config.diretorios.outputs,
+  config.diretorios.temporarios,
+  './avatars',
+  './audios'
+].forEach((directory) => fs.mkdirSync(path.resolve(directory), { recursive: true }));
 
 // Configurar multer para upload de arquivos
 const storage = multer.diskStorage({
@@ -40,7 +51,7 @@ const upload = multer({
       cb(null, true);
     } else if (file.fieldname === 'customAudio' && file.mimetype.startsWith('audio/')) {
       cb(null, true);
-    } else if ((file.fieldname === 'avatar1' || file.fieldname === 'avatar2') && 
+    } else if ((file.fieldname === 'avatar' || file.fieldname === 'avatar1' || file.fieldname === 'avatar2') && 
                (file.mimetype.startsWith('image/') || 
                 file.mimetype.startsWith('video/') ||
                 file.mimetype === 'model/gltf-binary' ||
@@ -57,15 +68,25 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+// O Cine Séries aceita até 8 imagens de referência de 5 MB (base64).
+// O limite maior fica restrito a esse endpoint; o restante da API continua em 1 MB.
+const standardJsonParser = express.json({ limit: process.env.JSON_BODY_LIMIT || '1mb' });
+const cineImageJsonParser = express.json({ limit: process.env.CINE_IMAGE_JSON_LIMIT || '56mb' });
+app.use((req, res, next) => {
+  if (req.path === '/api/cine/image') return cineImageJsonParser(req, res, next);
+  return standardJsonParser(req, res, next);
+});
+app.use(express.urlencoded({ extended: false, limit: '1mb' }));
+const billing = registerBilling(app);
 
 // Rotas de upload (antes do static para evitar conflitos)
-app.post('/upload', upload.fields([
+app.post('/upload', billing.requireAuth, upload.fields([
   { name: 'video', maxCount: 1 }, 
   { name: 'customAudio', maxCount: 1 },
   { name: 'avatar1', maxCount: 1 },
   { name: 'avatar2', maxCount: 1 }
-]), async (req, res) => {
+ ]), async (req, res) => {
+  let creditReservation = null;
   try {
     const videoFile = req.files?.video?.[0];
     const audioFile = req.files?.customAudio?.[0];
@@ -131,8 +152,9 @@ app.post('/upload', upload.fields([
       });
     }
     
-    // Checar se há espaço livre antes de processar
+    // Checar espaço e reservar um crédito antes de iniciar o processamento.
     storageManager.checkAndCleanup();
+    creditReservation = await billing.reserveVideoCredit(req.user.id);
     
     // Preparar lista de avatares
     const avatarPaths = [];
@@ -146,6 +168,8 @@ app.post('/upload', upload.fields([
       avatarPaths,
       avatarConfigs
     );
+    await billing.completeVideoCredit(creditReservation, path.basename(resultPath), videoFile.originalname);
+    creditReservation = null;
     
     // Retornar sucesso com informações do arquivo processado
     res.json({
@@ -158,8 +182,12 @@ app.post('/upload', upload.fields([
     });
 
   } catch (error) {
+    if (creditReservation) {
+      try { await billing.refundVideoCredit(creditReservation); }
+      catch (refundError) { console.error('❌ Falha ao devolver crédito:', refundError); }
+    }
     console.error('❌ Erro no processamento:', error);
-    res.status(500).json({
+    res.status(error.status || 500).json({
       error: 'Erro no processamento do arquivo',
       message: error.message
     });
@@ -167,7 +195,7 @@ app.post('/upload', upload.fields([
 });
 
 // Rota para upload de avatar personalizado 📤
-app.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
+app.post('/upload-avatar', billing.requireAuth, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ 
@@ -205,97 +233,26 @@ app.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
 });
 
 // Servir arquivos estáticos
-app.use('/outputs', express.static(path.join(__dirname, '../outputs')));
-app.use(express.static(path.join(__dirname, '../frontend')));
-
-// Rotas de Autenticação
-app.post('/api/signup', (req, res) => {
+app.get('/outputs/:filename', billing.requireAuth, async (req, res) => {
   try {
-    const { firstName, lastName, email, password, terms } = req.body;
-
-    // Validações básicas
-    if (!email || !password || !firstName || !lastName) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Todos os campos são obrigatórios' 
-      });
+    const filename = path.basename(req.params.filename);
+    if (filename !== req.params.filename || !(await billing.userOwnsVideo(req.user.id, filename))) {
+      return res.status(404).json({ error: 'Arquivo não encontrado.' });
     }
-
-    if (password.length < 6) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Senha deve ter no mínimo 6 caracteres' 
-      });
-    }
-
-    if (!terms) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Você deve aceitar os termos' 
-      });
-    }
-
-    // Aqui você implementaria a lógica de salvar no banco de dados
-    // Por enquanto, retornar sucesso para testes
-    const token = Buffer.from(`${email}:${Date.now()}`).toString('base64');
-
-    return res.json({ 
-      success: true, 
-      message: 'Cadastro realizado com sucesso!',
-      token: token,
-      user: {
-        email,
-        firstName,
-        lastName
-      }
-    });
+    res.sendFile(path.resolve(config.diretorios.outputs, filename));
   } catch (error) {
-    console.error('Erro no signup:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Erro ao criar conta. Tente novamente.' 
-    });
+    res.status(500).json({ error: 'Erro ao acessar vídeo.' });
   }
 });
+app.use(express.static(path.join(__dirname, '../frontend'), { index: false }));
 
-app.post('/api/login', (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Validações básicas
-    if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email e senha são obrigatórios' 
-      });
-    }
-
-    // Aqui você implementaria a lógica de verificação no banco de dados
-    // Por enquanto, aceitar qualquer credencial para testes
-    const token = Buffer.from(`${email}:${Date.now()}`).toString('base64');
-
-    return res.json({ 
-      success: true, 
-      message: 'Login realizado com sucesso!',
-      token: token,
-      user: {
-        email
-      }
-    });
-  } catch (error) {
-    console.error('Erro no login:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Erro ao fazer login. Tente novamente.' 
-    });
-  }
-});
+// Cadastro, login, sessão, carteira e pagamentos são registrados em backend/billing.js.
 
 // Rotas
 
 // Rota principal - servir o frontend
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/avatar-config.html'));
+  res.redirect('/login.html');
 });
 
 // Rota para página antiga (compatibilidade)
@@ -304,9 +261,12 @@ app.get('/index.html', (req, res) => {
 });
 
 // Rota para download do vídeo processado
-app.get('/download/:filename', (req, res) => {
+app.get('/download/:filename', billing.requireAuth, async (req, res) => {
   try {
     const filename = req.params.filename;
+    if (!(await billing.userOwnsVideo(req.user.id, filename))) {
+      return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    }
     const filePath = path.join(config.diretorios.outputs, filename);
     
     console.log(`📥 Requisição de download: ${filename}`);
@@ -392,6 +352,280 @@ app.get('/download/:filename', (req, res) => {
   }
 });
 
+
+/* Cine Séries — narração com voz pública ElevenLabs (PT-BR). */
+const CINE_DEFAULT_VOICE_ID = 'GIuLCSVfgJaUuh7hYOY8';
+const CINE_DEFAULT_VOICE_NAME = 'Lucas - Deep & Profound Narrator';
+
+app.get('/api/cine/voices', (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.json({ count: cineVoiceCatalog.length, voices: cineVoiceCatalog });
+});
+
+app.get('/api/cine/voice-config', (req, res) => {
+  res.json({
+    provider: 'ElevenLabs',
+    voiceId: process.env.ELEVENLABS_VOICE_ID || CINE_DEFAULT_VOICE_ID,
+    voiceName: CINE_DEFAULT_VOICE_NAME,
+    language: 'pt-BR',
+    configured: Boolean(process.env.ELEVENLABS_API_KEY)
+  });
+});
+
+app.post('/api/cine/voice', billing.requireAuth, async (req, res) => {
+  try {
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'Configure ELEVENLABS_API_KEY nas variáveis privadas do servidor.' });
+    const text = String(req.body?.text || '').trim();
+    if (!text) return res.status(400).json({ error: 'Digite o texto que deseja transformar em voz.' });
+    if (text.length > 5000) return res.status(400).json({ error: 'O texto pode ter no máximo 5.000 caracteres por geração.' });
+
+    const requestedVoiceId = String(req.body?.voiceId || process.env.ELEVENLABS_VOICE_ID || CINE_DEFAULT_VOICE_ID);
+    const voiceId = cineVoiceCatalog.some(voice => voice.id === requestedVoiceId) ? requestedVoiceId : CINE_DEFAULT_VOICE_ID;
+    const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(voiceId) + '?output_format=mp3_44100_128', {
+      method: 'POST',
+      headers: {
+        'xi-api-key': apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.48, similarity_boost: 0.78, style: 0.25, use_speaker_boost: true }
+      }),
+      signal: AbortSignal.timeout(90000)
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('ElevenLabs TTS error:', response.status, detail.slice(0, 500));
+      return res.status(response.status === 401 ? 503 : 502).json({
+        error: response.status === 401
+          ? 'A chave da ElevenLabs foi recusada. Confira ELEVENLABS_API_KEY no servidor.'
+          : 'A ElevenLabs não conseguiu gerar o áudio. Verifique os créditos e os limites da conta.'
+      });
+    }
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Cine-Voice-Id', voiceId);
+    const audio = Buffer.from(await response.arrayBuffer());
+    res.setHeader('Content-Length', audio.length);
+    res.send(audio);
+  } catch (error) {
+    console.error('Cine Séries voice generation error:', error);
+    res.status(error.name === 'TimeoutError' ? 504 : 500).json({
+      error: error.name === 'TimeoutError' ? 'A geração de voz demorou demais. Tente novamente.' : 'Erro ao gerar a narração.'
+    });
+  }
+});
+
+
+app.post('/api/cine/sound-effect', billing.requireAuth, async (req, res) => {
+  try {
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'Configure ELEVENLABS_API_KEY nas variáveis privadas do servidor.' });
+    const prompt = String(req.body?.prompt || '').trim();
+    if (!prompt) return res.status(400).json({ error: 'Descreva o som que deseja gerar.' });
+    if (prompt.length > 1000) return res.status(400).json({ error: 'A descrição pode ter no máximo 1.000 caracteres.' });
+    const duration = Math.min(30, Math.max(0.5, Number(req.body?.durationSeconds) || 5));
+    const response = await fetch('https://api.elevenlabs.io/v1/sound-generation', {
+      method: 'POST',
+      headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
+      body: JSON.stringify({
+        text: prompt,
+        model_id: 'eleven_text_to_sound_v2',
+        duration_seconds: duration,
+        prompt_influence: 0.45,
+        loop: req.body?.loop === true
+      }),
+      signal: AbortSignal.timeout(90000)
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('ElevenLabs SFX error:', response.status, detail.slice(0, 500));
+      return res.status(response.status === 401 ? 503 : 502).json({
+        error: response.status === 401 ? 'A chave da ElevenLabs foi recusada.' : 'A ElevenLabs não conseguiu gerar o efeito. Verifique os créditos e limites da conta.'
+      });
+    }
+    const audio = Buffer.from(await response.arrayBuffer());
+    res.setHeader('Content-Type', response.headers.get('content-type') || 'audio/mpeg');
+    res.setHeader('Content-Length', audio.length);
+    res.setHeader('Cache-Control', 'no-store');
+    res.send(audio);
+  } catch (error) {
+    console.error('Cine Séries sound effect error:', error);
+    res.status(error.name === 'TimeoutError' ? 504 : 500).json({ error: error.name === 'TimeoutError' ? 'A geração do efeito demorou demais.' : 'Erro ao gerar o efeito sonoro.' });
+  }
+});
+
+
+/* Cine Séries — geração de imagens e continuidade visual com NVIDIA NIM. */
+app.get('/api/cine/image-config', (req, res) => {
+  res.json({ provider: 'NVIDIA NIM', model: process.env.NVIDIA_IMAGE_MODEL || 'black-forest-labs/flux.2-klein-4b', configured: Boolean(process.env.NVIDIA_API_KEY) });
+});
+
+app.post('/api/cine/image', billing.requireAuth, async (req, res) => {
+  try {
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'Configure NVIDIA_API_KEY nas variáveis privadas do servidor para ativar a geração de imagens.' });
+    const prompt = String(req.body?.prompt || '').trim();
+    if (!prompt) return res.status(400).json({ error: 'A descrição da cena está vazia.' });
+    if (prompt.length > 10000) return res.status(400).json({ error: 'A descrição pode ter no máximo 10.000 caracteres.' });
+
+    const rawImages = Array.isArray(req.body?.referenceImages) ? req.body.referenceImages : [];
+    if (rawImages.length > 8) return res.status(400).json({ error: 'Use no máximo 8 imagens de referência por cena.' });
+    const images = rawImages.map((value) => {
+      const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(value || ''));
+      if (!match) throw Object.assign(new Error('Uma imagem de referência está em formato inválido.'), { status: 400 });
+      const bytes = Buffer.from(match[2], 'base64');
+      if (!bytes.length || bytes.length > 5 * 1024 * 1024) throw Object.assign(new Error('Cada imagem de referência deve ter até 5 MB.'), { status: 400 });
+      return { mime: match[1], bytes };
+    });
+
+    const model = process.env.NVIDIA_IMAGE_MODEL || 'black-forest-labs/flux.2-klein-4b';
+    const endpoint = images.length
+      ? 'https://ai.api.nvidia.com/v1/images/edits'
+      : 'https://ai.api.nvidia.com/v1/images/generations';
+    const form = new FormData();
+    form.append('model', model);
+    form.append('prompt', prompt);
+    form.append('n', '1');
+    form.append('response_format', 'b64_json');
+    images.forEach((item, index) => {
+      const ext = item.mime === 'image/png' ? 'png' : item.mime === 'image/webp' ? 'webp' : 'jpg';
+      form.append('image', new Blob([item.bytes], { type: item.mime }), 'reference-' + (index + 1) + '.' + ext);
+    });
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + apiKey, Accept: 'application/json' },
+      body: form,
+      signal: AbortSignal.timeout(180000)
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('NVIDIA image generation error:', response.status, detail.slice(0, 700));
+      return res.status(response.status === 401 || response.status === 403 ? 503 : 502).json({
+        error: response.status === 401 || response.status === 403
+          ? 'A NVIDIA recusou a chave ou o acesso ao modelo. Confira NVIDIA_API_KEY e a disponibilidade do modelo na sua conta.'
+          : 'A NVIDIA não conseguiu gerar a imagem. Confira os limites, créditos e disponibilidade do modelo.'
+      });
+    }
+    const result = await response.json();
+    const encoded = result?.data?.[0]?.b64_json || result?.artifacts?.[0]?.base64;
+    if (!encoded) {
+      console.error('NVIDIA image response missing image data:', JSON.stringify(result).slice(0, 700));
+      return res.status(502).json({ error: 'A NVIDIA respondeu, mas não retornou os dados da imagem.' });
+    }
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ image: 'data:image/png;base64,' + encoded, model, provider: 'NVIDIA NIM' });
+  } catch (error) {
+    console.error('Cine Séries NVIDIA image error:', error);
+    res.status(error.status || (error.name === 'TimeoutError' ? 504 : 500)).json({
+      error: error.status ? error.message : error.name === 'TimeoutError' ? 'A geração da imagem demorou demais. Tente novamente.' : 'Erro ao gerar a imagem da cena.'
+    });
+  }
+});
+
+
+/* Cine Séries — roteirista IA NVIDIA NIM (roteiro, cenas e diálogos). */
+app.post('/api/cine/script', billing.requireAuth, async (req, res) => {
+  try {
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'Configure NVIDIA_API_KEY nas variáveis privadas do servidor.' });
+    const idea = String(req.body?.idea || '').trim();
+    if (!idea) return res.status(400).json({ error: 'Descreva a ideia ou sinopse antes de gerar o roteiro.' });
+    if (idea.length > 12000) return res.status(400).json({ error: 'A ideia pode ter no máximo 12.000 caracteres.' });
+
+    const context = {
+      series: req.body?.series || {},
+      episode: req.body?.episode || {},
+      characters: Array.isArray(req.body?.characters) ? req.body.characters.slice(0, 30) : [],
+      locations: Array.isArray(req.body?.locations) ? req.body.locations.slice(0, 30) : [],
+      style: String(req.body?.style || 'Roteiro audiovisual cinematográfico').slice(0, 300),
+      sceneCount: Math.max(2, Math.min(20, Number(req.body?.sceneCount) || 6))
+    };
+    const model = process.env.NVIDIA_TEXT_MODEL || 'meta/llama-3.3-70b-instruct';
+    const systemPrompt = [
+      'Você é roteirista profissional, showrunner e diretor de séries. Escreva em português brasileiro.',
+      'Crie um roteiro original, coerente, filmável e emocionalmente envolvente.',
+      'Respeite rigorosamente os nomes, aparência, personalidade e relações dos personagens fornecidos. Não invente personagens principais adicionais.',
+      'Mantenha continuidade entre cenas: figurino, objetos, ferimentos, horário, clima, posição dos personagens e fatos narrativos.',
+      'Retorne exclusivamente JSON válido, sem markdown, sem cercas de código e sem comentários.',
+      'Formato obrigatório: {"title":"...","logline":"...","synopsis":"...","scenes":[{"title":"...","location":"...","timeOfDay":"...","action":"Descrição visual e ação filmável","camera":"Plano e movimento de câmera","characters":["Nome"],"dialogue":[{"character":"Nome","text":"Fala em português brasileiro","emotion":"Emoção e intenção"}],"sound":"Ambiência e efeitos sonoros","continuityNotes":"O que precisa permanecer consistente"}]}.',
+      'Cada cena deve conter falas naturais quando houver personagens presentes. Não atribua falas a personagens que não estejam na cena.',
+      'Inclua de 2 a ' + context.sceneCount + ' cenas, com progressão narrativa, abertura, desenvolvimento e gancho/conclusão.'
+    ].join(' ');
+
+    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: 'IDEIA E DIREÇÃO:\n' + idea + '\n\nCONTEXTO DA PRODUÇÃO:\n' + JSON.stringify(context) }
+        ],
+        temperature: 0.7,
+        max_tokens: 4096,
+        stream: false
+      }),
+      signal: AbortSignal.timeout(120000)
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      console.error('NVIDIA script generation error:', response.status, detail.slice(0, 700));
+      return res.status(response.status === 401 || response.status === 403 ? 503 : 502).json({
+        error: response.status === 401 || response.status === 403
+          ? 'A NVIDIA recusou a chave ou não liberou acesso ao modelo de texto.'
+          : 'A NVIDIA não conseguiu gerar o roteiro. Verifique os limites e a disponibilidade do modelo.'
+      });
+    }
+    const result = await response.json();
+    const content = result?.choices?.[0]?.message?.content;
+    if (!content) return res.status(502).json({ error: 'A NVIDIA respondeu sem conteúdo de roteiro.' });
+    let screenplay;
+    try { screenplay = JSON.parse(content); }
+    catch (_) {
+      const clean = String(content).replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/, '').trim();
+      screenplay = JSON.parse(clean);
+    }
+    if (!Array.isArray(screenplay.scenes) || !screenplay.scenes.length) {
+      return res.status(502).json({ error: 'O roteiro retornado não contém cenas válidas. Tente novamente.' });
+    }
+    screenplay.scenes = screenplay.scenes.slice(0, 20).map((scene, index) => ({
+      title: String(scene.title || 'Cena ' + (index + 1)).slice(0, 160),
+      location: String(scene.location || '').slice(0, 300),
+      timeOfDay: String(scene.timeOfDay || '').slice(0, 100),
+      action: String(scene.action || '').slice(0, 4000),
+      camera: String(scene.camera || '').slice(0, 500),
+      characters: Array.isArray(scene.characters) ? scene.characters.slice(0, 20).map(name => String(name).slice(0, 120)) : [],
+      dialogue: Array.isArray(scene.dialogue) ? scene.dialogue.slice(0, 40).map(line => ({
+        character: String(line.character || '').slice(0, 120),
+        text: String(line.text || '').slice(0, 1500),
+        emotion: String(line.emotion || '').slice(0, 200)
+      })) : [],
+      sound: String(scene.sound || '').slice(0, 500),
+      continuityNotes: String(scene.continuityNotes || '').slice(0, 1000)
+    }));
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ provider: 'NVIDIA NIM', model, screenplay });
+  } catch (error) {
+    console.error('Cine Séries NVIDIA screenplay error:', error);
+    res.status(error.name === 'TimeoutError' ? 504 : 500).json({
+      error: error.name === 'TimeoutError' ? 'A geração do roteiro demorou demais. Tente novamente.' : 'Erro ao gerar o roteiro.'
+    });
+  }
+});
+
+app.use('/api/avatar-studio', require('./avatarStudio')(billing));
+
+// Health check simples para provedores de hospedagem. Não expõe segredos nem dados do banco.
+app.get('/health', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.status(200).json({ status: 'ok', service: 'cine-series-backend' });
+});
+
 // Rota para verificar status do servidor
 app.get('/status', (req, res) => {
   res.json({
@@ -399,32 +633,24 @@ app.get('/status', (req, res) => {
     message: 'Servidor Rolezando Avatar funcionando!',
     config: {
       usarAudioDoVideo: config.usarAudioDoVideo,
-      porta: config.porta,
-      host: config.host
+      porta: Number(process.env.PORT || config.porta),
+      host: process.env.HOST || '0.0.0.0'
     }
   });
 });
 
 // Rota para listar vídeos processados
-app.get('/videos', (req, res) => {
-  fs.readdir(config.diretorios.outputs, (err, files) => {
-    if (err) {
-      return res.status(500).json({ error: 'Erro ao ler diretório' });
-    }
-    
-    const videoFiles = files.filter(file => 
-      file.endsWith('.mp4') && file.includes('_final')
-    );
-    
-    res.json({
-      videos: videoFiles,
-      count: videoFiles.length
-    });
-  });
+app.get('/videos', billing.requireAuth, async (req, res) => {
+  try {
+    const videos = await billing.listUserVideos(req.user.id);
+    res.json({ videos, count: videos.length });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao listar vídeos', message: error.message });
+  }
 });
 
 // Rota para monitorar espaço em disco e estatísticas de armazenamento
-app.get('/api/storage-stats', (req, res) => {
+app.get('/api/storage-stats', billing.requireAuth, (req, res) => {
   try {
     const stats = storageManager.getStorageStats();
     res.json({
@@ -446,7 +672,7 @@ app.get('/api/storage-stats', (req, res) => {
 });
 
 // Rota para triggerar limpeza manual
-app.post('/api/cleanup', (req, res) => {
+app.post('/api/cleanup', billing.requireAdmin, (req, res) => {
   try {
     console.log('🧹 Limpeza manual iniciada');
     storageManager.performPreventiveCleanup();
@@ -483,21 +709,152 @@ app.use((error, req, res, next) => {
   });
 });
 
+
+/* Cine Séries — renderização MP4 do plano de montagem com FFmpeg. */
+const cineIncomingDir = path.resolve(config.diretorios.temporarios, 'cine-incoming');
+fs.mkdirSync(cineIncomingDir, { recursive: true });
+const cineRenderUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, cineIncomingDir),
+    filename: (req, file, cb) => cb(null, 'cine-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12) + path.extname(file.originalname).toLowerCase())
+  }),
+  limits: { fileSize: 40 * 1024 * 1024, files: 80, fields: 2, fieldSize: 2 * 1024 * 1024 }
+});
+const cineFfmpegPath = require('ffmpeg-static') || 'ffmpeg';
+const { spawn: cineSpawn } = require('child_process');
+
+app.post('/api/cine/render', billing.requireAuth, cineRenderUpload.array('media', 80), async (req, res) => {
+  let reservation = null;
+  let workDir = null;
+  try {
+    const manifest = JSON.parse(String(req.body?.manifest || '{}'));
+    const scenes = Array.isArray(manifest.scenes) ? manifest.scenes : [];
+    if (!scenes.length || scenes.length > 40) return res.status(400).json({ error: 'A montagem precisa ter de 1 a 40 cenas.' });
+    if (!req.files?.length) return res.status(400).json({ error: 'Envie as imagens e os áudios da montagem.' });
+
+    const media = new Map();
+    const uploadBytes = (req.files || []).reduce((sum, file) => sum + Number(file.size || 0), 0);
+    if (uploadBytes > 150 * 1024 * 1024) return res.status(400).json({ error: 'O conjunto de arquivos ultrapassa o limite de 150 MB por episódio.' });
+    for (const file of req.files) {
+      const name = path.basename(file.originalname || '');
+      if (!/^(image|audio)-[a-zA-Z0-9_-]{1,100}\.(jpg|jpeg|png|webp|mp3|wav|m4a|ogg)$/i.test(name)) {
+        return res.status(400).json({ error: 'Um dos arquivos enviados tem nome ou formato inválido.' });
+      }
+      media.set(name, file.path);
+    }
+    scenes.forEach((scene, index) => {
+      const duration = Number(scene.duration);
+      if (!Number.isFinite(duration) || duration < 1 || duration > 600) throw Object.assign(new Error('Duração inválida na cena ' + (index + 1) + '.'), { status: 400 });
+      if (!media.has(scene.imageFile)) throw Object.assign(new Error('A cena "' + String(scene.title || index + 1).slice(0, 100) + '" está sem imagem enviada. Selecione uma imagem principal para cada cena.'), { status: 400 });
+      (Array.isArray(scene.audio) ? scene.audio : []).forEach(track => {
+        if (!media.has(track.file)) throw Object.assign(new Error('Um áudio da montagem não foi enviado.'), { status: 400 });
+      });
+    });
+
+    const totalDuration = scenes.reduce((sum, scene) => sum + Number(scene.duration), 0);
+    if (totalDuration > 1800) return res.status(400).json({ error: 'A duração máxima por renderização é de 30 minutos.' });
+
+    await fs.promises.mkdir(config.diretorios.temporarios, { recursive: true });
+    await fs.promises.mkdir(config.diretorios.outputs, { recursive: true });
+    workDir = path.join(config.diretorios.temporarios, 'cine-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9));
+    await fs.promises.mkdir(workDir, { recursive: true });
+    const saved = new Map();
+    for (const [name, sourcePath] of media) {
+      const target = path.join(workDir, name);
+      await fs.promises.rename(sourcePath, target);
+      saved.set(name, target);
+    }
+
+    const args = ['-y', '-hide_banner', '-loglevel', 'error'];
+    scenes.forEach(scene => {
+      args.push('-loop', '1', '-t', String(Number(scene.duration)), '-i', saved.get(scene.imageFile));
+    });
+    const audioInputs = [];
+    scenes.forEach((scene, sceneIndex) => {
+      (Array.isArray(scene.audio) ? scene.audio : []).forEach(track => {
+        const inputIndex = scenes.length + audioInputs.length;
+        args.push('-i', saved.get(track.file));
+        audioInputs.push({ inputIndex, startAt: Math.max(0, Number(track.startAt) || 0) + scenes.slice(0, sceneIndex).reduce((sum, item) => sum + Number(item.duration), 0), volume: Math.max(0, Math.min(1, Number(track.volume ?? 1))) });
+      });
+    });
+
+    const filters = [];
+    scenes.forEach((scene, index) => {
+      filters.push('[' + index + ':v]scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p,setpts=PTS-STARTPTS[v' + index + ']');
+    });
+    let videoLabel = 'v0';
+    let accumulated = Number(scenes[0].duration);
+    for (let index = 1; index < scenes.length; index++) {
+      const duration = 0.4;
+      const requested = String(scenes[index - 1].transition || 'cut');
+      const allowed = ['fade', 'fadeblack', 'wipeleft', 'slideright', 'circleopen', 'dissolve'];
+      const transition = requested === 'cut' ? 'fade' : (allowed.includes(requested) ? requested : 'fade');
+      const nextLabel = 'vx' + index;
+      filters.push('[' + videoLabel + '][v' + index + ']xfade=transition=' + transition + ':duration=' + duration + ':offset=' + Math.max(0, accumulated - duration).toFixed(3) + '[' + nextLabel + ']');
+      videoLabel = nextLabel;
+      accumulated += Number(scenes[index].duration) - duration;
+    }
+
+    if (audioInputs.length) {
+      audioInputs.forEach((track, index) => {
+        filters.push('[' + track.inputIndex + ':a]aresample=44100,adelay=' + Math.round(track.startAt * 1000) + '|' + Math.round(track.startAt * 1000) + ',volume=' + track.volume.toFixed(2) + '[a' + index + ']');
+      });
+      filters.push(audioInputs.map((_, index) => '[a' + index + ']').join('') + 'amix=inputs=' + audioInputs.length + ':duration=longest:dropout_transition=2,alimiter=limit=0.95[aout]');
+    } else {
+      filters.push('anullsrc=r=44100:cl=stereo,atrim=duration=' + totalDuration.toFixed(3) + '[aout]');
+    }
+
+    if (scenes.length > 1) {
+      filters.push('[' + videoLabel + ']tpad=stop_mode=clone:stop_duration=' + (0.4 * (scenes.length - 1)).toFixed(3) + '[vfinal]');
+      videoLabel = 'vfinal';
+    }
+    const filename = 'cine-series-' + Date.now() + '.mp4';
+    const outputPath = path.join(config.diretorios.outputs, filename);
+    args.push('-filter_complex', filters.join(';'), '-map', '[' + videoLabel + ']', '-map', '[aout]', '-t', String(totalDuration), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', outputPath);
+
+    reservation = await billing.reserveVideoCredit(req.user.id);
+    await new Promise((resolve, reject) => {
+      const child = cineSpawn(cineFfmpegPath, args, { stdio: ['ignore', 'ignore', 'pipe'] });
+      let stderr = '';
+      child.stderr.on('data', chunk => { stderr = (stderr + chunk.toString()).slice(-6000); });
+      child.on('error', reject);
+      child.on('close', code => code === 0 ? resolve() : reject(new Error(stderr || 'FFmpeg encerrou com código ' + code)));
+    });
+    await billing.completeVideoCredit(reservation, filename, String(manifest.title || 'Cine Séries').slice(0, 180));
+    reservation = null;
+    const stat = await fs.promises.stat(outputPath);
+    res.json({ status: 'rendered', fileName: filename, downloadUrl: '/download/' + encodeURIComponent(filename), sizeBytes: stat.size, durationSeconds: totalDuration, scenes: scenes.length });
+  } catch (error) {
+    if (reservation) {
+      try { await billing.refundVideoCredit(reservation); } catch (refundError) { console.error('Cine render credit refund failed:', refundError); }
+    }
+    console.error('Cine Séries render error:', error);
+    res.status(error.status || 500).json({ error: error.status ? error.message : 'Não foi possível renderizar o episódio. Verifique o FFmpeg e os arquivos enviados.' });
+  } finally {
+    if (workDir) {
+      try { await fs.promises.rm(workDir, { recursive: true, force: true }); } catch (cleanupError) { console.error('Cine render temp cleanup failed:', cleanupError); }
+    }
+    for (const file of req.files || []) {
+      try { await fs.promises.rm(file.path, { force: true }); } catch (_) {}
+    }
+  }
+});
+
 // Iniciar servidor
-const PORT = config.porta || 3000;
+const PORT = Number(process.env.PORT || config.porta || 3000);
 
 // Inicializar Storage Manager para gerenciar espaço em disco
 const storageManager = new StorageManager(config);
 storageManager.startMonitoring(30); // Verificar a cada 30 minutos
 
-app.listen(PORT, config.host, () => {
+app.listen(PORT, process.env.HOST || '0.0.0.0', () => {
   console.log(`
   ╔══════════════════════════════════════╗
   ║    🚀 SERVIDOR ROLEZANDO AVATAR     ║
   ║                                     ║
   ║  Status: ONLINE                     ║
   ║  Porta: ${PORT}                           ║
-  ║  Host: ${config.host}                  ║
+  ║  Host: ${process.env.HOST || '0.0.0.0'}                  ║
   ║  Áudio do vídeo: ${config.usarAudioDoVideo ? 'ATIVADO 🔥' : 'DESATIVADO'} ║
   ╚══════════════════════════════════════╝
   `);

@@ -10,7 +10,9 @@ class StorageManager {
     constructor(config) {
         this.config = config;
         this.settings = {
-            MAX_OUTPUT_AGE_DAYS: parseInt(process.env.MAX_OUTPUT_AGE_DAYS) || 7,
+            // Arquivos finais pertencem ao usuário: retenção automática fica desativada por padrão.
+            // Configure MAX_OUTPUT_AGE_DAYS explicitamente para habilitar expiração.
+            MAX_OUTPUT_AGE_DAYS: process.env.MAX_OUTPUT_AGE_DAYS === undefined ? 0 : Math.max(0, parseInt(process.env.MAX_OUTPUT_AGE_DAYS, 10) || 0),
             MAX_TEMP_AGE_HOURS: parseInt(process.env.MAX_TEMP_AGE_HOURS) || 24,
             MIN_FREE_SPACE_MB: parseInt(process.env.MIN_FREE_SPACE_MB) || 500,
             MAX_VIDEO_SIZE_MB: parseInt(process.env.MAX_VIDEO_SIZE_MB) || 500,
@@ -60,16 +62,23 @@ class StorageManager {
      * Obtém informações de espaço em disco
      */
     getDiskSpace() {
-        try {
-            // Retornar valores padrão - Monitoramento simplificado
-            return {
-                freeMB: 1000,
-                usedPercent: 50
-            };
-        } catch (err) {
-            console.warn('Erro ao obter espaço: ' + err.message);
-            return { freeMB: 1000, usedPercent: 50 };
+        // Não inventar capacidade livre: use os dados reais do filesystem.
+        // statfsSync existe nas versões atuais do Node exigidas pelo projeto.
+        const target = fs.existsSync(this.config.diretorios.uploads)
+            ? this.config.diretorios.uploads
+            : process.cwd();
+        const info = fs.statfsSync(target);
+        const blockSize = Number(info.bsize);
+        const totalBlocks = Number(info.blocks);
+        const availableBlocks = Number(info.bavail);
+        const freeMB = (availableBlocks * blockSize) / (1024 * 1024);
+        const usedPercent = totalBlocks > 0
+            ? ((totalBlocks - Number(info.bfree)) / totalBlocks) * 100
+            : 0;
+        if (!Number.isFinite(freeMB) || !Number.isFinite(usedPercent)) {
+            throw new Error('O sistema não retornou estatísticas válidas do disco.');
         }
+        return { freeMB, usedPercent };
     }
 
     /**
@@ -78,12 +87,15 @@ class StorageManager {
     performPreventiveCleanup() {
         console.log('🧹 Limpeza preventiva iniciada');
         
-        // Remover outputs com mais de 7 dias
-        this.cleanupDirectory(
-            this.config.diretorios.outputs,
-            this.settings.MAX_OUTPUT_AGE_DAYS * 24 * 60 * 60 * 1000,
-            'output'
-        );
+        // Nunca apagar vídeos finais silenciosamente por padrão.
+        // A expiração só é ativada quando MAX_OUTPUT_AGE_DAYS é configurado > 0.
+        if (this.settings.MAX_OUTPUT_AGE_DAYS > 0) {
+            this.cleanupDirectory(
+                this.config.diretorios.outputs,
+                this.settings.MAX_OUTPUT_AGE_DAYS * 24 * 60 * 60 * 1000,
+                'output'
+            );
+        }
         
         // Remover temporários com mais de 24h
         this.cleanupDirectory(
@@ -99,13 +111,15 @@ class StorageManager {
     performEmergencyCleanup() {
         console.log('🚨 LIMPEZA DE EMERGÊNCIA - Espaço crítico!');
         
-        // Reduzir drasticamente o tempo de retenção
-        // Remover tudo com mais de 2 dias
-        this.cleanupDirectory(
-            this.config.diretorios.outputs,
-            2 * 24 * 60 * 60 * 1000,
-            'output_emergência'
-        );
+        // Mesmo em emergência, preservar os vídeos finais do usuário.
+        // Se uma retenção foi configurada explicitamente, respeitar exatamente esse prazo.
+        if (this.settings.MAX_OUTPUT_AGE_DAYS > 0) {
+            this.cleanupDirectory(
+                this.config.diretorios.outputs,
+                this.settings.MAX_OUTPUT_AGE_DAYS * 24 * 60 * 60 * 1000,
+                'output_emergência'
+            );
+        }
         
         // Remover temp com mais de 2h
         this.cleanupDirectory(

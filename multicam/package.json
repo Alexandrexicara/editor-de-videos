@@ -1,0 +1,37 @@
+{
+  "name": "multicam-music-studio",
+  "version": "1.0.0",
+  "description": "Sistema de gravação multicâmera para clipes musicais",
+  "main": "record.js",
+  "scripts": {
+    "record": "node record.js",
+    "switch": "node switcher.js",
+    "merge": "node merge.js",
+    "start": "npm run record && npm run switch && npm run merge",
+    "gui": "node gui-gerenciador-cameras.js",
+    "mobile": "node mobile-server.js",
+    "stream": "node stream.js",
+    "mobile:control": "node mobile-server.js",
+    "mobile:camera": "node mobile-stream-server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "express": "^4.18.2",
+    "fluent-ffmpeg": "^2.1.2",
+    "socket.io": "^4.7.2",
+    "ws": "^8.20.0"
+  },
+  "keywords": [
+    "multicamera",
+    "video",
+    "music",
+    "recording",
+    "ffmpeg"
+  ],
+  "author": "MultiCam Music Studio",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -931,6 +931,11 @@
     </style>
 </head>
 <body>
+<div id="wallet-chip" style="position:fixed;z-index:9999;top:12px;right:14px;background:#151b36;border:1px solid #ff287d;border-radius:30px;padding:9px 14px;color:#fff;font:600 13px Arial;box-shadow:0 4px 18px #0005"><a href="/conta.html" style="color:#fff;text-decoration:none">💳 Carteira: <span id="wallet-credit-count">...</span> créditos</a></div>
+<script>
+(async()=>{try{const r=await fetch('/api/me',{credentials:'same-origin'});if(!r.ok){location.href='/login.html';return;}const d=await r.json();document.getElementById('wallet-credit-count').textContent=d.user.credits;}catch(_){location.href='/login.html';}})();
+</script>
+
     <div class="container">
         <div class="header">
             <h1>🎬 Gerador de Vídeo com Avatar</h1>
@@ -2007,8 +2012,8 @@
                     }, 2000);
                 } else {
                     updateStep(1);
-                    showMessage(`❌ Erro: ${data.error || data.message || 'Falha ao processar vídeo'}`, 'error');
-                    showStatusMessage('❌', 'Erro no processamento', data.error || data.message || 'Tente novamente', 'error');
+                    showMessage(`❌ Erro: ${data.message || data.error || 'Falha ao processar vídeo'}`, 'error');
+                    showStatusMessage('❌', 'Erro no processamento', data.message || data.error || 'Tente novamente', 'error');
                 }
             } catch (error) {
                 document.getElementById('loading').classList.remove('active');

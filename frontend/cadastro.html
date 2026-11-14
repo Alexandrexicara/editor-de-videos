@@ -464,8 +464,7 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('✅ Conta criada com sucesso! Você será redirecionado para criar vídeos.');
-                    window.location.href = 'criaçao.html';
+                    window.location.href = 'conta.html';
                 } else {
                     alert('❌ ' + (data.message || 'Erro ao criar conta'));
                 }
