@@ -290,37 +290,39 @@ footer {
 
     <div class="pricing">
         <div class="price-card">
-            <h4>Créditos Básico</h4>
-            <span>R$ 20</span>
-            <p>Ideal para testes</p>
-            <button onclick="comprarCreditos('basico', 20)">Comprar</button>
+            <h4>Pacote Básico</h4>
+            <span>R$ 100,00</span>
+            <p>10 produções de vídeo</p>
+            <button onclick="comprarCreditos()">Comprar pela SumUp</button>
         </div>
 
         <div class="price-card">
-            <h4>Créditos Intermediário</h4>
-            <span>R$ 30</span>
-            <button onclick="comprarCreditos('intermediario', 30)">Comprar</button>
+            <h4>Pacote Intermediário</h4>
+            <span>R$ 500,00</span>
+            <p>50 produções de vídeo</p>
+            <button onclick="comprarCreditos()">Comprar pela SumUp</button>
         </div>
 
         <div class="price-card">
-            <h4>Créditos Avançado</h4>
-            <span>R$ 40</span>
-            <button onclick="comprarCreditos('avancado', 40)">Comprar</button>
+            <h4>Pacote Avançado</h4>
+            <span>R$ 1.000,00</span>
+            <p>100 produções de vídeo</p>
+            <button onclick="comprarCreditos()">Comprar pela SumUp</button>
         </div>
 
         <div class="price-card">
-            <h4>Créditos Profissional</h4>
-            <span>R$ 50</span>
-            <button onclick="comprarCreditos('profissional', 50)">Comprar</button>
+            <h4>Pacote Profissional</h4>
+            <span>R$ 5.000,00</span>
+            <p>500 produções de vídeo</p>
+            <button onclick="comprarCreditos()">Comprar pela SumUp</button>
         </div>
     </div>
 
-    <!-- Botão para acessar o editor após compra -->
     <div style="text-align: center; margin-top: 50px;">
         <button onclick="acessarEditor()" class="editor-btn">
             🎬 Acessar Editor de Vídeos
         </button>
-        <p style="margin-top: 15px; color: #999; font-size: 13px;">(Requer login e créditos)</p>
+        <p style="margin-top: 15px; color: #999; font-size: 13px;">1 crédito = 1 produção concluída. Pagamento seguro pela SumUp.</p>
     </div>
 </section>
 
@@ -329,63 +331,14 @@ footer {
 </footer>
 
 <script>
-// Sistema de créditos e acesso ao editor
-let creditosComprados = 0;
-let tipoCredito = '';
-
-function comprarCreditos(tipo, valor) {
-    // Verificar se está logado
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    // Simular compra de créditos (em produção integraria com pagamento real)
-    creditosComprados = valor;
-    tipoCredito = tipo;
-    
-    alert(`✅ Créditos ${tipo.toUpperCase()} comprados com sucesso! Valor: R$ ${valor}
-
-Agora você pode acessar o editor de vídeos.`);
-    
-    // Salvar no localStorage para persistência
-    localStorage.setItem('creditos_comprados', creditosComprados);
-    localStorage.setItem('tipo_credito', tipoCredito);
-    localStorage.setItem('data_compra', new Date().toISOString());
+// Todas as compras passam pela carteira autenticada e pelo checkout real da SumUp.
+function comprarCreditos() {
+    window.location.href = '/conta.html';
 }
 
 function acessarEditor() {
-    // Verificar se está logado
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-        alert('⚠️ Você precisa estar logado para acessar o editor!');
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    // Verificar se comprou créditos
-    const creditosSalvos = localStorage.getItem('creditos_comprados');
-    
-    if (!creditosSalvos || parseInt(creditosSalvos) <= 0) {
-        alert('⚠️ Você precisa comprar créditos primeiro!\n\nEscolha um plano acima e clique em "Comprar".');
-        return;
-    }
-    
-    // Redirecionar para o editor de criação
-    window.location.href = 'avatar-config.html';
+    window.location.href = '/cria%C3%A7%C3%A3o.html';
 }
-
-// Verificar créditos salvos ao carregar a página
-window.addEventListener('load', function() {
-    const creditosSalvos = localStorage.getItem('creditos_comprados');
-    if (creditosSalvos && parseInt(creditosSalvos) > 0) {
-        const tipo = localStorage.getItem('tipo_credito') || 'básico';
-        console.log(`✅ Créditos ${tipo} detectados: R$ ${creditosSalvos}`);
-    }
-});
 </script>
 
 </body>
