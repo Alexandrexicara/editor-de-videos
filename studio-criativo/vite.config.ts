@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   base: '/studio-criativo/',
   plugins: [react()],
   build: {
-    outDir: resolve(__dirname, '../frontend/studio-criativo'),
+    outDir: fileURLToPath(new URL('../frontend/studio-criativo', import.meta.url)),
     emptyOutDir: true,
   },
 });
