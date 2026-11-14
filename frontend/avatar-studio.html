@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avatar Studio — renderização local | Rolezando AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<style>
+:root{color-scheme:dark;--bg:#090d18;--panel:#121a2b;--line:#26334c;--muted:#9aa9c2;--text:#f4f7ff;--accent:#8b7cff;--accent2:#45d6c5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 12% 0%,#20244a 0,transparent 34%),var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;min-height:100vh}
+header{height:70px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,4vw,54px);background:#0b1020d9}
+.brand{font-weight:800;letter-spacing:.3px}.brand span{color:var(--accent2)}header a{color:#cbd5eb;text-decoration:none;margin-left:18px;font-size:14px}
+main{max-width:1180px;margin:34px auto;padding:0 18px 60px}.intro{margin-bottom:26px}.eyebrow{color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}.intro h1{font-size:clamp(28px,4vw,42px);margin:8px 0}.intro p{color:var(--muted);line-height:1.6;max-width:760px}
+.layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:20px}.panel{background:linear-gradient(160deg,#151f34,#101727);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 16px 50px #0003}.panel h2{font-size:17px;margin:0 0 18px}.field{margin:0 0 18px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:8px;color:#dce5f8}.field textarea,.field input[type=text],.field select{width:100%;border:1px solid #33415d;border-radius:10px;background:#0b1221;color:var(--text);padding:13px;font:inherit;outline:none}.field textarea{min-height:150px;resize:vertical;line-height:1.55}.field textarea:focus,.field input:focus,.field select:focus{border-color:var(--accent)}.hint{color:var(--muted);font-size:12px;margin-top:7px;line-height:1.5}
+.upload{border:1px dashed #51617f;border-radius:12px;padding:16px;background:#0b1221}.upload input{max-width:100%;color:var(--muted)}.preview{width:100%;aspect-ratio:4/3;background:linear-gradient(135deg,#222b45,#111827);border:1px solid #33415d;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--muted);text-align:center;padding:14px}.preview img{width:100%;height:100%;object-fit:contain}.preview video{width:100%;height:100%;object-fit:contain}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:140px}.btn{border:0;border-radius:10px;padding:13px 16px;font-weight:800;cursor:pointer;color:white;background:linear-gradient(110deg,#7668ef,#9a69eb)}.btn.secondary{background:#24324c;border:1px solid #3b4a68}.btn:disabled{opacity:.5;cursor:not-allowed}.btn.full{width:100%;margin-top:4px}.status{display:none;margin-top:16px;padding:13px;border-radius:10px;background:#19263a;color:#dce5f8;line-height:1.5;font-size:13px}.status.show{display:block}.status.error{background:#3a1e2a;color:#ffc5d0}.status.ok{background:#12332f;color:#b6fff0}.voice-choice{display:flex;gap:10px;margin-bottom:14px}.voice-choice label{flex:1;border:1px solid #33415d;padding:12px;border-radius:10px;cursor:pointer;font-size:13px}.voice-choice input{accent-color:var(--accent)}.notice{border-left:3px solid #e5b95c;padding:10px 12px;background:#2b261a;color:#f2dfb4;border-radius:0 8px 8px 0;font-size:12px;line-height:1.5;margin-top:14px}
+#result{display:none;margin-top:20px}#result video{width:100%;max-height:560px;background:#000;border-radius:12px}#download{display:inline-block;margin-top:12px;color:#9eece1;font-weight:700}
+@media(max-width:820px){.layout{grid-template-columns:1fr}header{padding:0 16px}header a{margin-left:10px}}
+</style>
+</head>
+<body>
+<header><div class="brand">ROLEZANDO <span>AI</span></div><nav><a href="index.html">Início</a><a href="cine-series.html">Cine Séries</a><a href="conta.html">Minha conta</a></nav></header>
+<main>
+<section class="intro"><div class="eyebrow">Criação com inteligência artificial</div><h1>Avatar Falante 3D</h1><p>Transforme um texto ou uma gravação em um vídeo com personagem digital. Escolha uma voz da biblioteca ou use sua própria gravação e personalize gestos, expressões e movimentos do avatar.</p></section>
+<div class="layout">
+<section class="panel">
+<h2>1. O que o avatar vai falar?</h2>
+<div class="field"><label for="scriptText">Seu texto</label><textarea id="scriptText" maxlength="5000" placeholder="Digite aqui o texto que o seu avatar deverá apresentar..."></textarea><div class="hint"><span id="charCount">0</span>/5.000 caracteres.</div></div>
+<h2>2. Escolha a voz</h2>
+<div class="voice-choice"><label><input type="radio" name="voiceMode" value="library" checked> Voz da biblioteca</label><label><input type="radio" name="voiceMode" value="own"> Minha própria voz</label></div>
+<div id="libraryVoice" class="field"><label for="voiceSelect">Voz em português</label><select id="voiceSelect"><option value="">Carregando vozes...</option></select><div class="hint">As vozes disponíveis são carregadas da biblioteca do projeto.</div><button class="btn secondary" id="testVoice" type="button" style="margin-top:10px">▶ Testar voz selecionada</button></div>
+<div id="ownVoice" class="field" hidden><label for="audioFile">Envie sua gravação</label><div class="upload"><input id="audioFile" type="file" accept="audio/*"><div class="hint">Use uma gravação clara, sem música de fundo. O áudio enviado será usado no lugar da voz sintética.</div></div></div>
+</section>
+<section class="panel">
+<h2>3. Escolha ou crie seu personagem</h2>
+<div class="field"><label for="avatarPrompt">Descreva o avatar 3D que deseja criar</label><input id="avatarPrompt" type="text" maxlength="700" placeholder="Ex.: apresentadora 3D profissional, roupa azul, estúdio moderno"><div class="hint">Crie uma imagem de personagem ou envie a sua. Para animação corporal 3D real, será necessário um modelo 3D rigado; imagens comuns recebem movimento visual 2D/2.5D.</div><label style="display:flex;gap:9px;align-items:center;margin:12px 0;color:#dce5f8;font-size:13px"><input id="removeBg" type="checkbox" style="accent-color:var(--accent);width:17px;height:17px"> Gerar avatar com fundo transparente</label><div class="hint">Quando ativado, o sistema pede um fundo verde uniforme e converte esse fundo em transparência PNG diretamente no navegador. O arquivo original não é enviado para um serviço de remoção.</div><button class="btn secondary full" id="createAvatar" type="button">✨ Criar imagem do avatar</button><button class="btn secondary full" id="removeBgNow" type="button" disabled>✂️ Remover fundo da imagem atual</button></div>
+<div class="field"><label for="behavior">Movimento visual e expressões (imagem 2D/2.5D)</label><textarea id="behavior" rows="3" maxlength="1200" placeholder="Ex.: gesticula naturalmente com as mãos, sorri, demonstra entusiasmo e mantém contato visual.">Gesticula naturalmente com as mãos, mantém contato visual com a câmera, sorri de forma espontânea e usa expressões faciais naturais.</textarea><div class="hint">Descreva como o personagem deve se comportar durante a fala.</div></div>
+<div class="row"><div class="field"><label for="resolution">Qualidade do vídeo</label><select id="resolution"><option value="540p">540p — econômica</option><option value="720p">720p — equilibrada</option><option value="1080p">1080p — alta</option></select><div class="hint" id="priceHint">Renderização no seu dispositivo; conversão MP4 no servidor.</div></div><div class="field"><label for="aspectRatio">Formato do vídeo</label><select id="aspectRatio"><option value="9:16">Vertical 9:16</option><option value="16:9">Horizontal 16:9</option><option value="1:1">Quadrado 1:1</option></select></div></div>
+<div class="field"><label for="avatarFile">Ou envie uma imagem do personagem</label><div class="upload"><input id="avatarFile" type="file" accept="image/png,image/jpeg,image/webp"></div></div>
+<div class="preview" id="avatarPreview">A prévia do personagem aparecerá aqui.</div>
+<div class="notice">A voz sintetizada usa o modelo Kokoro no próprio navegador; o texto não é enviado à ElevenLabs. A criação de imagem por descrição usa a API NVIDIA configurada. A animação/captura do vídeo ocorre no dispositivo e o servidor apenas converte WebM para MP4. Cada vídeo concluído consome 1 crédito da carteira Cine Séries. Imagens PNG/JPG/WebP recebem movimento 2D/2.5D; gestos articulados dependem de um modelo GLB com esqueleto compatível.</div>
+</section>
+</div>
+<section class="panel" style="margin-top:20px">
+<h2>4. Gerar vídeo</h2>
+<button class="btn full" id="generate" type="button">🎬 Gerar meu avatar falante</button>
+<div id="status" class="status" role="status"></div>
+<div id="result"><h2>Seu vídeo está pronto</h2><video id="resultVideo" controls playsinline></video><a id="download" download="avatar-falante.mp4">Baixar vídeo MP4</a></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let avatarDataUrl='',resultUrl='',voices=[],sourceAvatarBlob=null;
+function showStatus(message,type=''){const el=$('status');el.textContent=message;el.className='status show '+type}
+function dataUrlToBlob(dataUrl){const [meta,data]=dataUrl.split(',');const mime=(meta.match(/data:(.*?);/)||[])[1]||'image/png';const bytes=atob(data);const array=new Uint8Array(bytes.length);for(let i=0;i<bytes.length;i++)array[i]=bytes.charCodeAt(i);return new Blob([array],{type:mime})}
+function showAvatar(src){avatarDataUrl=src;$('avatarPreview').innerHTML='';const img=document.createElement('img');img.src=src;$('avatarPreview').appendChild(img);$('removeBgNow').disabled=!src}
+window.avatarStudioSetImage=(blob,src)=>{sourceAvatarBlob=blob;showAvatar(src)};
+async function removeGreenBackground(blob){
+  const bitmap=await createImageBitmap(blob);
+  const canvas=document.createElement('canvas');canvas.width=bitmap.width;canvas.height=bitmap.height;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(bitmap,0,0);bitmap.close();
+  const frame=ctx.getImageData(0,0,canvas.width,canvas.height);const px=frame.data;
+  const threshold=42,feather=34;
+  for(let i=0;i<px.length;i+=4){
+    const r=px[i],g=px[i+1],b=px[i+2];
+    const dominance=g-Math.max(r,b);
+    if(g>55&&dominance>threshold){
+      const alpha=Math.max(0,Math.min(255,Math.round((threshold+feather-dominance)/feather*255)));
+      px[i+3]=Math.min(px[i+3],alpha);
+      if(alpha<255){px[i]=Math.min(255,r+Math.round((255-alpha)*0.08));px[i+1]=Math.min(255,g);px[i+2]=Math.min(255,b+Math.round((255-alpha)*0.08));}
+    }
+  }
+  ctx.putImageData(frame,0,0);
+  return await new Promise((resolve,reject)=>canvas.toBlob(out=>out?resolve(out):reject(new Error('Não foi possível criar o PNG transparente.')),'image/png'));
+}
+async function applyBackgroundRemoval(blob){
+  showStatus('Removendo o fundo no próprio navegador...');
+  const transparent=await removeGreenBackground(blob);
+  showAvatar(await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(transparent)}));
+  sourceAvatarBlob=transparent;
+  showStatus('PNG com transparência criado. Confira as bordas na prévia.','ok');
+}
+$('scriptText').addEventListener('input',()=>{$('charCount').textContent=$('scriptText').value.length});
+document.querySelectorAll('input[name="voiceMode"]').forEach(r=>r.addEventListener('change',()=>{const own=document.querySelector('input[name="voiceMode"]:checked').value==='own';$('ownVoice').hidden=!own;$('libraryVoice').hidden=own}));
+$('avatarFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;if(f.size>10*1024*1024){showStatus('A imagem deve ter no máximo 10 MB.','error');e.target.value='';return}sourceAvatarBlob=f;const reader=new FileReader();reader.onload=async()=>{showAvatar(reader.result);if($('removeBg').checked){try{await applyBackgroundRemoval(f)}catch(err){showStatus(err.message,'error')}}};reader.readAsDataURL(f)});
+$('removeBgNow').addEventListener('click',async()=>{if(!sourceAvatarBlob)return;const btn=$('removeBgNow');btn.disabled=true;try{await applyBackgroundRemoval(sourceAvatarBlob)}catch(e){showStatus(e.message,'error')}finally{btn.disabled=false}});
+$('removeBg').addEventListener('change',async()=>{if(!$('removeBg').checked||!sourceAvatarBlob)return;try{await applyBackgroundRemoval(sourceAvatarBlob)}catch(e){showStatus(e.message,'error')}});
+$('createAvatar').addEventListener('click',async()=>{const prompt=$('avatarPrompt').value.trim();if(!prompt){showStatus('Descreva o personagem antes de criar a imagem.','error');return}const btn=$('createAvatar');btn.disabled=true;showStatus('Criando imagem do personagem com NVIDIA...');try{const r=await fetch('/api/cine/image',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({prompt:'Retrato de personagem digital 3D, corpo visível até a cintura, olhando diretamente para a câmera, boca visível, iluminação de estúdio. '+($('removeBg').checked?'Fundo verde chroma key puro #00FF00, totalmente uniforme, sem sombras, sem objetos, sem gradiente, sem reflexos e sem verde no personagem. ':'Fundo simples e discreto. ')+prompt})});const data=await r.json();if(!r.ok)throw new Error(data.error||'Falha ao criar personagem.');sourceAvatarBlob=dataUrlToBlob(data.image);showAvatar(data.image);if($('removeBg').checked)await applyBackgroundRemoval(sourceAvatarBlob);else showStatus('Imagem do avatar criada.','ok')}catch(e){showStatus(e.message,'error')}finally{btn.disabled=false}});
+$('generate').addEventListener('click',async()=>{const text=$('scriptText').value.trim();const own=document.querySelector('input[name="voiceMode"]:checked').value==='own';const avatarFile=$('avatarFile').files[0];const audioFile=$('audioFile').files[0];if(!avatarDataUrl&&!avatarFile){showStatus('Envie uma imagem ou crie o personagem primeiro.','error');return}if(own&&!audioFile){showStatus('Envie a gravação da sua própria voz.','error');return}if(!own&&!text){showStatus('Digite o texto que o avatar deverá falar.','error');return}if(!own&&!$('voiceSelect').value){showStatus('Escolha uma voz da biblioteca.','error');return}
+const btn=$('generate');btn.disabled=true;$('result').style.display='none';showStatus('Preparando áudio e animando o avatar. Isso pode levar alguns minutos...');try{const form=new FormData();if(sourceAvatarBlob&&avatarDataUrl)form.append('avatar',sourceAvatarBlob,'avatar.png');else if(avatarFile)form.append('avatar',avatarFile);else form.append('avatar',dataUrlToBlob(avatarDataUrl),'avatar.png');if(own)form.append('customAudio',audioFile);else{form.append('text',text);form.append('voiceId',$('voiceSelect').value)}form.append('behavior',$('behavior').value);form.append('resolution',$('resolution').value);form.append('aspectRatio',$('aspectRatio').value);const r=await fetch('/api/avatar-studio/generate',{method:'POST',body:form,credentials:'same-origin'});if(!r.ok||(r.headers.get('content-type')||'').includes('application/json')){let msg='Não foi possível gerar o vídeo.';try{const d=await r.json();msg=d.error||msg}catch{}throw new Error(msg)}const blob=await r.blob();if(resultUrl)URL.revokeObjectURL(resultUrl);resultUrl=URL.createObjectURL(blob);$('resultVideo').src=resultUrl;$('download').href=resultUrl;$('result').style.display='block';showStatus('Avatar falante gerado com sucesso.','ok');$('result').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){showStatus(e.message,'error')}finally{btn.disabled=false}});
+
+// A biblioteca local de vozes é inicializada em avatar-renderer.js.
+</script>
+<script type="module" src="avatar-renderer.js"></script>
+<script type="module" src="avatar-glb.mjs"></script>
+<script type="module" src="avatar-library.mjs"></script>
+</body>
+</html>
