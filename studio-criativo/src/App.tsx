@@ -297,9 +297,9 @@ export default function App() {
       setBackground(project.document.background || '#ffffff');
       setProjectName(project.name);
       setProjectId(project.id);
-      setSaved(true);
       setShowProjects(false);
       refresh();
+      setSaved(true);
       historyRef.current = [JSON.stringify(c.toJSON(['name']))];
       historyIndexRef.current = 0;
       setHistoryPosition(0);
@@ -389,18 +389,21 @@ export default function App() {
     c.clear();
     if (kind === 'sale') {
       c.backgroundColor = '#17112b';
+      setBackground('#17112b');
       c.add(new Rect({ left: 45, top: 45, width: canvasSize.width - 90, height: canvasSize.height - 90, rx: 42, ry: 42, fill: '#2c1b4d', stroke: '#f4b942', strokeWidth: 8, name: 'Moldura da oferta' }));
       c.add(new Textbox('OFERTA ESPECIAL', { left: 100, top: 190, width: canvasSize.width - 200, fontSize: 82, fontWeight: 'bold', textAlign: 'center', fill: '#ffd166', name: 'Título da oferta' }));
       c.add(new Textbox('ATÉ 50% OFF', { left: 100, top: 390, width: canvasSize.width - 200, fontSize: 105, fontWeight: 'bold', textAlign: 'center', fill: '#ffffff', name: 'Desconto' }));
       c.add(new Textbox('Aproveite por tempo limitado', { left: 100, top: 560, width: canvasSize.width - 200, fontSize: 38, textAlign: 'center', fill: '#e9d8ff', name: 'Legenda' }));
     } else if (kind === 'event') {
       c.backgroundColor = '#092b35';
+      setBackground('#092b35');
       c.add(new Rect({ left: 45, top: 45, width: canvasSize.width - 90, height: canvasSize.height - 90, rx: 36, ry: 36, fill: '#0f4c5c', stroke: '#8de3d2', strokeWidth: 6, name: 'Moldura do evento' }));
       c.add(new Textbox('VOCÊ É NOSSO CONVIDADO', { left: 100, top: 210, width: canvasSize.width - 200, fontSize: 55, fontWeight: 'bold', textAlign: 'center', fill: '#ffffff', name: 'Título do evento' }));
       c.add(new Textbox('NOME DO EVENTO', { left: 100, top: 390, width: canvasSize.width - 200, fontSize: 84, fontWeight: 'bold', textAlign: 'center', fill: '#8de3d2', name: 'Nome do evento' }));
       c.add(new Textbox('Data • Horário • Local', { left: 100, top: 590, width: canvasSize.width - 200, fontSize: 36, textAlign: 'center', fill: '#ffffff', name: 'Informações' }));
     } else {
       c.backgroundColor = '#f4f0e8';
+      setBackground('#f4f0e8');
       c.add(new Rect({ left: 50, top: 50, width: canvasSize.width - 100, height: canvasSize.height - 100, rx: 28, ry: 28, fill: '#ffffff', stroke: '#d8c7a5', strokeWidth: 5, name: 'Cartão do produto' }));
       c.add(new Textbox('DESTAQUE DA SEMANA', { left: 100, top: 130, width: canvasSize.width - 200, fontSize: 52, fontWeight: 'bold', textAlign: 'center', fill: '#4b3b2a', name: 'Chamada' }));
       c.add(new Textbox('NOME DO PRODUTO', { left: 100, top: 390, width: canvasSize.width - 200, fontSize: 74, fontWeight: 'bold', textAlign: 'center', fill: '#9b5d2e', name: 'Produto' }));
