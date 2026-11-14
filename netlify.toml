@@ -1,6 +1,6 @@
 [build]
   publish = "frontend"
-  command = "echo 'Frontend estático pronto para publicação'"
+  command = "cd studio-criativo && npm install && npm run build"
 
 [[redirects]]
   from = "/api/*"
