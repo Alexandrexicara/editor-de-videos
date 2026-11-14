@@ -6,10 +6,10 @@ const COOKIE = 'rolezando_session';
 const SESSION_SECONDS = 604800;
 const CATALOG = {
   BRL: [
-    { id: 'credits_10', minor: 100, credits: 10 },
-    { id: 'credits_50', minor: 500, credits: 50 },
-    { id: 'credits_100', minor: 1000, credits: 100 },
-    { id: 'credits_500', minor: 5000, credits: 500 }
+    { id: 'credits_10', minor: 10000, credits: 10 },
+    { id: 'credits_50', minor: 50000, credits: 50 },
+    { id: 'credits_100', minor: 100000, credits: 100 },
+    { id: 'credits_500', minor: 500000, credits: 500 }
   ],
   USD: [
     { id: 'credits_10', minor: 100, credits: 10 },
@@ -77,6 +77,26 @@ function verifySession(token) {
   try {
     const p = JSON.parse(Buffer.from(parts[0], 'base64url').toString());
     return p.sub && p.exp > Math.floor(Date.now() / 1000) ? { id: p.sub, email: p.email } : null;
+  } catch (_) { return null; }
+}
+function signMulticamToken(userId) {
+  const payload = Buffer.from(JSON.stringify({
+    sub: userId, scope: 'multicam', exp: Math.floor(Date.now() / 1000) + 600
+  })).toString('base64url');
+  const signature = crypto.createHmac('sha256', sessionKey()).update(payload).digest('base64url');
+  return payload + '.' + signature;
+}
+function verifyMulticamToken(token) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const expected = crypto.createHmac('sha256', sessionKey()).update(parts[0]).digest();
+  const received = Buffer.from(parts[1], 'base64url');
+  if (expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) return null;
+  try {
+    const payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString());
+    return payload.scope === 'multicam' && payload.sub && payload.exp > Math.floor(Date.now() / 1000)
+      ? { id: payload.sub } : null;
   } catch (_) { return null; }
 }
 function cookieValue(req) {
@@ -172,6 +192,53 @@ function registerBilling(app) {
       next();
     } catch (error) { res.status(503).json({ success: false, message: error.message }); }
   };
+  const requireMulticamToken = (req, res, next) => {
+    try {
+      const token = String(req.headers.authorization || '').replace(/^Bearer\\s+/i, '');
+      const user = verifyMulticamToken(token);
+      if (!user) return res.status(401).json({ success: false, message: 'Sessão MultiCam expirada. Abra o estúdio novamente pelo Cine Séries.' });
+      req.multicamUser = user;
+      next();
+    } catch (error) { res.status(503).json({ success: false, message: error.message }); }
+  };
+
+  app.post('/api/multicam/session', requireAuth, (req, res) => {
+    res.json({ success: true, token: signMulticamToken(req.user.id), expiresIn: 600, pricePerProduction: 10.00, currency: 'BRL' });
+  });
+
+  app.post('/api/multicam/reserve', requireMulticamToken, async (req, res) => {
+    try {
+      const reservation = await reserveVideoCredit(req.multicamUser.id);
+      const balance = await pool.query('SELECT credits FROM users WHERE id=$1', [req.multicamUser.id]);
+      res.json({ success: true, reservationId: reservation.id, credits: balance.rows[0]?.credits || 0 });
+    } catch (error) {
+      res.status(error.status || 503).json({ success: false, message: error.message });
+    }
+  });
+
+  app.post('/api/multicam/complete', requireMulticamToken, async (req, res) => {
+    try {
+      const reservationId = String(req.body?.reservationId || '');
+      if (!/^[0-9a-f-]{36}$/i.test(reservationId)) return res.status(400).json({ success: false, message: 'Reserva de produção inválida.' });
+      await completeVideoCredit({ id: reservationId, userId: req.multicamUser.id }, 'multicam-' + reservationId + '.mp4', 'Produção de videoclipe MultiCam');
+      const balance = await pool.query('SELECT credits FROM users WHERE id=$1', [req.multicamUser.id]);
+      res.json({ success: true, credits: balance.rows[0]?.credits || 0 });
+    } catch (error) {
+      res.status(error.status || 503).json({ success: false, message: error.message });
+    }
+  });
+
+  app.post('/api/multicam/refund', requireMulticamToken, async (req, res) => {
+    try {
+      const reservationId = String(req.body?.reservationId || '');
+      if (!/^[0-9a-f-]{36}$/i.test(reservationId)) return res.status(400).json({ success: false, message: 'Reserva de produção inválida.' });
+      await refundVideoCredit({ id: reservationId, userId: req.multicamUser.id });
+      res.json({ success: true, refunded: true });
+    } catch (error) {
+      res.status(error.status || 503).json({ success: false, message: error.message });
+    }
+  });
+
   const requireAdmin = (req, res, next) => {
     const expected = process.env.ADMIN_API_KEY || '';
     const supplied = String(req.headers['x-admin-key'] || '');
@@ -232,7 +299,7 @@ function registerBilling(app) {
   });
 
   app.get('/api/credits/packages', (req, res) => {
-    res.json({ pricePerVideo: { BRL: 0.10, USD: 0.10 }, packages: Object.fromEntries(
+    res.json({ pricePerVideo: { BRL: 10.00, USD: 0.10 }, packages: Object.fromEntries(
       Object.entries(CATALOG).map(([currency, list]) => [currency, list.map((p) => ({ id: p.id, credits: p.credits, amount: p.minor / 100, currency }))])
     ) });
   });
