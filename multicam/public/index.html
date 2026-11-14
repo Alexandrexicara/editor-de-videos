@@ -625,24 +625,98 @@
             document.getElementById('processing-status').textContent = result.success ? '✅ ' + result.message : '❌ ' + result.message;
         }
         
+        const MULTICAM_BILLING_API = 'https://editor-de-videos.onrender.com';
+        window.addEventListener('message', (event) => {
+            const allowedOrigin = event.origin === 'https://cine-vidios.netlify.app' ||
+                /^https:\/\/deploy-preview-\\d+--cine-vidios\\.netlify\\.app$/.test(event.origin);
+            if (!allowedOrigin || event.data?.type !== 'CINE_MULTICAM_AUTH' || typeof event.data.token !== 'string') return;
+            sessionStorage.setItem('cine_multicam_token', event.data.token);
+            window.opener?.postMessage({ type: 'CINE_MULTICAM_AUTH_ACK' }, event.origin);
+            addLog('✅ Conta Cine Séries conectada à carteira MultiCam.', 'success');
+        });
+        window.addEventListener('load', () => {
+            if (window.opener) window.opener.postMessage({ type: 'CINE_MULTICAM_READY' }, '*');
+        });
+        async function reserveMulticamProduction() {
+            const token = sessionStorage.getItem('cine_multicam_token');
+            if (!token) throw new Error('Abra o MultiCam pelo painel Cine Séries e faça login para liberar a produção.');
+            const response = await fetch(MULTICAM_BILLING_API + '/api/multicam/reserve', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok || !result.reservationId) throw new Error(result.message || 'Não foi possível reservar o crédito da produção.');
+            sessionStorage.setItem('cine_multicam_reservation', result.reservationId);
+            return result.reservationId;
+        }
+        async function completeMulticamProduction(reservationId) {
+            const token = sessionStorage.getItem('cine_multicam_token');
+            const response = await fetch(MULTICAM_BILLING_API + '/api/multicam/complete', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reservationId })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok || !result.success) throw new Error(result.message || 'A confirmação da produção ficou pendente.');
+            sessionStorage.removeItem('cine_multicam_reservation');
+            addLog('💳 Produção concluída: 1 crédito consumido (R$ 10,00). Saldo: ' + result.credits, 'success');
+        }
+        async function refundMulticamProduction(reservationId) {
+            const token = sessionStorage.getItem('cine_multicam_token');
+            try {
+                await fetch(MULTICAM_BILLING_API + '/api/multicam/refund', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reservationId })
+                });
+                sessionStorage.removeItem('cine_multicam_reservation');
+                addLog('↩️ A produção falhou. O crédito foi devolvido à carteira.', 'warning');
+            } catch (error) {
+                addLog('Falha ao confirmar o estorno. Guarde o identificador da reserva: ' + reservationId, 'error');
+            }
+        }
+
         async function mergeVideo() {
-            document.getElementById('processing-status').className = 'status-message processing';
-            document.getElementById('processing-status').textContent = '🎬 Juntando...';
-            const response = await fetch('/api/merge', { method: 'POST' });
-            const result = await response.json();
-            document.getElementById('processing-status').className = 'status-message ready';
-            document.getElementById('processing-status').textContent = result.success ? '✅ ' + result.message : '❌ ' + result.message;
-            loadFiles();
+            let reservationId = null;
+            try {
+                reservationId = await reserveMulticamProduction();
+                document.getElementById('processing-status').className = 'status-message processing';
+                document.getElementById('processing-status').textContent = '🎬 Juntando videoclipe...';
+                const response = await fetch('/api/merge', { method: 'POST' });
+                const result = await response.json();
+                document.getElementById('processing-status').className = result.success ? 'status-message ready' : 'status-message error';
+                document.getElementById('processing-status').textContent = result.success ? '✅ ' + result.message : '❌ ' + result.message;
+                if (result.success) await completeMulticamProduction(reservationId);
+                else await refundMulticamProduction(reservationId);
+                loadFiles();
+            } catch (error) {
+                if (reservationId) await refundMulticamProduction(reservationId);
+                document.getElementById('processing-status').className = 'status-message error';
+                document.getElementById('processing-status').textContent = '❌ ' + error.message;
+                alert(error.message);
+            }
         }
         
         async function fullProcess() {
-            document.getElementById('processing-status').className = 'status-message processing';
-            document.getElementById('processing-status').textContent = '🚀 Processando...';
-            const response = await fetch('/api/full-process', { method: 'POST' });
-            const result = await response.json();
-            document.getElementById('processing-status').className = 'status-message ready';
-            document.getElementById('processing-status').textContent = result.success ? '✅ ' + result.message : '❌ ' + result.message;
-            loadFiles();
+            let reservationId = null;
+            try {
+                reservationId = await reserveMulticamProduction();
+                document.getElementById('processing-status').className = 'status-message processing';
+                document.getElementById('processing-status').textContent = '🚀 Produzindo videoclipe...';
+                const response = await fetch('/api/full-process', { method: 'POST' });
+                const result = await response.json();
+                document.getElementById('processing-status').className = result.success ? 'status-message ready' : 'status-message error';
+                document.getElementById('processing-status').textContent = result.success ? '✅ ' + result.message : '❌ ' + result.message;
+                if (result.success) await completeMulticamProduction(reservationId);
+                else await refundMulticamProduction(reservationId);
+                loadFiles();
+            } catch (error) {
+                if (reservationId) await refundMulticamProduction(reservationId);
+                document.getElementById('processing-status').className = 'status-message error';
+                document.getElementById('processing-status').textContent = '❌ ' + error.message;
+                alert(error.message);
+            }
         }
         
         // GERENCIADOR DE ARQUIVOS
