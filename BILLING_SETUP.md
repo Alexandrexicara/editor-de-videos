@@ -1,8 +1,8 @@
 # Carteira de créditos e pagamentos SumUp
 
 ## Preços configurados
-- Brasil: R$ 0,10 por vídeo. R$ 1 = 10 vídeos; R$ 5 = 50; R$ 10 = 100; R$ 50 = 500.
-- Exterior: US$ 0,10 por vídeo. US$ 1 = 10 vídeos; US$ 5 = 50; US$ 10 = 100; US$ 50 = 500.
+- Brasil: R$ 10,00 por produção de vídeo concluída. 10 créditos = R$ 100; 50 = R$ 500; 100 = R$ 1.000; 500 = R$ 5.000.
+- Exterior: US$ 0,10 por produção de vídeo concluída. 10 créditos = US$ 1; 50 = US$ 5; 100 = US$ 10; 500 = US$ 50.
 - Cada processamento concluído consome 1 crédito. Se falhar, o crédito reservado é devolvido.
 
 ## Variáveis obrigatórias no serviço de hospedagem
@@ -10,8 +10,8 @@
 - SESSION_SECRET: segredo aleatório longo (mínimo 32 bytes) para assinar cookies de sessão.
 - ADMIN_API_KEY: segredo administrativo opcional; necessário apenas para acionar a limpeza manual.
 - SUMUP_API_KEY: chave privada da API SumUp.
-- SUMUP_MERCHANT_CODE: código do estabelecimento SumUp.
-- PUBLIC_BASE_URL: URL HTTPS pública do backend.
+- SUMUP_MERCHANT_CODE: código do estabelecimento SumUp (opcional quando a API da SumUp permite obtê-lo pelo perfil autenticado).
+- PUBLIC_BASE_URL: URL HTTPS pública do site, que encaminha `/api/*` ao backend.
 - NODE_ENV=production
 - HOST=0.0.0.0
 - PORT: porta fornecida pelo serviço.
