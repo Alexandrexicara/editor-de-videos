@@ -1,6 +1,7 @@
 @echo off
 title MultiCam Music Studio - Iniciando...
 color 0A
+cd /d "%~dp0"
 
 echo.
 echo ===============================================
