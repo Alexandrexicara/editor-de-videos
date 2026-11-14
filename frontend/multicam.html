@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MultiCam Studio | Cine Séries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#080b14;--panel:#111827;--line:#263247;--muted:#9aa8bd;--text:#f7f9fc;--pink:#ff3d8b;--violet:#8b5cf6;--cyan:#38bdf8}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0%,#28204b 0,transparent 42%),radial-gradient(ellipse at 90% 20%,#12334a 0,transparent 36%),var(--bg);color:var(--text);font:16px Inter,system-ui,sans-serif}
+main{width:min(1100px,calc(100% - 32px));margin:auto;padding:28px 0 64px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.brand{font-weight:800;letter-spacing:.02em}.brand span{color:var(--pink)}a{color:inherit}.back{color:#c6d2e4;text-decoration:none;border:1px solid var(--line);padding:10px 14px;border-radius:12px}
+.hero{padding:64px 0 34px;max-width:760px}.eyebrow{color:#f9a8d4;text-transform:uppercase;letter-spacing:.16em;font-size:12px;font-weight:800}.hero h1{font-size:clamp(38px,7vw,68px);line-height:1.02;margin:14px 0 18px;letter-spacing:-.055em}.hero h1 span{background:linear-gradient(90deg,var(--pink),#b794f4,var(--cyan));background-clip:text;color:transparent}.hero p{color:#b7c3d5;line-height:1.8;font-size:17px;max-width:680px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{background:linear-gradient(145deg,rgba(22,32,50,.94),rgba(13,18,31,.96));border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 20px 70px #0003}.icon{font-size:28px}.card h2{font-size:19px;margin:12px 0 8px}.card p{color:var(--muted);line-height:1.65;font-size:14px}.action{display:inline-flex;align-items:center;justify-content:center;margin-top:12px;padding:12px 16px;border-radius:12px;text-decoration:none;font-weight:700;background:linear-gradient(100deg,var(--pink),var(--violet));color:white}.action.secondary{background:#1c2b40;border:1px solid #34445d}.notice{margin-top:18px;padding:18px 20px;border:1px solid #725b32;background:#2a2113;border-radius:16px;color:#f5d9a4;line-height:1.65;font-size:14px}.steps{margin-top:28px}.steps h2{font-size:22px}.steps ol{padding-left:22px;color:#c2ccda;line-height:1.9}.foot{color:#718096;font-size:12px;margin-top:30px}.price-panel{margin:0 0 22px;padding:18px 20px;border:1px solid #6b4d83;background:#21172f;border-radius:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.price-panel strong{font-size:24px;color:#f9a8d4}.price-panel p{color:#d6c7e8;line-height:1.6;font-size:14px}.action-button{border:0;cursor:pointer;font:inherit}
+</style>
+</head>
+<body><main>
+<div class="top"><div class="brand">CINE <span>SÉRIES</span> / MULTICAM</div><a class="back" href="index.html">← Voltar ao painel</a></div>
+<section class="hero"><div class="eyebrow">Estúdio multicâmera</div><h1>Seu clipe. <span>Vários ângulos.</span></h1><p>Grave câmeras simultaneamente, controle as tomadas, sincronize o áudio e monte seu vídeo musical em um único fluxo de produção.</p></section>
+<section class="grid">
+<article class="card"><div class="icon">🎬</div><h2>Estúdio principal</h2><p>Abra a interface de gravação e edição multicâmera executada no computador que está conectado às câmeras.</p><button class="action action-button" id="openStudio" type="button">Abrir MultiCam no computador ↗</button></article>
+<article class="card"><div class="icon">📱</div><h2>Controle pelo celular</h2><p>Use o controle remoto para iniciar e parar a gravação e acompanhar a sessão pela rede local.</p><a class="action secondary" href="http://localhost:3002/" target="_blank" rel="noopener">Abrir controle local ↗</a></article>
+<article class="card"><div class="icon">🎥</div><h2>Câmera do celular</h2><p>O módulo opcional recebe a imagem do telefone. Para iniciá-lo, abra outro terminal na pasta multicam e execute npm run mobile:camera.</p><a class="action secondary" href="http://localhost:3001/" target="_blank" rel="noopener">Abrir servidor de câmera ↗</a></article>
+</section>
+<section class="price-panel"><div><p>Produção de videoclipe no MultiCam</p><strong>R$ 10,00 por produção concluída</strong><p>O sistema reserva 1 crédito ao iniciar a montagem e só confirma a cobrança quando o vídeo final é gerado. Se falhar, o crédito é devolvido.</p></div><a class="action secondary" href="/conta.html">Minha carteira / comprar créditos</a></section>
+<div class="notice"><strong>Importante:</strong> esta página fica hospedada no Cine Séries, mas a captura das câmeras USB e o FFmpeg precisam rodar no computador do usuário. Um site hospedado na nuvem não consegue acessar diretamente as webcams, microfones e dispositivos USB do seu computador. Inicie o MultiCam localmente antes de usar os atalhos acima.</div>
+<section class="steps"><h2>Primeira inicialização no Windows</h2><ol><li>Baixe ou clone o repositório do Cine Séries integrado.</li><li>Abra a pasta <code>multicam</code> no computador conectado às câmeras.</li><li>Execute <code>INICIAR-SISTEMA.bat</code> ou instale as dependências com <code>npm install</code> e inicie o painel conforme o README.</li><li>Volte a esta página e abra o Estúdio principal. Para controle pelo celular, use o endereço de rede local do computador e a porta indicada no README.</li></ol></section>
+<div class="foot">MultiCam Music Studio integrado como módulo independente. O código original do projeto permanece preservado em sua própria pasta.</div>
+</main><script>
+let multicamStudioWindow = null;
+let multicamAuthToken = null;
+let multicamStudioReady = false;
+function sendMulticamToken() {
+  if (multicamStudioReady && multicamAuthToken && multicamStudioWindow && !multicamStudioWindow.closed) {
+    multicamStudioWindow.postMessage({ type: 'CINE_MULTICAM_AUTH', token: multicamAuthToken }, 'http://localhost:3000');
+  }
+}
+window.addEventListener('message', (event) => {
+  if (event.source !== multicamStudioWindow || event.origin !== 'http://localhost:3000' || event.data?.type !== 'CINE_MULTICAM_READY') return;
+  multicamStudioReady = true;
+  sendMulticamToken();
+});
+document.getElementById('openStudio').addEventListener('click', async () => {
+  multicamStudioWindow = window.open('http://localhost:3000/', 'cine-multicam-studio');
+  if (!multicamStudioWindow) {
+    alert('O navegador bloqueou a janela. Permita pop-ups para abrir o MultiCam.');
+    return;
+  }
+  try {
+    const response = await fetch('/api/multicam/session', { method: 'POST', credentials: 'same-origin' });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.token) {
+      multicamStudioWindow.close();
+      if (response.status === 401) {
+        window.location.href = '/login.html?next=/multicam.html';
+        return;
+      }
+      throw new Error(result.message || 'Não foi possível autenticar o MultiCam.');
+    }
+    multicamAuthToken = result.token;
+    sendMulticamToken();
+  } catch (error) {
+    if (multicamStudioWindow && !multicamStudioWindow.closed) multicamStudioWindow.close();
+    alert(error.message);
+  }
+});
+</script>
+</body></html>
