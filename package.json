@@ -9,7 +9,7 @@
     "frontend": "npx serve frontend",
     "electron": "electron .",
     "electron:dev": "concurrently \"npm run dev\" \"electron .\"",
-    "build": "electron-builder",
+    "build": "node scripts/build.js",
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
