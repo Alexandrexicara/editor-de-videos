@@ -4,43 +4,43 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "https://editor-de-videos.onrender.com/api/:splat"
+  to = "https://editor-de-videos-95y3.onrender.com/api/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/upload"
-  to = "https://editor-de-videos.onrender.com/upload"
+  to = "https://editor-de-videos-95y3.onrender.com/upload"
   status = 200
   force = true
 
 [[redirects]]
   from = "/upload-avatar"
-  to = "https://editor-de-videos.onrender.com/upload-avatar"
+  to = "https://editor-de-videos-95y3.onrender.com/upload-avatar"
   status = 200
   force = true
 
 [[redirects]]
   from = "/download/*"
-  to = "https://editor-de-videos.onrender.com/download/:splat"
+  to = "https://editor-de-videos-95y3.onrender.com/download/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/outputs/*"
-  to = "https://editor-de-videos.onrender.com/outputs/:splat"
+  to = "https://editor-de-videos-95y3.onrender.com/outputs/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/health"
-  to = "https://editor-de-videos.onrender.com/health"
+  to = "https://editor-de-videos-95y3.onrender.com/health"
   status = 200
   force = true
 
 [[redirects]]
   from = "/status"
-  to = "https://editor-de-videos.onrender.com/status"
+  to = "https://editor-de-videos-95y3.onrender.com/status"
   status = 200
   force = true
 
@@ -48,5 +48,5 @@
 # Rotas antigas ou não estáticas continuam chegando ao backend.
 [[redirects]]
   from = "/*"
-  to = "https://editor-de-videos.onrender.com/:splat"
+  to = "https://editor-de-videos-95y3.onrender.com/:splat"
   status = 200
